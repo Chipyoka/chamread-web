@@ -8,7 +8,7 @@
     <div class="min-h-[90dvh] flex flex-col items-center justify-center ">
         <div class="w-full max-w-md px-6 py-8 bg-white/90 backdrop-blur-md rounded-sm shadow-lg">
             <div class="flex items-center justify-center">
-                  <img src="{{ asset('images/logo.png') }}" alt="logo" class="h-14">
+                  <img src="{{ asset('images/app_logo.png') }}" alt="logo" class="h-14">
             </div>
             <div class="mb-6 mt-2 text-center">
                 <!-- <h2 class="text-gray-600 text-xl font-semibold">Dashboard Login</h2> -->
