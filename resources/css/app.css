@@ -3,6 +3,10 @@
   --color-primary: #198BCE;
 }
 
+body{
+  max-width: 1920px !important;
+  
+}
 /* Tailwind directives */
 @tailwind base;
 @tailwind components;

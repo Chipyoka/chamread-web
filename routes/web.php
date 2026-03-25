@@ -17,4 +17,14 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/csas', [ProfileController::class,'edit'])->name('csas.index');
+    Route::get('/csas/map', [ProfileController::class,'edit'])->name('csas.map');
+    Route::get('/exceptions', [ProfileController::class,'edit'])->name('exceptions.index');
+    Route::get('/accounts', [ProfileController::class,'edit'])->name('accounts.index');
+    Route::get('/analytics', [ProfileController::class,'edit'])->name('analytics.index');
+    Route::get('/admin/settings', [ProfileController::class,'edit'])->name('admin.settings');
+    Route::get('/audit', [ProfileController::class,'edit'])->name('audit.index');
+});
+
 require __DIR__.'/auth.php';
