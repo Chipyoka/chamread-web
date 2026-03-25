@@ -1,0 +1,9 @@
+/* resources/css/app.css */
+:root {
+  --color-primary: #198BCE;
+}
+
+/* Tailwind directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
