@@ -3,13 +3,13 @@
         @php
             $userRole = auth()->user()->role ?? 'csa';
             $tabs = [
-                ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'home', 'roles' => ['csa','supervisor','admin'], 'pattern' => 'dashboard'],
-                ['name' => 'CSAs', 'route' => 'csas.index', 'icon' => 'users', 'roles' => ['supervisor','admin'], 'pattern' => 'csas.*'],
-                ['name' => 'Accounts', 'route' => 'accounts.index', 'icon' => 'file-text', 'roles' => ['supervisor','admin'], 'pattern' => 'accounts.*'],
-                ['name' => 'Exceptions', 'route' => 'exceptions.index', 'icon' => 'alert-circle', 'roles' => ['supervisor','admin'], 'pattern' => 'exceptions.*'],
-                ['name' => 'Analytics', 'route' => 'analytics.index', 'icon' => 'bar-chart-2', 'roles' => ['admin'], 'pattern' => 'analytics.*'],
-                ['name' => 'Admin', 'route' => 'admin.settings', 'icon' => 'settings', 'roles' => ['admin'], 'pattern' => 'admin.*'],
-                ['name' => 'Audit', 'route' => 'audit.index', 'icon' => 'clipboard', 'roles' => ['admin'], 'pattern' => 'audit.*'],
+                ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'home', 'roles' => ['CSA','SUPERVISOR','ADMIN'], 'pattern' => 'dashboard'],
+                ['name' => 'CSAs', 'route' => 'csas.index', 'icon' => 'users', 'roles' => ['SUPERVISOR','ADMIN'], 'pattern' => 'csas.*'],
+                ['name' => 'Accounts', 'route' => 'accounts.index', 'icon' => 'file-text', 'roles' => ['SUPERVISOR','ADMIN'], 'pattern' => 'accounts.*'],
+                ['name' => 'Exceptions', 'route' => 'exceptions.index', 'icon' => 'alert-circle', 'roles' => ['SUPERVISOR','ADMIN'], 'pattern' => 'exceptions.*'],
+                ['name' => 'Analytics', 'route' => 'analytics.index', 'icon' => 'bar-chart-2', 'roles' => ['ADMIN'], 'pattern' => 'analytics.*'],
+                ['name' => 'Admin', 'route' => 'admin.settings', 'icon' => 'settings', 'roles' => ['ADMIN'], 'pattern' => 'ADMIN.*'],
+                ['name' => 'Audit', 'route' => 'audit.index', 'icon' => 'clipboard', 'roles' => ['ADMIN'], 'pattern' => 'audit.*'],
             ];
         @endphp
 

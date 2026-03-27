@@ -28,6 +28,11 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // update last login 
+        $request->user()->update([
+            'last_login_at' => now()
+        ]);
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
