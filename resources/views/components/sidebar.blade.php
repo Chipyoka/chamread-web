@@ -1,10 +1,10 @@
 <div class="min-h-[85dvh] max-h-dvh w-60 bg-white flex flex-col px-6 py-3 border-r border-gray-200">
     <nav class="flex-1 mt-4">
         @php
-            $userRole = auth()->user()->role ?? 'csa';
+            $userRole = auth()->user()->role ?? 'CSA';
             $tabs = [
                 ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'home', 'roles' => ['CSA','SUPERVISOR','ADMIN'], 'pattern' => 'dashboard'],
-                ['name' => 'CSAs', 'route' => 'csas.index', 'icon' => 'users', 'roles' => ['SUPERVISOR','ADMIN'], 'pattern' => 'csas.*'],
+                ['name' => 'CSAs', 'route' => 'admin.csas.index', 'icon' => 'users', 'roles' => ['SUPERVISOR','ADMIN'], 'pattern' => 'admin.csas.*'],
                 ['name' => 'Accounts', 'route' => 'accounts.index', 'icon' => 'file-text', 'roles' => ['SUPERVISOR','ADMIN'], 'pattern' => 'accounts.*'],
                 ['name' => 'Exceptions', 'route' => 'exceptions.index', 'icon' => 'alert-circle', 'roles' => ['SUPERVISOR','ADMIN'], 'pattern' => 'exceptions.*'],
                 ['name' => 'Analytics', 'route' => 'analytics.index', 'icon' => 'bar-chart-2', 'roles' => ['ADMIN'], 'pattern' => 'analytics.*'],

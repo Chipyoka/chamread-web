@@ -26,7 +26,7 @@
                 <x-sidebar />
 
                 <!-- main content -->
-                <div class="w-full">
+                <div class="w-full overflow-y-auto h-full max-h-[80dvh]">
                     {{ $slot }}
                 </div>
             </main>
