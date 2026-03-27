@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('username')->unique();
             $table->string('photo_url')->nullable();
             $table->string('role')->defaul('CSA');
+            $table->string('status')->defaul('ACTIVE');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
