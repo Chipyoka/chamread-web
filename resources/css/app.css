@@ -11,3 +11,48 @@ body{
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+
+/* Base class */
+.hover-sweep {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Overlay */
+.hover-sweep::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    background: linear-gradient(
+        120deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.25) 50%,
+        transparent 70%
+    );
+
+    transform: translateX(-120%);
+    pointer-events: none;
+}
+
+/* Keyframes: strictly left → right */
+@keyframes sweep-right {
+    from {
+        transform: translateX(-120%);
+    }
+    to {
+        transform: translateX(120%);
+    }
+}
+
+/* Trigger only on hover */
+.hover-sweep:hover::before {
+    animation: sweep-right 1s ease forwards;
+}
+
+/* Reset instantly when hover ends */
+.hover-sweep::before {
+    animation: none;
+}
