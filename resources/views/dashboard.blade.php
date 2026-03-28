@@ -4,7 +4,7 @@
             <div class="text-gray-600 mb-6">
                 <h4 class="text-2xl font-medium">Welcome,</h4>
                 <p class="text-sm">Below are summaries of key metrics from the overall Chamread performance.</p>
-                <a href="{{route('admin.csas.index')}}">Go to CSA</a>
+            
             </div>
             <div class="grid grid-cols-3 gap-x-4 gap-y-8">
 
