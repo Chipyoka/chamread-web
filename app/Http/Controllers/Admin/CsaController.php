@@ -11,8 +11,18 @@ use App\Models\CsaAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
+use App\Services\AuditLogService;
+
 class CsaController extends Controller
 {
+    protected $auditLog;
+
+    public function __construct(AuditLogService $auditLog)
+    {
+        $this->auditLog = $auditLog;
+    }
+
+
     /**
      * List all CSAs
      */
@@ -38,7 +48,7 @@ class CsaController extends Controller
     /**
      * Store new CSA
      */
-    public function store(Request $request)
+   public function store(Request $request)
     {
         $data = $request->validate([
             'name' => 'required|string|max:100',
@@ -51,7 +61,19 @@ class CsaController extends Controller
         $data['password'] = Hash::make($data['password']);
         $data['role'] = 'CSA';
 
-        User::create($data);
+        // Persist and capture the model
+        $user = User::create($data);
+
+        // Remove sensitive data before logging
+        $logData = collect($user->toArray())
+            ->except(['password', 'remember_token'])
+            ->toArray();
+
+        // Audit log
+        $this->auditLog->log('CREATE', 'User created', [
+            'user_id' => $user->id,
+            'payload' => $logData,
+        ]);
 
         return redirect()
             ->route('admin.csas.index')
@@ -91,7 +113,7 @@ class CsaController extends Controller
     /**
      * Update CSA
      */
-    public function update(Request $request, User $csa)
+   public function update(Request $request, User $csa)
     {
         $this->ensureCSA($csa);
 
@@ -104,19 +126,44 @@ class CsaController extends Controller
             'password' => 'nullable|min:6'
         ]);
 
+        // Capture original state (before update)
+        $original = collect($csa->toArray())
+            ->except(['password', 'remember_token'])
+            ->toArray();
+
+        // Handle password mutation
         if (!empty($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         } else {
             unset($data['password']);
         }
 
+        // Perform update
         $csa->update($data);
+
+        // Refresh model to get latest state
+        $csa->refresh();
+
+        // Capture updated state (after update)
+        $updated = collect($csa->toArray())
+            ->except(['password', 'remember_token'])
+            ->toArray();
+
+        // Compute only changed fields (delta)
+        $changes = array_diff_assoc($updated, $original);
+
+        // Audit log
+        $this->auditLog->log('UPDATE', 'User updated', [
+            'user_id' => $csa->id,
+            'changes' => $changes,
+            'before' => $original,
+            'after' => $updated,
+        ]);
 
         return redirect()
             ->route('admin.csas.index')
             ->with('success', 'CSA updated successfully.');
     }
-
     /**
      * Delete CSA
      */
@@ -125,9 +172,21 @@ class CsaController extends Controller
         $this->ensureCSA($csa);
 
         // Optional: prevent delete if has readings
-        // abort_if($csa->readings()->exists(), 403);
+        abort_if($csa->readings()->exists(), 403);
 
+        // Capture state before deletion
+        $snapshot = collect($csa->toArray())
+            ->except(['password', 'remember_token'])
+            ->toArray();
+
+        // Perform delete
         $csa->delete();
+
+        // Audit log
+        $this->auditLog->log('DELETE', 'User deleted', [
+            'user_id' => $csa->id,
+            'payload' => $snapshot,
+        ]);
 
         return redirect()
             ->route('admin.csas.index')
@@ -171,7 +230,20 @@ class CsaController extends Controller
             'billing_cycle_id' => 'required|exists:billing_cycles,id',
         ]);
 
-        CsaAssignment::updateOrCreate(
+        // Attempt to find existing assignment (pre-state)
+        $existing = CsaAssignment::where([
+            'csa_id' => $csa->id,
+            'zone_id' => $data['zone_id'],
+            'dma_id' => $data['dma_id'],
+            'billing_cycle_id' => $data['billing_cycle_id'],
+        ])->first();
+
+        $before = $existing
+            ? collect($existing->toArray())->toArray()
+            : null;
+
+        // Perform upsert
+        $assignment = CsaAssignment::updateOrCreate(
             [
                 'csa_id' => $csa->id,
                 'zone_id' => $data['zone_id'],
@@ -183,6 +255,26 @@ class CsaController extends Controller
                 'assigned_at' => now(),
             ]
         );
+
+        // Refresh to ensure latest persisted state
+        $assignment->refresh();
+
+        $after = collect($assignment->toArray())->toArray();
+
+        // Compute delta if it existed before
+        $changes = $before
+            ? array_diff_assoc($after, $before)
+            : $after;
+
+        // Audit log (normalized action)
+        $this->auditLog->log('ASSIGN', 'CSA assignment saved', [
+            'csa_id' => $csa->id,
+            'assignment_id' => $assignment->id,
+            'operation' => $before ? 'updated' : 'created',
+            'changes' => $changes,
+            'before' => $before,
+            'after' => $after,
+        ]);
 
         return redirect()
             ->route('admin.csas.assign', $csa->id)
