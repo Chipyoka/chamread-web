@@ -32,6 +32,10 @@ class AuthController extends Controller
 
         $user = $request->user();
 
+        $request->user()->update([
+            'last_login_at' => now()
+        ]);
+
         // Optional: Restrict mobile login to CSA only
         // if ($user->role !== 'CSA') {
         //     return response()->json([
@@ -109,6 +113,7 @@ class AuthController extends Controller
             'role' => $user->role,
             'photo_url' => $user->photo_url,
             'created_at' => $user->created_at,
+            'last_login_at' => $user->last_login_at,
         ];
     }
 }
