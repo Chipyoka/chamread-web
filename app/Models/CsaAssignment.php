@@ -7,11 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class CsaAssignment extends Model
 {
     protected $fillable = [
-        'csa_id','zone_id','dma_id','billing_cycle_id','status','assigned_at'
+        'csa_id','zone_id','dma_id','target','billing_cycle_id',
+        'status','assignment_type','assigned_at', 'covering_reason',
+        'covered_csa_id'
     ];
 
       protected $casts = [
         'assigned_at' => 'datetime',
+        'end_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

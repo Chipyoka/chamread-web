@@ -19,12 +19,21 @@ return new class extends Migration
             $table->foreignId('dma_id')->nullable()->constrained();
             $table->foreignId('billing_cycle_id')->constrained();
 
-            $table->enum('status', ['active','reassigned'])->default('active');
+            $table->unsignedInteger('target')->default(1000);
+            $table->enum('assignment_type', ['primary', 'secondary'])->default('primary');
+            $table->foreignId('covered_csa_id')->nullable()->constrained('users');
+            $table->string('covering_reason')->nullable();
+
+            $table->enum('status', ['active','reassigned', 'inactive', 'other'])->default('active');
             $table->timestamp('assigned_at')->nullable();
+            $table->timestamp('end_at')->nullable();
 
             $table->timestamps();
 
-            $table->unique(['csa_id','zone_id','dma_id','billing_cycle_id']);
+            $table->unique(
+                ['csa_id','zone_id','dma_id','billing_cycle_id','assignment_type'],
+                'csa_assignments_unique'
+            );
             $table->index(['csa_id','billing_cycle_id']);
         });
     }

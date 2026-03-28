@@ -25,6 +25,14 @@
         <form action="{{ route('admin.csas.assign.store', $csa) }}" method="POST" class="space-y-6 bg-white p-6 rounded-lg shadow-sm">
             @csrf
 
+              <!-- Target -->
+            <div>
+                <x-input-label for="target" :value="__('Target')" />
+                <x-text-input id="target" name="target" type="number" class="mt-1 block w-full" value="{{ old('name') }}" required autofocus />
+                <x-input-error :messages="$errors->get('target')" class="mt-2" />
+            </div>
+
+
             <!-- Zone -->
             <div>
                 <x-input-label for="zone_id" :value="__('Zone')" />
@@ -87,6 +95,8 @@
                             <th class="px-6 py-3">Zone</th>
                             <th class="px-6 py-3">DMA</th>
                             <th class="px-6 py-3">Billing Cycle</th>
+                            <th class="px-6 py-3">Target</th>
+                            <th class="px-6 py-3">Type</th>
                             <th class="px-6 py-3">Status</th>
                             <th class="px-6 py-3">Assigned At</th>
                             <th class="px-6 py-3">Actions</th>
@@ -99,6 +109,8 @@
                                 <td class="px-6 py-4 text-sm text-gray-800">{{ $assignment->zone->name ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-800">{{ $assignment->dma?->name ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-800">{{ $assignment->billingCycle->name ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-800">{{ $assignment->target ?? '0' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-800">{{ $assignment->assignment_type ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-800 capitalize">{{ $assignment->status }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->assigned_at?->format('Y-m-d') ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">

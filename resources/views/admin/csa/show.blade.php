@@ -92,6 +92,8 @@
                             <th class="px-6 py-3">Zone</th>
                             <th class="px-6 py-3">DMA</th>
                             <th class="px-6 py-3">Billing Cycle</th>
+                            <th class="px-6 py-3">Target</th>
+                            <th class="px-6 py-3">Type</th>
                             <th class="px-6 py-3">Status</th>
                             <th class="px-6 py-3">Assigned At</th>
                         </tr>
@@ -103,6 +105,8 @@
                                 <td class="px-6 py-4 text-sm text-gray-800">{{ $assignment->zone->name ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-800">{{ $assignment->dma?->name ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-800">{{ $assignment->billingCycle->name ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-800">{{ $assignment->target ?? '0' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-800">{{ $assignment->assignment_type ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-800 capitalize">{{ $assignment->status }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->assigned_at?->format('Y-m-d') ?? '-' }}</td>
                             </tr>

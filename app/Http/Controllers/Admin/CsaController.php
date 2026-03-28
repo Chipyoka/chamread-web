@@ -55,7 +55,6 @@ class CsaController extends Controller
             'username' => 'required|string|max:100|unique:users,username',
             'email' => 'nullable|email|unique:users,email',
             'password' => 'required|string|min:6',
-            'zone_id' => 'nullable|exists:zones,id',
         ]);
 
         $data['password'] = Hash::make($data['password']);
@@ -121,7 +120,6 @@ class CsaController extends Controller
             'name' => 'required|string|max:100',
             'username' => "required|string|max:100|unique:users,username,{$csa->id}",
             'email' => "nullable|email|unique:users,email,{$csa->id}",
-            'zone_id' => 'nullable|exists:zones,id',
             'status' => 'required|in:ACTIVE,SUSPENDED,INACTIVE',
             'password' => 'nullable|min:6'
         ]);
@@ -224,13 +222,19 @@ class CsaController extends Controller
     {
         $this->ensureCSA($csa);
 
+        // Validate input
         $data = $request->validate([
             'zone_id' => 'required|exists:zones,id',
             'dma_id' => 'nullable|exists:dmas,id',
             'billing_cycle_id' => 'required|exists:billing_cycles,id',
+            'target' => 'required|integer',
+            'assignment_type' => 'nullable|in:primary,secondary',
+            'covered_csa_id' => 'nullable|exists:users,id',
+            'covering_reason' => 'nullable|string|max:255',
+            'end_at' => 'nullable|date|after_or_equal:now',
         ]);
 
-        // Attempt to find existing assignment (pre-state)
+        // Attempt to find existing assignment for the CSA + zone + cycle + type
         $existing = CsaAssignment::where([
             'csa_id' => $csa->id,
             'zone_id' => $data['zone_id'],
@@ -238,11 +242,9 @@ class CsaController extends Controller
             'billing_cycle_id' => $data['billing_cycle_id'],
         ])->first();
 
-        $before = $existing
-            ? collect($existing->toArray())->toArray()
-            : null;
+        $before = $existing ? $existing->toArray() : null;
 
-        // Perform upsert
+        // Upsert the assignment
         $assignment = CsaAssignment::updateOrCreate(
             [
                 'csa_id' => $csa->id,
@@ -251,22 +253,22 @@ class CsaController extends Controller
                 'billing_cycle_id' => $data['billing_cycle_id'],
             ],
             [
+                'target' => $data['target'],
                 'status' => 'active',
                 'assigned_at' => now(),
+                'end_at' => $data['end_at'] ?? null,
+                'covered_csa_id' => $data['covered_csa_id'] ?? null,
+                'covering_reason' => $data['covering_reason'] ?? null,
             ]
         );
 
-        // Refresh to ensure latest persisted state
         $assignment->refresh();
+        $after = $assignment->toArray();
 
-        $after = collect($assignment->toArray())->toArray();
+        // Compute changes for audit
+        $changes = $before ? array_diff_assoc($after, $before) : $after;
 
-        // Compute delta if it existed before
-        $changes = $before
-            ? array_diff_assoc($after, $before)
-            : $after;
-
-        // Audit log (normalized action)
+        // Audit log
         $this->auditLog->log('ASSIGN', 'CSA assignment saved', [
             'csa_id' => $csa->id,
             'assignment_id' => $assignment->id,
