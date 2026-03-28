@@ -1,21 +1,12 @@
 <?php
+use App\Http\Controllers\Api\AssignmentsController;
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
-
-/*
-|--------------------------------------------------------------------------
-| API Routes (Mobile - CSA App)
-|--------------------------------------------------------------------------
-*/
-
-// Versioned API Group
 Route::prefix('v1')->name('api.v1.')->group(function () {
 
     /*
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     | Auth Routes
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     */
 
     // Public
@@ -24,15 +15,24 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     });
 
     // Protected
-    Route::middleware(['auth:sanctum'])
-        ->prefix('auth')
-        ->name('auth.')
-        ->group(function () {
+    Route::middleware(['auth:sanctum'])->group(function () {
 
+        Route::prefix('auth')->name('auth.')->group(function () {
             Route::get('/me', [AuthController::class, 'me'])->name('me');
-
             Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
             Route::post('/logout-all', [AuthController::class, 'logoutAll'])->name('logoutAll');
         });
+
+        /*
+        |------------------------------------------------------------------
+        | Assignments Routes (CSA)
+        |------------------------------------------------------------------
+        | Currently only exposes the "current" stats endpoint.
+        | Can be expanded later for CRUD, history, or assignment actions.
+        */
+        Route::prefix('assignments')->name('assignments.')->group(function () {
+            Route::get('/current', [AssignmentsController::class, 'current'])->name('current');
+        });
+
+    });
 });
