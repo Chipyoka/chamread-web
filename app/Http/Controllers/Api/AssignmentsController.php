@@ -67,6 +67,7 @@ class AssignmentsController extends Controller
                         'zone' => $a->zone ? ['id' => $a->zone->id, 'name' => $a->zone->name] : null,
                         'dma' => $a->dma ? ['id' => $a->dma->id, 'name' => $a->dma->name] : null,
                         'target' => $a->target,
+                        'assignment_type' => $a->assignment_type,
                         'status' => $a->status,
                     ];
                 }),

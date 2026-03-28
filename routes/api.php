@@ -1,5 +1,6 @@
 <?php
 use App\Http\Controllers\Api\AssignmentsController;
+use App\Http\Controllers\Api\AuthController;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
 
