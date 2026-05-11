@@ -12,6 +12,24 @@
                        <img src="{{ asset('images/app_logo.png') }}" alt="logo" class="h-10">
                     </a>
                     
+                    @php
+                        // Set timezone to GMT+2
+                        $currentTime = new DateTime('now', new DateTimeZone('GMT+2'));
+                        $currentHour = (int) $currentTime->format('G'); // 24-hour format without leading zeros
+                        
+                        // Determine greeting based on hour
+                        if ($currentHour >= 5 && $currentHour < 12) {
+                            $greeting = 'Good Morning';
+                        } elseif ($currentHour >= 12 && $currentHour < 17) {
+                            $greeting = 'Good Afternoon';
+                        } else {
+                            $greeting = 'Good Evening';
+                        }
+                    @endphp
+
+                    <h4 class="ml-6 text-xl font-medium text-gray-500 capitalize">{{ $greeting }}, {{ Auth::user()->username ?? 'Guest' }}</h4>
+
+                    
                    
                 </div>
             </div>
