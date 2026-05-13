@@ -2,6 +2,12 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\AccountsController;
+use App\Http\Controllers\Admin\AnalyticsController;
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AuditController;
+use App\Http\Controllers\Admin\ReadingsController;
+use App\Http\Controllers\Admin\CsaController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -16,15 +22,15 @@ Route::middleware(['auth','role:ADMIN,SUPERVISOR'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/csas/map', [ProfileController::class,'edit'])->name('csas.map');
-    Route::get('/exceptions', [ProfileController::class,'edit'])->name('exceptions.index');
-    Route::get('/accounts', [ProfileController::class,'edit'])->name('accounts.index');
-    Route::get('/analytics', [ProfileController::class,'edit'])->name('analytics.index');
-    Route::get('/admin/settings', [ProfileController::class,'edit'])->name('admin.settings');
-    Route::get('/audit', [ProfileController::class,'edit'])->name('audit.index');
+    Route::get('/readings', [ReadingsController::class,'index'])->name('readings.index');
+    Route::get('/accounts', [AccountsController::class,'index'])->name('accounts.index');
+    Route::get('/analytics', [AnalyticsController::class,'index'])->name('analytics.index');
+    Route::get('/admin/settings', [AdminController::class,'index'])->name('admin.settings');
+    Route::get('/audit', [AuditController::class,'index'])->name('audit.index');
 });
 
 
-use App\Http\Controllers\Admin\CsaController;
+
 
 Route::prefix('admin')
     ->name('admin.')
