@@ -55,6 +55,32 @@ class DashboardController extends Controller
             });
 
 
-        return view('dashboard', compact('totalCsas', 'totalZones', 'totalDmas', 'totalBillingCycles', 'currentCycle', 'completionRate', 'topCsas'));
+        // We get readings with status READ and NOT_READ as separate variables for the current cycle
+        $accountsRead = Reading::where('status', 'READ')->count();
+        $accountsNotRead = Reading::where('status', 'NOT_READ')->count();
+
+        // Get accounts with abnormal readings
+        $accountsAbnormal = ($accountsRead + $accountsNotRead) < $totalReadings ? $totalReadings - ($accountsRead + $accountsNotRead) : 0;
+
+        // Get Zero consumption readings where previous_reading = current_reading
+        $zeroConsumption = Reading::whereColumn('previous_reading', 'current_reading')->where('billing_cycle_id', $currentCycle->id)->count();
+
+        //Billing area edits - we get from audit logs where action = "BILLING_EDIT", these are overall not scoped to billing cycle for now
+        $billingAreaEdits = $this->auditLog->countByAction('BILLING_EDIT');
+
+
+        return view('dashboard', compact(
+            'totalCsas',
+            'accountsRead',
+            'accountsNotRead',
+            'accountsAbnormal',
+            'zeroConsumption',
+            'billingAreaEdits',
+            'assignedCsas',
+            'totalBillingCycles',
+            'currentCycle',
+            'completionRate',
+            'topCsas'
+            ));
     }
 }
