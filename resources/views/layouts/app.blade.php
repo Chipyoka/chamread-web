@@ -39,5 +39,6 @@
             </div>
             <p class="text-xs text-center text-gray-400 max-w-[70%]">Dashboard cannot be loaded using a smaller screen.</p>
         </div>
+        @stack('scripts')
     </body>
 </html>

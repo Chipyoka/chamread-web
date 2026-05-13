@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Zone;
+use App\Models\AuditLog;
 use App\Models\Reading;
 use App\Models\Dma;
 use App\Models\BillingCycle;
@@ -46,11 +47,10 @@ class DashboardController extends Controller
         $topCsas = Reading::where('billing_cycle_id', $currentCycle->id)
             ->select('csa_id', \DB::raw('count(*) as total_readings'))
             ->groupBy('csa_id')
-            ->orderByDesc('total_readings')
             ->take(5)
             ->get()
             ->map(function($item) {
-                $item->csa_name = User::find($item->csa_id)->name ?? 'Unknown';
+                $item->csa_name = User::find($item->csa_id)->username ?? 'Unknown';
                 return $item;
             });
 
@@ -66,7 +66,7 @@ class DashboardController extends Controller
         $zeroConsumption = Reading::whereColumn('previous_reading', 'current_reading')->where('billing_cycle_id', $currentCycle->id)->count();
 
         //Billing area edits - we get from audit logs where action = "BILLING_EDIT", these are overall not scoped to billing cycle for now
-        $billingAreaEdits = $this->auditLog->countByAction('BILLING_EDIT');
+        $billingAreaEdits = AuditLog::where('action', 'BILLING_EDIT')->count();
 
 
         return view('dashboard', compact(

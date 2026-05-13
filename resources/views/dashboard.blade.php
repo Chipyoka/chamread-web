@@ -51,25 +51,21 @@
                 <p class="text-gray-400 text-xs uppercase my-2">Top performers</p>
                 <div>
                     @if($topCsas->isEmpty())
-                        <div class="flex items-center justify-center  border border-gray-100 rounded-sm bg-gray-50/70 min-h-60">
-                            <p class="text-gray-500 text-xs">No CSA data available.</p>
+                        <div class="flex flex-col gap-4 items-center justify-center  border border-gray-100 rounded-sm bg-gray-50/70 min-h-60">
+                            <i data-lucide="chart-no-axes-column" class="w-8 h-8 text-gray-300"></i>
+                            <p class="text-gray-400 text-xs">No data available yet</p>
                         </div>
                     @else
-                        <ul class="mt-4 space-y-2">
-                            @foreach($topCsas as $csa)
-                                <li class="flex items-center justify-between bg-gray-50 rounded-sm px-4 py-2 hover:bg-gray-100 transition-colors duration-200">
-                                    <div class="flex items-center space-x-4">
-                                        <div class="w-7 h-7 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center">
-                                            <i data-lucide="user" class="w-5 h-5"></i>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-medium text-gray-700">{{ $csa->name }}</p>
-                                            <p class="text-xs text-gray-500">Readings: {{ $csa->readings_count }}</p>
-                                        </div>
-                                    </div>
-                                </li>
-                            @endforeach
-                        </ul>
+                        @php
+                            $labels = $topCsas->map(fn($u) => $u->username)->values();
+                            $counts = $topCsas->map(fn($u) => $u->total_readings)->values();
+                        @endphp
+                       <x-charts.bar-chart
+                            title="Top 5 Users"
+                            dataset-label="Reading Count"
+                            :labels="$labels->toArray()"
+                            :dataset="$counts->toArray()"
+                        />
                     @endif
                 </div>
             </div>
