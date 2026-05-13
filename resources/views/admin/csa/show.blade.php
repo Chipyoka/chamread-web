@@ -9,23 +9,47 @@
             </div>
 
             <div class="flex items-center space-x-2">
-                <a href="{{ route('admin.csas.edit', $csa) }}"
-                   class="inline-flex items-center px-4 py-2 bg-yellow-50 text-yellow-700 text-sm font-medium rounded hover:bg-yellow-100 transition">
-                    <i data-lucide="edit" class="w-4 h-4 mr-2"></i> Edit
-                </a>
+           
+                 <x-micro-button
+                    variant="edit"
+                    href="{{ route('admin.csas.edit', $csa) }}"
+                    icon="edit"
+                    size="md"
+                >
+                    Edit CSA
+                </x-micro-button>
 
-                <a href="{{ route('admin.csas.assign', $csa) }}"
-                   class="inline-flex items-center px-4 py-2 bg-purple-50 text-purple-700 text-sm font-medium rounded hover:bg-purple-100 transition">
-                    <i data-lucide="map-pin" class="w-4 h-4 mr-2"></i> Assign
-                </a>
+                 <x-micro-button
+                    color="purple"
+                    href="{{ route('admin.csas.assign', $csa) }}"
+                    icon="map-pin"
+                    size="md"
+                >
+                    Assign
+                </x-micro-button>
 
                 <form action="{{ route('admin.csas.destroy', $csa) }}" method="POST" onsubmit="return confirm('Delete this CSA?')">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-50 text-red-600 text-sm font-medium rounded hover:bg-red-100 transition">
-                        <i data-lucide="trash" class="w-4 h-4 mr-2"></i> Delete
-                    </button>
+                     <x-micro-button
+                    variant="delete"
+                    href="{{ route('admin.csas.destroy', $csa) }}"
+                    icon="trash"
+                    size="md"
+                >
+                   Delete
+                </x-micro-button>
                 </form>
+
+                 <!-- back to list -->
+                <x-micro-button
+                    variant="edit"
+                    href="{{ route('admin.csas.index') }}"
+                    icon="arrow-left"
+                    size="md"
+                >
+                    Back to list
+                </x-micro-button>
             </div>
         </div>
 
@@ -37,7 +61,7 @@
         @endif
 
         <!-- CSA Info Card -->
-        <div class="bg-white shadow-sm rounded-lg p-6 space-y-4">
+        <div class="bg-white rounded-md p-6 space-y-4 border border-gray-200">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <h2 class="text-gray-600 text-sm font-medium">Name</h2>
@@ -82,7 +106,7 @@
         </div>
 
         <!-- CSA Assignments -->
-        <div class="bg-white shadow-sm rounded-lg p-6 space-y-4">
+        <div class="bg-white border border-gray-200 rounded-md p-6 space-y-4">
             <h3 class="text-lg font-semibold text-gray-800">Assignments</h3>
 
             @if($assignments->count() > 0)

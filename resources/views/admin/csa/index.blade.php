@@ -88,35 +88,52 @@
                                 <td class="px-6 py-4 text-right text-sm space-x-2">
 
                                     <!-- View -->
-                                    <a href="{{ route('admin.csas.show', $csa) }}"
-                                       class="inline-flex items-center px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100">
+                                    <x-micro-button
+                                        href="{{ route('admin.csas.show', $csa) }}"
+                                        color="blue"
+                                        icon="eye"
+                                        size="sm"
+                                    >
                                         View
-                                    </a>
+                                    </x-micro-button>
+
 
                                     <!-- Edit -->
-                                    <a href="{{ route('admin.csas.edit', $csa) }}"
-                                       class="inline-flex items-center px-2 py-1 text-xs bg-yellow-50 text-yellow-700 rounded hover:bg-yellow-100">
+                                    <x-micro-button
+                                        variant="edit"
+                                        href="{{ route('admin.csas.edit', $csa) }}"
+                                        icon="edit"
+                                        size="sm"
+                                    >
                                         Edit
-                                    </a>
+                                    </x-micro-button>
 
                                     <!-- Assign -->
-                                    <a href="{{ route('admin.csas.assign', $csa) }}"
-                                       class="inline-flex items-center px-2 py-1 text-xs bg-purple-50 text-purple-700 rounded hover:bg-purple-100">
+                                    <x-micro-button
+                                    color="purple"
+                                    href="{{ route('admin.csas.edit', $csa) }}"
+                                    icon="map-pin"
+                                    size="sm"
+                                    >
                                         Assign
-                                    </a>
+                                    </x-micro-button>
 
                                     <!-- Delete -->
                                     <form action="{{ route('admin.csas.destroy', $csa) }}"
                                           method="POST"
                                           class="inline-block"
-                                          onsubmit="return confirm('Delete this CSA?')">
+                                          onsubmit="return confirm('Are you sure you want to delete this CSA?')">
                                         @csrf
                                         @method('DELETE')
 
-                                        <button type="submit"
-                                                class="px-2 py-1 text-xs bg-red-50 text-red-600 rounded hover:bg-red-100">
+                                        <x-micro-button 
+                                          type="submit"
+                                          color="red"
+                                          icon="trash"
+                                          size="sm"
+                                        >
                                             Delete
-                                        </button>
+                                        </x-micro-button>
                                     </form>
 
                                 </td>
