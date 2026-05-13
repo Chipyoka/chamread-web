@@ -41,6 +41,20 @@ class DashboardController extends Controller
 
         $completionRate = $totalReadings > 0 ? round(($assignedCsas / $totalReadings) * 100, 2) : 0;
 
-        return view('dashboard', compact('totalCsas', 'totalZones', 'totalDmas', 'totalBillingCycles', 'currentCycle', 'completionRate'));
+
+        // We get the top five CSAs with highest number of readings by csa_id column in readings table
+        $topCsas = Reading::where('billing_cycle_id', $currentCycle->id)
+            ->select('csa_id', \DB::raw('count(*) as total_readings'))
+            ->groupBy('csa_id')
+            ->orderByDesc('total_readings')
+            ->take(5)
+            ->get()
+            ->map(function($item) {
+                $item->csa_name = User::find($item->csa_id)->name ?? 'Unknown';
+                return $item;
+            });
+
+
+        return view('dashboard', compact('totalCsas', 'totalZones', 'totalDmas', 'totalBillingCycles', 'currentCycle', 'completionRate', 'topCsas'));
     }
 }
