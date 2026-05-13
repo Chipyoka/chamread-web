@@ -1,16 +1,16 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
      return redirect()->route(auth()->check() ? 'dashboard' : 'login');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth','role:ADMIN,SUPERVISOR'])->name('dashboard');
-    
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth','role:ADMIN,SUPERVISOR'])->name('dashboard');
+
+
 Route::middleware(['auth','role:ADMIN,SUPERVISOR'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
