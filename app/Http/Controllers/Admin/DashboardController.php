@@ -73,7 +73,8 @@ class DashboardController extends Controller
         $gpsMismatch = ExceptionGpsMismatch::count();
 
 
-        return view('dashboard', compact(
+        return view('dashboard')->with('success', 'Dashboard loaded successfully!')->with(
+             compact(
             'totalCsas',
             'accountsRead',
             'accountsNotRead',
@@ -86,6 +87,7 @@ class DashboardController extends Controller
             'completionRate',
             'topCsas',
             'gpsMismatch'
-            ));
+            )
+            );
     }
 }

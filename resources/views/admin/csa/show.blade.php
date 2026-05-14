@@ -53,13 +53,6 @@
             </div>
         </div>
 
-        <!-- Flash Messages -->
-        @if(session('success'))
-            <div class="px-4 py-3 bg-green-50 text-green-700 text-sm rounded-md">
-                {{ session('success') }}
-            </div>
-        @endif
-
         <!-- CSA Info Card -->
         <div class="bg-white rounded-md p-6 space-y-4 border border-gray-200">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

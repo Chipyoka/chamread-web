@@ -48,36 +48,36 @@ class CsaController extends Controller
     /**
      * Store new CSA
      */
-   public function store(Request $request)
-    {
-        $data = $request->validate([
-            'name' => 'required|string|max:100',
-            'username' => 'required|string|max:100|unique:users,username',
-            'email' => 'nullable|email|unique:users,email',
-            'password' => 'required|string|min:6',
-        ]);
+    public function store(Request $request)
+        {
+            $data = $request->validate([
+                'name' => 'required|string|max:100',
+                'username' => 'required|string|max:100|unique:users,username',
+                'email' => 'nullable|email|unique:users,email',
+                'password' => 'required|string|min:6',
+            ]);
 
-        $data['password'] = Hash::make($data['password']);
-        $data['role'] = 'CSA';
+            $data['password'] = Hash::make($data['password']);
+            $data['role'] = 'CSA';
 
-        // Persist and capture the model
-        $user = User::create($data);
+            // Persist and capture the model
+            $user = User::create($data);
 
-        // Remove sensitive data before logging
-        $logData = collect($user->toArray())
-            ->except(['password', 'remember_token'])
-            ->toArray();
+            // Remove sensitive data before logging
+            $logData = collect($user->toArray())
+                ->except(['password', 'remember_token'])
+                ->toArray();
 
-        // Audit log
-        $this->auditLog->log('CREATE', 'User created', [
-            'user_id' => $user->id,
-            'payload' => $logData,
-        ]);
+            // Audit log
+            $this->auditLog->log('CREATE', 'User created', [
+                'user_id' => $user->id,
+                'payload' => $logData,
+            ]);
 
-        return redirect()
-            ->route('admin.csas.index')
-            ->with('success', 'CSA created successfully.');
-    }
+            return redirect()
+                ->route('admin.csas.index')
+                ->with('success', 'CSA created successfully.');
+        }
 
     /**
      * Show single CSA
@@ -170,7 +170,10 @@ class CsaController extends Controller
         $this->ensureCSA($csa);
 
         // Optional: prevent delete if has readings
-        abort_if($csa->readings()->exists(), 403);
+        if ($csa->readings()->exists()) {
+        return redirect()->back()
+            ->with('error', 'Cannot delete CSA with Readings');
+         }
 
         // Capture state before deletion
         $snapshot = collect($csa->toArray())

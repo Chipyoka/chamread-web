@@ -15,13 +15,6 @@
             </a>
         </div>
 
-        <!-- Flash Messages -->
-        @if(session('success'))
-            <div class="px-4 py-3 bg-green-50 text-green-700 text-sm rounded-md">
-                {{ session('success') }}
-            </div>
-        @endif
-
         <!-- Table -->
         <div class="bg-white shadow-sm rounded-lg overflow-hidden">
 

@@ -15,13 +15,6 @@
             </a>
         </div>
 
-        <!-- Flash Messages -->
-        @if(session('success'))
-            <div class="px-4 py-3 bg-green-50 text-green-700 text-sm rounded-md">
-                {{ session('success') }}
-            </div>
-        @endif
-
         <!-- Form -->
         <form action="{{ route('admin.csas.store') }}" method="POST" class="space-y-6 bg-white p-6 rounded-lg shadow-sm">
             @csrf

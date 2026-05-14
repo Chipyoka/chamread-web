@@ -59,6 +59,10 @@
             </p>
         </div>
 
+        <!-- Toast Notifications -->
+        <x-toast />
+
+
         <script>
             const loader = document.getElementById('page-loader');
 
