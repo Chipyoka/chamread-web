@@ -5,10 +5,7 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                     <!-- <a href="{{ route('dashboard') }}">
-                       <img src="{{ asset('images/logo.png') }}" alt="logo" class="h-9 ml-6">
-                    </a> -->
-                        <a href="{{ route('dashboard') }}">
+                    <a href="{{ route('dashboard') }}">
                        <img src="{{ asset('images/app_logo.png') }}" alt="logo" class="h-10">
                     </a>
                     
@@ -66,6 +63,8 @@
                         </form>
                     </x-slot>
                 </x-dropdown>
+
+                  <x-profile-photo :user="Auth::user()" :size="10" />
             </div>
 
             <!-- Hamburger -->
