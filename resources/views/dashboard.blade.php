@@ -148,7 +148,7 @@
                     <!-- card GPS Mismatch Alerts-->
                     <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-orange-400 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
                         <div class="">
-                            <h2 class="text-3xl font-bold text-orange-400">0 000 000</h2>
+                            <h2 class="text-3xl font-bold text-orange-400">{{ $gpsMismatch ?? 0 }}</h2>
                             <p class="text-gray-500 text-xs uppercase mt-2">GPS Mismatch Alerts</p>
                         </div>
                         <div class="flex items-center justify-center p-4 bg-orange-100/70 rounded-full">

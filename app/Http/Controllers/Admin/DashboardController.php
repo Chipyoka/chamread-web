@@ -9,6 +9,7 @@ use App\Models\AuditLog;
 use App\Models\Reading;
 use App\Models\Dma;
 use App\Models\BillingCycle;
+use App\Models\ExceptionGpsMismatch;
 use App\Models\CsaAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -68,6 +69,9 @@ class DashboardController extends Controller
         //Billing area edits - we get from audit logs where action = "BILLING_EDIT", these are overall not scoped to billing cycle for now
         $billingAreaEdits = AuditLog::where('action', 'BILLING_EDIT')->count();
 
+        // Get GPS mismatches from the table
+        $gpsMismatch = ExceptionGpsMismatch::count();
+
 
         return view('dashboard', compact(
             'totalCsas',
@@ -80,7 +84,8 @@ class DashboardController extends Controller
             'totalBillingCycles',
             'currentCycle',
             'completionRate',
-            'topCsas'
+            'topCsas',
+            'gpsMismatch'
             ));
     }
 }
