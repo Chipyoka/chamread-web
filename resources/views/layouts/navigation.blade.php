@@ -40,11 +40,9 @@
                     >
                         <i data-lucide="bell" class="h-6 w-6 text-gray-500 transition-colors duration-300"></i>
                         {{-- Notification Badge --}}
-                        @php
-                        $hasUnread = false;
-                        @endphp
+                    
 
-                        @if($hasUnread)
+                        @if($hasUnreadNotifications)
                          <span class="absolute top-1 right-0 h-2 w-2 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center"></span>
                         @endif
                     </button>

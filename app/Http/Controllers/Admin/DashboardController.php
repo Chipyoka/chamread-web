@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Zone;
+use App\Models\SystemNotification;
 use App\Models\AuditLog;
 use App\Models\Reading;
 use App\Models\Dma;
@@ -73,6 +74,8 @@ class DashboardController extends Controller
         $gpsMismatch = ExceptionGpsMismatch::count();
 
 
+
+
         return view('dashboard')->with('success', 'Dashboard loaded successfully!')->with(
              compact(
             'totalCsas',
@@ -90,4 +93,6 @@ class DashboardController extends Controller
             )
             );
     }
+
+
 }
