@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class AccountSnapshot extends Model
+class AccountsSnapshot extends Model
 {
     //
-
+    protected $table = 'accounts_snapshot';
+    
     public function location()
     {
         return $this->hasOne(AccountLocation::class);

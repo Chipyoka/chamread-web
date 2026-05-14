@@ -5,10 +5,11 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
+                    <a href="{{ route('dashboard.index') }}">
                        <img src="{{ asset('images/app_logo.png') }}" alt="logo" class="h-10">
                     </a>
                     
+                    <!-- Greeting -->
                     @php
                         // Set timezone to GMT+2
                         $currentTime = new DateTime('now', new DateTimeZone('GMT+2'));
@@ -26,10 +27,49 @@
 
                     <h4 class="ml-6 text-xl font-medium text-gray-500 capitalize">{{ $greeting }}, {{ Auth::user()->username ?? 'Guest' }}</h4>
 
+                
+
                     
                    
                 </div>
             </div>
+                <!-- Search bar -->
+                    <div class="w-[24rem]">
+                        <form action="{{ route('dashboard.search.results') }}" method="GET" class="w-full">
+
+                            <div class="relative w-full">
+
+                                <!-- Icon -->
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="search" class="h-5 w-5 text-gray-400"></i>
+                                </div>
+
+                                <!-- Input -->
+                                <input
+                                    type="search"
+                                    name="search"
+                                    id="search"
+                                    placeholder="Search accounts, or people..."
+                                    class="
+                                        w-full
+                                        pl-10 pr-4 py-2.5
+                                        bg-white
+                                        border border-gray-200
+                                        rounded
+
+                                        text-sm text-gray-700
+                                        placeholder-gray-400
+
+                                        focus:outline-none
+                                        focus:border-gray-400
+
+                                        transition duration-200 ease-in-out
+                                    "
+                                    autocomplete="off"
+                                />
+                            </div>
+                        </form>
+                    </div>
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
@@ -98,7 +138,7 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+            <x-responsive-nav-link :href="route('dashboard.index')" :active="request()->routeIs('dashboard.index')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
         </div>

@@ -54,7 +54,7 @@
             <!-- status -->
             <div>
                 <x-input-label for="status" :value="__('Status')" />
-                <select name="status" id="status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-primary focus:ring-opacity-50">
+                <select required name="status" id="status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-primary focus:ring-opacity-50">
                     <option value="ACTIVE" {{ old('status', $csa->status) == 'ACTIVE' ? 'selected' : '' }}>Active</option>
                     <option value="SUSPENDED" {{ old('status', $csa->status) == 'SUSPENDED' ? 'selected' : '' }}>Suspended</option>
                     <option value="INACTIVE" {{ old('status', $csa->status) == 'INACTIVE' ? 'selected' : '' }}>Inactive</option>
@@ -66,7 +66,7 @@
             <!-- Zone -->
             <div>
                 <x-input-label for="zone_id" :value="__('Zone (optional)')" />
-                <select name="zone_id" id="zone_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-primary focus:ring-opacity-50">
+                <select required name="zone_id" id="zone_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-primary focus:ring-opacity-50">
                     <option value="">-- Select Zone --</option>
                     @foreach($zones as $zone)
                         <option value="{{ $zone->id }}" {{ old('zone_id', $csa->zone?->id) == $zone->id ? 'selected' : '' }}>

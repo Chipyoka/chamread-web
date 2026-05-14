@@ -3,7 +3,7 @@
         @php
             $userRole = auth()->user()->role ?? 'CSA';
             $tabs = [
-                ['name' => 'Dashboard', 'route' => 'dashboard', 'icon' => 'home', 'roles' => ['CSA','SUPERVISOR','ADMIN'], 'pattern' => 'dashboard'],
+                ['name' => 'Dashboard', 'route' => 'dashboard.index', 'icon' => 'home', 'roles' => ['CSA','SUPERVISOR','ADMIN'], 'pattern' => 'dashboard.*'],
                 ['name' => 'CSAs', 'route' => 'admin.csas.index', 'icon' => 'users', 'roles' => ['SUPERVISOR','ADMIN'], 'pattern' => 'admin.csas.*'],
                 ['name' => 'Accounts', 'route' => 'accounts.index', 'icon' => 'file-text', 'roles' => ['SUPERVISOR','ADMIN'], 'pattern' => 'accounts.*'],
                 ['name' => 'Readings', 'route' => 'readings.index', 'icon' => 'list-todo', 'roles' => ['SUPERVISOR','ADMIN'], 'pattern' => 'readings.*'],

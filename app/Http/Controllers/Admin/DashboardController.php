@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Zone;
 use App\Models\SystemNotification;
+use App\Models\AccountsSnapshot;
 use App\Models\AuditLog;
 use App\Models\Reading;
 use App\Models\Dma;
@@ -95,4 +96,61 @@ class DashboardController extends Controller
     }
 
 
+      public function search(Request $request)
+    {
+        $query = trim($request->input('search'));
+
+        if (!$query) {
+            return view('search', [
+                'accounts' => [],
+                'readings' => [],
+                'people' => [],
+                'query' => $query
+            ]);
+        }
+
+        /**
+         * CUSTOMER ACCOUNTS
+         * Adjust searchable fields as per schema (account_number, name, meter_no, etc.)
+         */
+        $accounts = AccountsSnapshot::query()
+            ->where('account_number', 'like', "%{$query}%")
+            ->orWhere('name', 'like', "%{$query}%")
+            ->orWhere('meter_number', 'like', "%{$query}%")
+            ->limit(10)
+            ->get()
+            ->map(function ($account) {
+                return [
+                    'id' => $account->id,
+                    'title' => $account->name ?? 'Unnamed Account',
+                    'subtitle' => "Account: {$account->account_number}",
+                    'url' => route('admin.csas.show', $account->id),
+                ];
+            });
+
+        /**
+         * PEOPLE (USERS)
+         */
+        $people = User::query()
+            ->where('name', 'like', "%{$query}%")
+            ->orWhere('email', 'like', "%{$query}%")
+            ->orWhere('username', 'like', "%{$query}%")
+            ->limit(10)
+            ->get()
+            ->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'title' => $user->name,
+                    'subtitle' => $user->email,
+                    'role' => $user->role,
+                    'url' => route('admin.csas.show', $user),
+                ];
+            });
+
+        return view('search', [
+            'accounts' => $accounts,
+            'people' => $people,
+            'query' => $query,
+        ]);
+    }
 }

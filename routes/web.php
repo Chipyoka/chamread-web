@@ -11,10 +11,11 @@ use App\Http\Controllers\Admin\CsaController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-     return redirect()->route(auth()->check() ? 'dashboard' : 'login');
+     return redirect()->route(auth()->check() ? 'dashboard.index' : 'login');
 });
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth','role:ADMIN,SUPERVISOR'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth','role:ADMIN,SUPERVISOR'])->name('dashboard.index');
+Route::get('/search', [DashboardController::class, 'search'])->middleware(['auth','role:ADMIN,SUPERVISOR'])->name('dashboard.search.results');
 
 
 Route::middleware(['auth','role:ADMIN,SUPERVISOR'])->group(function () {
