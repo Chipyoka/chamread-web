@@ -14,7 +14,7 @@ class AuditLogService
     public function log(string $action, ?string $description = null, ?array $metadata = null): AuditLog
     {
         return AuditLog::create([
-            'user_id' => Auth::id(),
+            'user_id' => Auth::id() ?? null,
             'action' => $action,
             'description' => $description,
             'ip_address' => Request::ip(),

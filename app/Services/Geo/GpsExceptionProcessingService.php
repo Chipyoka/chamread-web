@@ -8,12 +8,17 @@ use App\Models\Reading;
 use App\Models\ReadingGpsCheck;
 use App\Models\SystemException;
 use Illuminate\Support\Facades\DB;
+use App\Services\AuditLogService;
 
 class GpsExceptionProcessingService
 {
+     protected $auditLog;
+
     public function __construct(
-        protected DistanceService $distanceService
+        protected DistanceService $distanceService,
+        AuditLogService $auditLog
     ) {
+        $this->auditLog = $auditLog;
     }
 
     /**
@@ -23,29 +28,43 @@ class GpsExceptionProcessingService
         int $chunkSize = 1000
     ): void {
 
+        // If no unchecked readings, skip processing
+        $count = Reading::query()
+            ->whereDoesntHave('gpsCheck')
+            ->count();
+
+        if ($count === 0) {
+
+            $this->auditLog->log('GPS', 'processing skipped: no unprocessed readings found.', [
+                'user' => 'System'
+            ]);
+
+            return;
+        }
+
         Reading::query()
 
-            /*
-            |--------------------------------------------------------------------------
-            | Only unprocessed readings
-            |--------------------------------------------------------------------------
-            */
-            ->whereDoesntHave('gpsCheck')
+        /*
+        |--------------------------------------------------------------------------
+        | Only unprocessed readings
+        |--------------------------------------------------------------------------
+        */
+        ->whereDoesntHave('gpsCheck')
 
-            /*
-            |--------------------------------------------------------------------------
-            | Important for memory safety
-            |--------------------------------------------------------------------------
-            */
-            ->orderBy('id')
+        /*
+        |--------------------------------------------------------------------------
+        | Important for memory safety
+        |--------------------------------------------------------------------------
+        */
+        ->orderBy('id')
 
-            ->chunkById($chunkSize, function ($readings) {
+        ->chunkById($chunkSize, function ($readings) {
 
-                foreach ($readings as $reading) {
+            foreach ($readings as $reading) {
 
-                    $this->processReading($reading);
-                }
-            });
+                $this->processReading($reading);
+            }
+        });
     }
 
     /**
