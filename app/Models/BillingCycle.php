@@ -12,4 +12,14 @@ class BillingCycle extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    public function gpsChecks()
+    {
+        return $this->hasMany(ReadingGpsCheck::class);
+    }
+
+    public function exceptions()
+    {
+        return $this->hasMany(SystemException::class);
+    }
 }

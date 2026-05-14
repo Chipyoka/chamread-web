@@ -30,4 +30,14 @@ class Reading extends Model
     {
         return $this->hasMany(Alert::class);
     }
+
+    public function gpsCheck()
+    {
+        return $this->hasOne(ReadingGpsCheck::class);
+    }
+
+    public function exceptions()
+    {
+        return $this->hasMany(SystemException::class);
+    }
 }
