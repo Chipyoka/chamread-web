@@ -1,6 +1,9 @@
+
+@import './loader.css';
+
 /* resources/css/app.css */
 :root {
-  --color-primary: rgb(25, 139, 206);
+  --color-primary: #198bce;
 }
 
 body{
