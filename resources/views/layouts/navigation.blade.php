@@ -33,6 +33,23 @@
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
+                <div class="border-r border-gray-200 pr-3">
+                    <button 
+                        @click="$dispatch('notification-toggle')"
+                        class="p-2 bg-gray-50/50 rounded-full hover:bg-gray-100/70 transition-all duration-300 ease-in-out relative group"
+                    >
+                        <i data-lucide="bell" class="h-6 w-6 text-gray-500 transition-colors duration-300"></i>
+                        {{-- Notification Badge --}}
+                        @php
+                        $hasUnread = false;
+                        @endphp
+
+                        @if($hasUnread)
+                         <span class="absolute top-1 right-0 h-2 w-2 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center"></span>
+                        @endif
+                    </button>
+                </div>
+                <x-notification-slide />
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-sm text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
@@ -64,7 +81,8 @@
                     </x-slot>
                 </x-dropdown>
 
-                  <x-profile-photo :user="Auth::user()" :size="10" />
+                <!-- Profile Photo -->
+                <x-profile-photo :user="Auth::user()" :size="10" />
             </div>
 
             <!-- Hamburger -->

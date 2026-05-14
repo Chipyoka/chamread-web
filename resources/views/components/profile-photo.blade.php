@@ -11,8 +11,8 @@
 
 <div class="relative {{ $sizeClass }}" id="{{ $uniqueId }}">
     {{-- Micro Loader / Pulse Effect --}}
-    <div class="absolute inset-0 rounded-full bg-gray-50 animate-pulse flex items-center justify-center z-10" id="loader-{{ $uniqueId }}">
-        <div class="w-3 h-3 bg-gray-200 rounded-full animate-pulse mx-1" style="animation-delay: 150ms"></div>
+    <div class="absolute inset-0 rounded-full bg-gray-50 flex items-center justify-center z-10" id="loader-{{ $uniqueId }}">
+        <div class="w-3 h-3 bg-gray-300 rounded-full animate-pulse mx-1" style="animation-delay: 150ms"></div>
     </div>
     
     {{-- Actual Image --}}
