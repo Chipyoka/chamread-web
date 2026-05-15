@@ -25,8 +25,9 @@
                         <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                             <th class="px-6 py-3">Name</th>
                             <th class="px-6 py-3">Email</th>
-                            <th class="px-6 py-3">Last Login</th>
+                            <th class="px-6 py-3">Zone</th>
                             <th class="px-6 py-3">Status</th>
+                            <th class="px-6 py-3">Last Login</th>
                             <th class="px-6 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -46,11 +47,9 @@
                                     {{ $csa->email }}
                                 </td>
 
-                                <!-- Last Login -->
-                                <td class="px-6 py-4 text-sm text-gray-500">
-                                    {{ $csa->last_login_at 
-                                        ? $csa->last_login_at->diffForHumans() 
-                                        : 'Never' }}
+                                  <!-- Zone -->
+                                <td class="px-6 py-4 text-sm text-gray-600">
+                                    {{ $csa->zone->name ?? '-' }}
                                 </td>
 
                                 <!-- Status -->
@@ -71,6 +70,14 @@
                                     @endif
                                 </td>
 
+                               
+                                 <!-- Last Login -->
+                                <td class="px-6 py-4 text-sm text-gray-500">
+                                    {{ $csa->last_login_at 
+                                        ? $csa->last_login_at->diffForHumans() 
+                                        : 'Never' }}
+                                </td>
+
                                 <!-- Actions -->
                                 <td class="px-6 py-4 text-right text-sm space-x-2">
 
@@ -78,10 +85,10 @@
                                     <x-micro-button
                                         href="{{ route('admin.csas.show', $csa) }}"
                                         color="blue"
-                                        icon="eye"
+                                        icon="user"
                                         size="sm"
                                     >
-                                        View
+                                        Profile
                                     </x-micro-button>
 
 
