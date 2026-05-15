@@ -5,7 +5,7 @@
             $tabs = [
                 ['name' => 'Dashboard', 'route' => 'dashboard.index', 'icon' => 'home', 'roles' => ['CSA','SUPERVISOR','ADMIN'], 'pattern' => 'dashboard.*'],
                 ['name' => 'CSAs', 'route' => 'admin.csas.index', 'icon' => 'users', 'roles' => ['SUPERVISOR','ADMIN'], 'pattern' => 'admin.csas.*'],
-                ['name' => 'Accounts', 'route' => 'accounts.index', 'icon' => 'file-text', 'roles' => ['SUPERVISOR','ADMIN'], 'pattern' => 'admin.accounts.*'],
+                ['name' => 'Accounts', 'route' => 'admin.accounts.index', 'icon' => 'file-text', 'roles' => ['SUPERVISOR','ADMIN'], 'pattern' => 'admin.accounts.*'],
                 ['name' => 'Readings', 'route' => 'readings.index', 'icon' => 'list-todo', 'roles' => ['SUPERVISOR','ADMIN'], 'pattern' => 'readings.*'],
                 ['name' => 'Analytics', 'route' => 'analytics.index', 'icon' => 'bar-chart-2', 'roles' => ['ADMIN'], 'pattern' => 'analytics.*'],
                 ['name' => 'Admin', 'route' => 'admin.settings', 'icon' => 'settings', 'roles' => ['ADMIN'], 'pattern' => 'ADMIN.*'],

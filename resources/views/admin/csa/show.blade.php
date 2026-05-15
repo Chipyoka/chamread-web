@@ -87,7 +87,7 @@
                 </div>
 
                 <div  class="px-2 py-1.5 bg-gray-50 rounded-sm">
-                    <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Status</h2>
+                    <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Activity Status</h2>
                     @if($csa->last_login_at && $csa->last_login_at->gt(now()->subDays(7)))
                         <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded">
                             Active
