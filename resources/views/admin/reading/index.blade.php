@@ -4,24 +4,15 @@
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-medium text-gray-600">Customer Accounts</h1>
-                <p class="text-sm text-gray-500">Manage Customer Accounts</p>
+                <h1 class="text-2xl font-medium text-gray-600">Meter Readings</h1>
+                <p class="text-sm text-gray-500">View Meter Readings from the current billing cycle</p>
             </div>
-
-            <!-- allow only admins -->
-             @if(Auth::user()->role === 'ADMIN')
-            <a href="{{ route('admin.accounts.create') }}"
-               class="inline-flex items-center px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary/90 transition">
-                <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
-                Add Account
-            </a>
-            @endif
         </div>
 
         <!-- Table -->
         <div class="bg-white rounded-md p-4 space-y-4 border border-gray-200 overflow-hidden">
 
-            @if($accounts->count() > 0)
+            @if($readings->count() > 0)
 
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
@@ -38,39 +29,39 @@
 
                     <tbody class="bg-white divide-y divide-gray-100">
 
-                        @foreach($accounts as $account)
+                        @foreach($readings as $reading)
                             <tr class="hover:bg-gray-50 transition">
 
-                                <!-- Account Number -->
+                                <!-- reading Number -->
                                 <td class="px-6 py-4 text-sm text-gray-600 font-medium">
-                                    {{ $account->account_number }}
+                                    {{ $reading->account_number }}
                                 </td>
 
                                 <!-- Meter Number -->
                                 <td class="px-6 py-4 text-sm text-gray-600">
-                                    {{ $account->meter_number ?? '-' }}
+                                    {{ $reading->meter_number ?? '-' }}
                                 </td>
 
                                 <!-- Name -->
                                 <td class="px-6 py-4 text-sm text-gray-600 font-medium">
-                                    {{ $account->name }}
+                                    {{ $reading->name }}
                                 </td>
 
                                 <!-- Phone -->
                                 <td class="px-6 py-4 text-sm text-gray-600">
-                                    {{ $account->phone ?? '-' }}
+                                    {{ $reading->phone ?? '-' }}
                                 </td>
                                 
 
                                   <!-- Zone -->
                                 <td class="px-6 py-4 text-sm text-gray-600">
-                                    {{ $account->zone->name ?? '-' }}
+                                    {{ $reading->zone->name ?? '-' }}
                                 </td>
 
 
                                     <!-- Billing Area -->
                                 <td class="px-6 py-4 text-sm text-gray-600">
-                                    {{ $account->billing_area ?? '-' }}
+                                    {{ $reading->billing_area ?? '-' }}
                                 </td>
 
                                 <!-- Actions -->
@@ -78,7 +69,7 @@
 
                                     <!-- View -->
                                     <x-micro-button
-                                        href="{{ route('admin.accounts.show', $account) }}"
+                                        href="{{ route('admin.readings.show', $reading) }}"
                                         color="blue"
                                         icon="eye"
                                         size="sm"
@@ -95,7 +86,7 @@
 
                 <!-- Pagination -->
                 <div class="p-4">
-                    {{ $accounts->links() }}
+                    {{ $readings->links() }}
                 </div>
 
             @else
@@ -103,9 +94,8 @@
                 <!-- Empty State -->
                 <div class="p-10 text-center">
                     <div class="flex flex-col items-center space-y-3">
-                        <i data-lucide="file-text" class="w-10 h-10 text-gray-300"></i>
-                        <p class="text-gray-500 text-sm">No accounts found.</p>
-                        <p class="text-gray-500 text-xs">Contact the IT Department to load customer accounts.</p>
+                        <i data-lucide="list-todo" class="w-10 h-10 text-gray-300"></i>
+                        <p class="text-gray-500 text-sm">No readings found.</p>
 
                     </div>
                 </div>
