@@ -4,10 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class AccountsSnapshot extends Model
+class CustomerAccount extends Model
 {
     //
-    protected $table = 'accounts_snapshot';
+    protected $table = 'customer_accounts';
     
     public function location()
     {

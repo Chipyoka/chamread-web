@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Zone;
 use App\Models\SystemNotification;
-use App\Models\AccountsSnapshot;
+use App\Models\CustomerAccount;
 use App\Models\AuditLog;
 use App\Models\Reading;
 use App\Models\Dma;
@@ -113,7 +113,7 @@ class DashboardController extends Controller
          * CUSTOMER ACCOUNTS
          * Adjust searchable fields as per schema (account_number, name, meter_no, etc.)
          */
-        $accounts = AccountsSnapshot::query()
+        $accounts = CustomerAccount::query()
             ->where('account_number', 'like', "%{$query}%")
             ->orWhere('name', 'like', "%{$query}%")
             ->orWhere('meter_number', 'like', "%{$query}%")

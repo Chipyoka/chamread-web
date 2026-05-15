@@ -70,6 +70,31 @@ Route::prefix('admin')
             Route::get('/{csa}/readings', [CsaController::class, 'csaReadings'])->name('readings');
         });
 
+
+        /**
+         * =====================================================
+         * CUSTOMER ACCOUNTS MANAGEMENT
+         * =====================================================
+         */
+        Route::prefix('accounts')->name('accounts.')->group(function () {
+
+            /**
+             * -------------------------------
+             * CORE CRUD
+             * -------------------------------
+             */
+            Route::get('/', [AccountsController::class, 'index'])->name('index');
+            Route::get('/create', [AccountsController::class, 'create'])->name('create');
+            Route::post('/', [AccountsController::class, 'store'])->name('store');
+
+            Route::get('/{account}', [AccountsController::class, 'show'])->name('show');
+            Route::get('/{account}/edit', [AccountsController::class, 'edit'])->name('edit');
+            Route::put('/{account}', [AccountsController::class, 'update'])->name('update');
+            Route::delete('/{account}', [AccountsController::class, 'destroy'])->name('destroy');
+
+           
+        });
+
     });
 
 require __DIR__.'/auth.php';

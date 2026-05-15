@@ -16,7 +16,7 @@
         </div>
 
         <!-- Table -->
-        <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+        <div class="bg-white rounded-md p-4 space-y-4 border border-gray-200 overflow-hidden">
 
             @if($csas->count() > 0)
 
