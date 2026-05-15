@@ -6,7 +6,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-semibold text-gray-600">Customer Account Details</h1>
-                <p class="text-sm text-gray-500">View customer account information</p>
+                <p class="text-sm text-gray-500">View customer account information </p>
             </div>
 
             <div class="flex items-center space-x-2">
@@ -26,6 +26,13 @@
 
         <!-- account Info Card -->
         <div class="bg-white rounded-md p-6 space-y-4 border border-gray-200">
+            <div class="flex items-center justify-end mb-2">
+                <h2 class="text-lg font-medium text-gray-600">Assigned to <span class="text-secondary">
+                    <a href="{{ route('admin.csas.show', $assignedCsa) }}" class="hover:underline">
+                        {{ $assignedCsa ? $assignedCsa->name : 'N/A' }}
+                    </a>
+                </span></h2>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Account #</h2>

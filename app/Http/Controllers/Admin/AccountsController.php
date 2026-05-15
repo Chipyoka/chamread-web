@@ -80,6 +80,10 @@ class AccountsController extends Controller
     public function show(CustomerAccount $account){
         $readings = $account->readings()->latest()->take(6)->get();
 
+        $assignedCsa = User::where('zone_id', $account->zone_id)
+            ->where('role', 'CSA')
+            ->first();
+
         // Prepare data for consumption trend chart
         $chartData = $readings->reverse()->map(function($reading) {
             return [
@@ -97,7 +101,7 @@ class AccountsController extends Controller
         ['date' => 'Jun 2026', 'consumption' => 155],
     ]);
 
-        return view('admin.account.show', compact('account', 'readings', 'chartData', 'chartDataT'));
+        return view('admin.account.show', compact('account', 'readings', 'chartData', 'chartDataT', 'assignedCsa'));
     }
  
 }

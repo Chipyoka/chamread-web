@@ -51,7 +51,7 @@
                     icon="arrow-left"
                     size="md"
                 >
-                    Back to list
+                    Back to CSAs
                 </x-micro-button>
             </div>
         </div>
