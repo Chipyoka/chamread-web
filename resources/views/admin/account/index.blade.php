@@ -8,11 +8,14 @@
                 <p class="text-sm text-gray-500">Manage Customer Accounts</p>
             </div>
 
+            <!-- allow only admins -->
+             @if(Auth::user()->role === 'ADMIN')
             <a href="{{ route('admin.accounts.create') }}"
                class="inline-flex items-center px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary/90 transition">
                 <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
                 Add Account
             </a>
+            @endif
         </div>
 
         <!-- Table -->
