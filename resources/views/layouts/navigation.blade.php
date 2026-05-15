@@ -34,7 +34,7 @@
                 </div>
             </div>
                 <!-- Search bar -->
-                    <div class="w-[24rem]">
+                    <div class="w-[30rem]">
                         <form action="{{ route('dashboard.search.results') }}" method="GET" class="w-full">
 
                             <div class="relative w-full">

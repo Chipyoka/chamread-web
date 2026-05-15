@@ -21,8 +21,8 @@
                     @endphp
                     <li>
                         <a href="{{ route($tab['route']) }}"
-                           class="flex items-center px-4 py-2 rounded-sm transition-all duration-200 ease-in {{ $isActive ? 'bg-primary text-white font-semibold' : 'text-gray-400 hover:bg-gray-100/80 hover:text-gray-500' }}">
-                            <i data-lucide="{{ $tab['icon'] }}" class="w-5 h-5 mr-3"></i>
+                           class="flex items-center px-3 py-2 text-sm rounded-sm transition-all duration-200 ease-in {{ $isActive ? 'bg-primary text-white font-semibold' : 'text-gray-400 hover:bg-gray-100/80 hover:text-gray-500' }}">
+                            <i data-lucide="{{ $tab['icon'] }}" class="w-4 h-4 mr-2"></i>
                             <span>{{ $tab['name'] }}</span>
                         </a>
                     </li>

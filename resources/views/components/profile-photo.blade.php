@@ -27,15 +27,17 @@
     >
 </div>
 
-<script>
-function handleImageLoad(uniqueId, imgElement) {
-    const loader = document.getElementById(`loader-${uniqueId}`);
-    if (loader) {
-        loader.style.opacity = '0';
-        setTimeout(() => {
-            loader.style.display = 'none';
-        }, 300);
-    }
-    imgElement.style.opacity = '1';
-}
-</script>
+@push('scripts')
+    <script>
+        function handleImageLoad(uniqueId, imgElement) {
+            const loader = document.getElementById(`loader-${uniqueId}`);
+            if (loader) {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                }, 300);
+            }
+            imgElement.style.opacity = '1';
+        }
+    </script>
+@endpush
