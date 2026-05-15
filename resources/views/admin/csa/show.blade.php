@@ -28,14 +28,14 @@
                     Assign
                 </x-micro-button>
 
-                <form action="{{ route('admin.csas.destroy', $csa) }}" method="POST" onsubmit="return confirm('Delete this CSA?')">
+                <form action="{{ route('admin.csas.destroy', $csa) }}" class="delete-form" method="POST" onsubmit="return confirm('Delete this CSA?')">
                     @csrf
                     @method('DELETE')
                      <x-micro-button
                     variant="delete"
-                    href="{{ route('admin.csas.destroy', $csa) }}"
                     icon="trash"
                     size="md"
+                    type="submit"
                 >
                    Delete
                 </x-micro-button>

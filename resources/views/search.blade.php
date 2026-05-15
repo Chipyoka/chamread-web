@@ -29,7 +29,7 @@
                 {{-- CUSTOMER ACCOUNTS --}}
                 <div class="bg-white rounded-md p-4">
                     <h2 class="text-xs uppercase text-gray-400 mb-4">
-                        Customer Accounts
+                        Customer Accounts ({{ $accounts->count() }})
                     </h2>
 
                     @forelse($accounts as $account)

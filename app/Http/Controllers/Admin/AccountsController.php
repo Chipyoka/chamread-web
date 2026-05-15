@@ -43,5 +43,32 @@ class AccountsController extends Controller
 
         return view('admin.account.create', compact('zones','dmas'));
     }
+
+    /**
+     * Store new account
+     */
+    public function store(Request $request){
+        $validated = $request->validate([
+            'account_number' => 'required|unique:customer_accounts,account_number',
+            'meter_number' => 'nullable|unique:customer_accounts,meter_number',
+            'name' => 'required|string|max:255',
+            'address' => 'nullable|string|max:500',
+            'phone' => 'nullable|string|max:20',
+            'zone_id' => 'required|exists:zones,id',
+            'dma_id' => 'required|exists:dmas,id',
+            'billing_area' => 'nullable|string|max:255'
+        ]);
+
+        $account = CustomerAccount::create($validated);
+
+        // Log the creation of a new account
+        $this->auditLog->log('CREATE', 'Customer account created', [
+            'account_id' => $account->id,
+            'account_number' => $account->account_number,
+            'performed_by' => auth()->user()->id
+        ]);
+
+        return redirect()->route('admin.accounts.index')->with('success', 'Customer account created successfully.');
+    }
  
 }

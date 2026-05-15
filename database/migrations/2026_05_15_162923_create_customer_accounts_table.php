@@ -25,9 +25,7 @@ return new class extends Migration
             $table->foreignId('dma_id')->constrained();
             $table->string('billing_area')->nullable();
 
-            $table->decimal('previous_reading', 12, 3)->nullable();
-
-            $table->timestamp('created_at')->nullable();
+            $table->timestamps();
 
             $table->unique(['account_number']);
             $table->index(['zone_id','dma_id']);

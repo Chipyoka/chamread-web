@@ -68,85 +68,148 @@
         <x-toast />
 
 
-        <script>
-                const loader = document.getElementById('page-loader');
+<script>
+    const loader = document.getElementById('page-loader');
+    let loaderTimeout = null;
 
-                function showLoader() {
-                    loader.classList.remove('opacity-0', 'pointer-events-none');
-                }
+    function showLoader() {
+        // Clear any existing timeout
+        if (loaderTimeout) {
+            clearTimeout(loaderTimeout);
+        }
+        
+        // Show loader
+        loader.classList.remove('opacity-0', 'pointer-events-none');
+        
+        // Set timeout to hide loader after 6 seconds
+        loaderTimeout = setTimeout(() => {
+            console.warn('Loader timeout: Force hiding loader after 6 seconds');
+            hideLoader();
+        }, 5000);
+    }
 
-                function hideLoader() {
-                    loader.classList.add('opacity-0', 'pointer-events-none');
-                }
+    function hideLoader() {
+        // Clear timeout if exists
+        if (loaderTimeout) {
+            clearTimeout(loaderTimeout);
+            loaderTimeout = null;
+        }
+        
+        // Hide loader
+        loader.classList.add('opacity-0', 'pointer-events-none');
+    }
 
-                // Hide loader on full page load
-                window.addEventListener('load', hideLoader);
+    // Hide loader on full page load
+    window.addEventListener('load', hideLoader);
 
-                // Handle link navigation safely
-                document.addEventListener('click', function (e) {
+    // Handle link navigation safely
+    document.addEventListener('click', function (e) {
+        const link = e.target.closest('a');
+        
+        if (!link) return;
 
-                    const link = e.target.closest('a');
+        /*
+        |--------------------------------------------------------------------------
+        | Ignore UI/internal anchors
+        |--------------------------------------------------------------------------
+        */
 
-                    if (!link) return;
+        // Leaflet popup controls
+        if (link.closest('.leaflet-container')) {
+            return;
+        }
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Ignore UI/internal anchors
-                    |--------------------------------------------------------------------------
-                    */
+        // Empty/hash links
+        if (
+            link.getAttribute('href') === '#' ||
+            link.getAttribute('href')?.startsWith('#')
+        ) {
+            return;
+        }
 
-                    // Leaflet popup controls
-                    if (link.closest('.leaflet-container')) {
-                        return;
-                    }
+        // Javascript links
+        if (
+            link.getAttribute('href')?.startsWith('javascript:')
+        ) {
+            return;
+        }
 
-                    // Empty/hash links
-                    if (
-                        link.getAttribute('href') === '#' ||
-                        link.getAttribute('href')?.startsWith('#')
-                    ) {
-                        return;
-                    }
+        /*
+        |--------------------------------------------------------------------------
+        | Valid navigation
+        |--------------------------------------------------------------------------
+        */
 
-                    // Javascript links
-                    if (
-                        link.getAttribute('href')?.startsWith('javascript:')
-                    ) {
-                        return;
-                    }
+        const isValidNavigation =
+            link.href &&
+            !link.target &&
+            !link.hasAttribute('download') &&
+            link.origin === window.location.origin;
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Valid navigation
-                    |--------------------------------------------------------------------------
-                    */
+        if (isValidNavigation) {
+            showLoader();
+        }
+    });
+    
+    // Handle form submissions
+    document.addEventListener('submit', function (e) {
+        const form = e.target;
+        
+        if (form.tagName === 'FORM') {
+            // Check if form has confirmed or prevent default scenarios
+            const isConfirmed = !form.hasAttribute('data-confirm') || 
+                               confirm(form.getAttribute('data-confirm') || 'Are you sure?');
+            
+            if (isConfirmed) {
+                showLoader();
+            }
+        }
+    });
 
-                    const isValidNavigation =
-                        link.href &&
-                        !link.target &&
-                        !link.hasAttribute('download') &&
-                        link.origin === window.location.origin;
-
-                    if (isValidNavigation) {
-                        showLoader();
-                    }
-                });
-                // Handle form submissions
-                document.addEventListener('submit', function (e) {
-                    const form = e.target;
-
-                    if (form.tagName === 'FORM') {
-                        showLoader();
-                    }
-                });
-
-                // Handle browser back/forward cache restore
-                window.addEventListener('pageshow', function (event) {
-                    if (event.persisted) {
+    // Handle browser back/forward cache restore
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted) {
+            hideLoader();
+        }
+    });
+    
+    // Handle form confirmations that might be cancelled
+    document.addEventListener('click', function(e) {
+        const button = e.target.closest('[data-confirm]');
+        if (button && button.type === 'submit') {
+            const confirmMessage = button.getAttribute('data-confirm') || 
+                                  button.closest('form')?.getAttribute('data-confirm');
+            
+            if (confirmMessage && !confirm(confirmMessage)) {
+                e.preventDefault();
+                // Ensure loader is hidden if confirmation is cancelled
+                hideLoader();
+                return false;
+            }
+        }
+    });
+    
+    // Handle beforeunload to ensure loader doesn't hang
+    window.addEventListener('beforeunload', function() {
+        hideLoader();
+    });
+    
+    // Optional: Handle AJAX/Fetch requests
+    const originalFetch = window.fetch;
+    window.fetch = function(...args) {
+        showLoader();
+        return originalFetch.apply(this, args)
+            .finally(() => {
+                // Don't hide immediately for AJAX that might update UI without navigation
+                // You can adjust this timeout as needed
+                setTimeout(() => {
+                    if (!document.querySelector('.loading-active')) {
                         hideLoader();
                     }
-                });
-        </script>
+                }, 300);
+            });
+    };
+</script>
 
         @stack('scripts')
     </body>

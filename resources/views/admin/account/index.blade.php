@@ -23,11 +23,12 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            <th class="px-6 py-3">Account #</th>
+                            <th class="px-6 py-3">Meter #</th>
                             <th class="px-6 py-3">Name</th>
-                            <th class="px-6 py-3">Email</th>
+                            <th class="px-6 py-3">Phone</th>
                             <th class="px-6 py-3">Zone</th>
-                            <th class="px-6 py-3">Status</th>
-                            <th class="px-6 py-3">Last Login</th>
+                            <th class="px-6 py-3">Billing Area</th>
                             <th class="px-6 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -37,45 +38,36 @@
                         @foreach($accounts as $account)
                             <tr class="hover:bg-gray-50 transition">
 
+                                <!-- Account Number -->
+                                <td class="px-6 py-4 text-sm text-gray-800 font-medium">
+                                    {{ $account->account_number }}
+                                </td>
+
+                                <!-- Meter Number -->
+                                <td class="px-6 py-4 text-sm text-gray-600">
+                                    {{ $account->meter_number ?? '-' }}
+                                </td>
+
                                 <!-- Name -->
                                 <td class="px-6 py-4 text-sm text-gray-800 font-medium">
                                     {{ $account->name }}
                                 </td>
 
-                                <!-- Email -->
+                                <!-- Phone -->
                                 <td class="px-6 py-4 text-sm text-gray-600">
-                                    {{ $account->email }}
+                                    {{ $account->phone ?? '-' }}
                                 </td>
+                                
 
                                   <!-- Zone -->
                                 <td class="px-6 py-4 text-sm text-gray-600">
                                     {{ $account->zone->name ?? '-' }}
                                 </td>
 
-                                <!-- Status -->
-                                <td class="px-6 py-4 uppercase">
-                                    @if($account->status === 'ACTIVE')
-                                    
-                                        <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded">
-                                            Active
-                                        </span>
-                                    @elseif ($account->status === 'SUSPENDED')
-                                        <span class="px-2 py-1 text-xs font-medium bg-amber-50 text-amber-600 rounded">
-                                            suspended
-                                        </span>
-                                    @else
-                                        <span class="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded">
-                                            Inactive
-                                        </span>
-                                    @endif
-                                </td>
 
-                               
-                                 <!-- Last Login -->
-                                <td class="px-6 py-4 text-sm text-gray-500">
-                                    {{ $account->last_login_at 
-                                        ? $account->last_login_at->diffForHumans() 
-                                        : 'Never' }}
+                                    <!-- Billing Area -->
+                                <td class="px-6 py-4 text-sm text-gray-600">
+                                    {{ $account->billing_area ?? '-' }}
                                 </td>
 
                                 <!-- Actions -->
@@ -85,22 +77,12 @@
                                     <x-micro-button
                                         href="{{ route('admin.accounts.show', $account) }}"
                                         color="blue"
-                                        icon="user"
+                                        icon="eye"
                                         size="sm"
                                     >
-                                        Profile
+                                        View Details
                                     </x-micro-button>
 
-
-                                    <!-- Edit -->
-                                    <x-micro-button
-                                        color="purple"
-                                        href="{{ route('admin.accounts.readings', $account) }}"
-                                        icon="list-todo"
-                                        size="sm"
-                                    >
-                                        Readings
-                                    </x-micro-button>
                                 </td>
                             </tr>
                         @endforeach

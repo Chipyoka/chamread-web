@@ -19,41 +19,61 @@
         <form action="{{ route('admin.accounts.store') }}" method="POST" class="space-y-6 bg-white p-6 rounded-lg shadow-sm">
             @csrf
 
+            <!-- Account Number -->
+            <div>
+                <x-input-label for="account_number" :value="__('Account Number')" />
+                <x-text-input id="account_number" name="account_number" type="text" class="mt-1 block w-full" value="{{ old('account_number') }}" required />
+                <x-input-error :messages="$errors->get('account_number')" class="mt-2" />
+            </div>
+
+            <!-- Meter Number -->
+            <div>
+                <x-input-label for="meter_number" :value="__('Meter Number')" />
+                <x-text-input id="meter_number" name="meter_number" type="text" class="mt-1 block w-full" value="{{ old('meter_number') }}" required />
+                <x-input-error :messages="$errors->get('meter_number')" class="mt-2" />
+            </div>
+
             <!-- Name -->
             <div>
                 <x-input-label for="name" :value="__('Name')" />
-                <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" value="{{ old('name') }}" required autofocus />
+                <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" value="{{ old('name') }}" required />
                 <x-input-error :messages="$errors->get('name')" class="mt-2" />
             </div>
 
-            <!-- Username -->
+            <!-- Phone -->
             <div>
-                <x-input-label for="username" :value="__('Username')" />
-                <x-text-input id="username" name="username" type="text" class="mt-1 block w-full" value="{{ old('username') }}" required />
-                <x-input-error :messages="$errors->get('username')" class="mt-2" />
+                <x-input-label for="phone" :value="__('Phone')" />
+                <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full" value="{{ old('phone') }}" required />
+                <x-input-error :messages="$errors->get('phone')" class="mt-2" />
             </div>
 
-            <!-- Email -->
+            <!-- Address -->
             <div>
-                <x-input-label for="email" :value="__('Email (optional)')" />
-                <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" value="{{ old('email') }}" />
-                <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                <x-input-label for="address" :value="__('Address')" />
+                <x-text-input id="address" name="address" type="text" class="mt-1 block w-full" value="{{ old('address') }}" required />
+                <x-input-error :messages="$errors->get('address')" class="mt-2" />
             </div>
 
-            <!-- Auto-generated Password -->
+            <!-- Billing Area -->
             <div>
-                <x-input-label :value="__('Password (auto-generated)')" />
-                <div class="flex items-center space-x-2 mt-1">
-                    <input id="passwordDisplay" type="text" class="block w-full px-3 py-2 border rounded-md bg-gray-100 text-gray-700 cursor-not-allowed" readonly>
-                    <button type="button" id="copyBtn" class="px-3 py-2 bg-primary text-white rounded hover:bg-primary/90 transition text-sm">
-                        Copy
-                    </button>
-                </div>
-                <p class="text-gray-500 text-sm mt-1">Default password format: <code>[username]1234</code></p>
+                <x-input-label for="billing_area" :value="__('Billing Area')" />
+                <x-text-input id="billing_area" name="billing_area" type="text" class="mt-1 block w-full" value="{{ old('billing_area') }}" required />
+                <x-input-error :messages="$errors->get('billing_area')" class="mt-2" />
             </div>
 
-            <!-- Hidden password input -->
-            <input type="hidden" name="password" id="passwordInput" value="">
+            <!-- dma -->
+            <div>
+                <x-input-label for="dma_id" :value="__('DMA (optional)')" />
+                <select name="dma_id" id="dma_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-primary focus:ring-opacity-50">
+                    <option value="">-- Select DMA --</option>
+                    @foreach($dmas as $dma)
+                        <option value="{{ $dma->id }}" {{ old('dma_id') == $dma->id ? 'selected' : '' }}>
+                            {{ $dma->name }}
+                        </option>
+                    @endforeach
+                </select>
+                <x-input-error :messages="$errors->get('dma_id')" class="mt-2" />
+            </div>
 
             <!-- Zone -->
             <div>
@@ -72,44 +92,10 @@
             <!-- Submit -->
             <div class="flex justify-end">
                 <button type="submit" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition">
-                    Create CSA
+                    Save Account
                 </button>
             </div>
         </form>
     </div>
-
-    <!-- Scripts -->
-    <script>
-        const usernameInput = document.getElementById('username');
-        const passwordDisplay = document.getElementById('passwordDisplay');
-        const passwordInput = document.getElementById('passwordInput');
-        const copyBtn = document.getElementById('copyBtn');
-
-        // Generate password dynamically
-        usernameInput.addEventListener('input', function() {
-            const username = usernameInput.value.trim();
-            const password = username ? username + '1234' : '';
-            passwordDisplay.value = password;
-            passwordInput.value = password;
-        });
-
-        // Copy to clipboard
-        copyBtn.addEventListener('click', function() {
-            if (!passwordDisplay.value) return;
-            passwordDisplay.select();
-            passwordDisplay.setSelectionRange(0, 99999); // for mobile devices
-            document.execCommand('copy');
-
-            // Feedback
-            copyBtn.textContent = 'Copied!';
-            setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
-        });
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            const event = new Event('input');
-            usernameInput.dispatchEvent(event);
-        });
-    </script>
 
 </x-app-layout>

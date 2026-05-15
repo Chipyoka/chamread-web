@@ -124,7 +124,7 @@ class DashboardController extends Controller
                     'id' => $account->id,
                     'title' => $account->name ?? 'Unnamed Account',
                     'subtitle' => "Account: {$account->account_number}",
-                    'url' => route('admin.csas.show', $account->id),
+                    'url' => route('admin.accounts.show', $account->id),
                 ];
             });
 
