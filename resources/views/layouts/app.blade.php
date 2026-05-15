@@ -22,7 +22,7 @@
         <!-- Global Loader Overlay -->
         <div
             id="page-loader"
-            class="fixed inset-0 z-[9999] flex items-center justify-center bg-white/80 backdrop-blur-sm transition-opacity duration-300"
+            class="fixed inset-0 z-[9999] flex items-center justify-center bg-white/60 backdrop-blur-sm transition-opacity duration-300"
         >
             <div class="loader"></div>
         </div>
@@ -64,36 +64,51 @@
 
 
         <script>
-            const loader = document.getElementById('page-loader');
+                const loader = document.getElementById('page-loader');
 
-            // Hide loader when page fully loads
-            window.addEventListener('load', () => {
-                loader.classList.add('opacity-0', 'pointer-events-none');
-
-                setTimeout(() => {
-                    loader.remove();
-                }, 300);
-            });
-
-            // Show loader during page navigation/refresh
-            document.addEventListener('click', function (e) {
-                const target = e.target.closest('a');
-
-                if (
-                    target &&
-                    target.href &&
-                    !target.href.startsWith('javascript:') &&
-                    !target.target &&
-                    !target.hasAttribute('download')
-                ) {
+                function showLoader() {
                     loader.classList.remove('opacity-0', 'pointer-events-none');
                 }
-            });
 
-            // Show loader on form submissions
-            document.addEventListener('submit', function () {
-                loader.classList.remove('opacity-0', 'pointer-events-none');
-            });
+                function hideLoader() {
+                    loader.classList.add('opacity-0', 'pointer-events-none');
+                }
+
+                // Hide loader on full page load
+                window.addEventListener('load', hideLoader);
+
+                // Handle link navigation safely
+                document.addEventListener('click', function (e) {
+                    const link = e.target.closest('a');
+
+                    if (!link) return;
+
+                    const isValidNavigation =
+                        link.href &&
+                        !link.target &&
+                        !link.hasAttribute('download') &&
+                        link.origin === window.location.origin;
+
+                    if (isValidNavigation) {
+                        showLoader();
+                    }
+                });
+
+                // Handle form submissions
+                document.addEventListener('submit', function (e) {
+                    const form = e.target;
+
+                    if (form.tagName === 'FORM') {
+                        showLoader();
+                    }
+                });
+
+                // Handle browser back/forward cache restore
+                window.addEventListener('pageshow', function (event) {
+                    if (event.persisted) {
+                        hideLoader();
+                    }
+                });
         </script>
 
         @stack('scripts')
