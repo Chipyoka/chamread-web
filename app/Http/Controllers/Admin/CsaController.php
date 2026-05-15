@@ -289,18 +289,94 @@ class CsaController extends Controller
     /**
      * Get readings and coordinates for a CSA
      */
-
-    public function csaReadings(User $csa){
+    public function csaReadings(User $csa)
+    {
         $this->ensureCSA($csa);
-        // Get current billing cycle (latest active)
+
+        // Current billing cycle
         $currentCycle = BillingCycle::latest()->first();
 
-        // get readings
-        $readings = $csa->readings()->where('billing_cycle_id', $currentCycle->id)->with(['zone', 'dma'])->paginate(10);
+        // Readings
+        $readings = $csa->readings()
+            ->where('billing_cycle_id', $currentCycle->id)
+            ->with(['zone', 'dma'])
+            ->latest()
+            ->paginate(10);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Extract GPS points for map
+        |--------------------------------------------------------------------------
+        */
+
+        $points = $csa->readings()
+            ->where('billing_cycle_id', $currentCycle->id)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->get([
+                'id',
+                'latitude',
+                'longitude',
+                'created_at',
+                'account_number',
+            ])
+            ->map(function ($reading) {
+
+                return [
+                    'id' => $reading->id,
+
+                    'lat' => (float) $reading->latitude,
+
+                    'lng' => (float) $reading->longitude,
+
+                    'time' => $reading->created_at?->format('Y-m-d H:i:s'),
+
+                    'account' => $reading->account_number,
+                ];
+            })
+            ->unique(fn ($point) => $point['lat'] . ',' . $point['lng'])
+            ->values()
+            ->toArray();
+
+            $pointsT = [
+                    [
+                        'id' => 1,
+                        'lat' => -15.4067,
+                        'lng' => 28.2871,
+                        'time' => now()->subMinutes(40)->format('Y-m-d H:i:s'),
+                        'account' => 'ACC-1001',
+                    ],
+
+                    [
+                        'id' => 2,
+                        'lat' => -15.4165,
+                        'lng' => 28.3012,
+                        'time' => now()->subMinutes(30)->format('Y-m-d H:i:s'),
+                        'account' => 'ACC-1002',
+                    ],
+
+                    [
+                        'id' => 3,
+                        'lat' => -15.4250,
+                        'lng' => 28.3158,
+                        'time' => now()->subMinutes(20)->format('Y-m-d H:i:s'),
+                        'account' => 'ACC-1003',
+                    ],
+
+                    [
+                        'id' => 4,
+                        'lat' => -15.4382,
+                        'lng' => 28.3304,
+                        'time' => now()->subMinutes(10)->format('Y-m-d H:i:s'),
+                        'account' => 'ACC-1004',
+                    ],
+                ];
 
         return view('admin.csa.readings', compact(
             'readings',
             'csa',
+            'points',
+            'pointsT',
         ));
     }
 

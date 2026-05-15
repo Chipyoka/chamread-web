@@ -14,6 +14,11 @@
             rel="stylesheet"
         />
 
+            <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet/dist/leaflet.css"
+        />
+
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
@@ -79,9 +84,42 @@
 
                 // Handle link navigation safely
                 document.addEventListener('click', function (e) {
+
                     const link = e.target.closest('a');
 
                     if (!link) return;
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Ignore UI/internal anchors
+                    |--------------------------------------------------------------------------
+                    */
+
+                    // Leaflet popup controls
+                    if (link.closest('.leaflet-container')) {
+                        return;
+                    }
+
+                    // Empty/hash links
+                    if (
+                        link.getAttribute('href') === '#' ||
+                        link.getAttribute('href')?.startsWith('#')
+                    ) {
+                        return;
+                    }
+
+                    // Javascript links
+                    if (
+                        link.getAttribute('href')?.startsWith('javascript:')
+                    ) {
+                        return;
+                    }
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Valid navigation
+                    |--------------------------------------------------------------------------
+                    */
 
                     const isValidNavigation =
                         link.href &&
@@ -93,7 +131,6 @@
                         showLoader();
                     }
                 });
-
                 // Handle form submissions
                 document.addEventListener('submit', function (e) {
                     const form = e.target;
