@@ -42,6 +42,12 @@ class AssignmentsController extends Controller
             ->where('billing_cycle_id', $currentCycle->id)
             ->get();
 
+
+        // Get CSA readings for current billing cycle
+        $readings = Reading::where('csa_id', $user->id)
+            ->where('billing_cycle_id', $currentCycle->id)
+            ->get();
+
         // Compute stats
         $totalTarget = $assignments->sum('target');
 
@@ -69,6 +75,19 @@ class AssignmentsController extends Controller
                         'target' => $a->target,
                         'assignment_type' => $a->assignment_type,
                         'status' => $a->status,
+                    ];
+                }),
+                'readings' => $readings->map(function ($r) {
+                    return [
+                        'id' => $r->id,
+                        'account_number' => $r->account_number,
+                        'meter_number' => $r->meter_number,
+                        'current_reading' => $r->current_reading,
+                        'billing_area' => $r->billing_area,
+                        'customer_name' => $r->account->name ?? null,
+                        'photo_url' => $r->photo_path,
+                        'reading_time' => $r->reading_time,
+                        'reason' => $r->reason_code,
                     ];
                 }),
                 'stats' => [
