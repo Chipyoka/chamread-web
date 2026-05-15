@@ -24,7 +24,6 @@
                     <thead class="bg-gray-50">
                         <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                             <th class="px-6 py-3">Name</th>
-                            <th class="px-6 py-3">Username</th>
                             <th class="px-6 py-3">Email</th>
                             <th class="px-6 py-3">Last Login</th>
                             <th class="px-6 py-3">Status</th>
@@ -40,11 +39,6 @@
                                 <!-- Name -->
                                 <td class="px-6 py-4 text-sm text-gray-800 font-medium">
                                     {{ $csa->name }}
-                                </td>
-
-                                <!-- Username -->
-                                <td class="px-6 py-4 text-sm text-gray-600">
-                                    {{ $csa->username }}
                                 </td>
 
                                 <!-- Email -->
@@ -93,42 +87,13 @@
 
                                     <!-- Edit -->
                                     <x-micro-button
-                                        variant="edit"
-                                        href="{{ route('admin.csas.edit', $csa) }}"
-                                        icon="edit"
+                                        color="purple"
+                                        href="{{ route('admin.csas.readings', $csa) }}"
+                                        icon="list-todo"
                                         size="sm"
                                     >
-                                        Edit
+                                        Readings
                                     </x-micro-button>
-
-                                    <!-- Assign -->
-                                    <x-micro-button
-                                    color="purple"
-                                    href="{{ route('admin.csas.edit', $csa) }}"
-                                    icon="map-pin"
-                                    size="sm"
-                                    >
-                                        Assign
-                                    </x-micro-button>
-
-                                    <!-- Delete -->
-                                    <form action="{{ route('admin.csas.destroy', $csa) }}"
-                                          method="POST"
-                                          class="inline-block"
-                                          onsubmit="return confirm('Are you sure you want to delete this CSA?')">
-                                        @csrf
-                                        @method('DELETE')
-
-                                        <x-micro-button 
-                                          type="submit"
-                                          color="red"
-                                          icon="trash"
-                                          size="sm"
-                                        >
-                                            Delete
-                                        </x-micro-button>
-                                    </form>
-
                                 </td>
                             </tr>
                         @endforeach

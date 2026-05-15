@@ -222,7 +222,7 @@ class CsaController extends Controller
      * Store assignment
      */
     public function storeAssignment(Request $request, User $csa)
-    {
+     {
         $this->ensureCSA($csa);
 
         // Validate input
@@ -284,6 +284,24 @@ class CsaController extends Controller
         return redirect()
             ->route('admin.csas.assign', $csa->id)
             ->with('success', 'Assignment saved successfully.');
+     }
+
+    /**
+     * Get readings and coordinates for a CSA
+     */
+
+    public function csaReadings(User $csa){
+        $this->ensureCSA($csa);
+        // Get current billing cycle (latest active)
+        $currentCycle = BillingCycle::latest()->first();
+
+        // get readings
+        $readings = $csa->readings()->where('billing_cycle_id', $currentCycle->id)->with(['zone', 'dma'])->paginate(10);
+
+        return view('admin.csa.readings', compact(
+            'readings',
+            'csa',
+        ));
     }
 
     /**
