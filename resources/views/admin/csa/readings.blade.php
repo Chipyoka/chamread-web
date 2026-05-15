@@ -4,7 +4,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-semibold text-gray-800"> Readings for <span class="text-secondary">{{ $csa->name ?? "CSA" }}</span></h1>
+                <h1 class="text-2xl font-semibold text-gray-600"> Readings for <span class="text-secondary">{{ $csa->name ?? "CSA" }}</span></h1>
                 <p class="text-sm text-gray-500">Scroll to the bottom to view map</p>
             </div>
 
@@ -52,12 +52,12 @@
                     <tbody class="bg-white divide-y divide-gray-100">
                         @foreach($readings as $reading)
                             <tr class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 text-sm text-gray-800">{{ $reading->account_number ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-800">{{ $reading->zone->name ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-800">{{ $reading->dma?->name ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-800">{{ $reading->previous_reading ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-800">{{ $reading->current_reading ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-800 capitalize">{{ $reading->status }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->account_number ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->zone->name ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->dma?->name ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->previous_reading ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->current_reading ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600 capitalize">{{ $reading->status }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->reading_time?->format('Y-m-d') ?? '-' }}</td>
                             </tr>
                         @endforeach

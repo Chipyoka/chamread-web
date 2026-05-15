@@ -39,7 +39,7 @@
                             <tr class="hover:bg-gray-50 transition">
 
                                 <!-- Account Number -->
-                                <td class="px-6 py-4 text-sm text-gray-800 font-medium">
+                                <td class="px-6 py-4 text-sm text-gray-600 font-medium">
                                     {{ $account->account_number }}
                                 </td>
 
@@ -49,7 +49,7 @@
                                 </td>
 
                                 <!-- Name -->
-                                <td class="px-6 py-4 text-sm text-gray-800 font-medium">
+                                <td class="px-6 py-4 text-sm text-gray-600 font-medium">
                                     {{ $account->name }}
                                 </td>
 

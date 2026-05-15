@@ -4,7 +4,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-semibold text-gray-800">Add New CSA</h1>
+                <h1 class="text-2xl font-semibold text-gray-600">Add New CSA</h1>
                 <p class="text-sm text-gray-500">Create a Customer Service Agent account</p>
             </div>
 

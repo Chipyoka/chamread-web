@@ -4,7 +4,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-semibold text-gray-800">CSA Details</h1>
+                <h1 class="text-2xl font-semibold text-gray-600">CSA Details</h1>
                 <p class="text-sm text-gray-500">View CSA profile and assignments</p>
             </div>
 
@@ -55,36 +55,36 @@
 
         <!-- CSA Info Card -->
         <div class="bg-white rounded-md p-6 space-y-4 border border-gray-200">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <h2 class="text-gray-600 text-sm font-medium">Name</h2>
-                    <p class="text-gray-800 font-semibold">{{ $csa->name }}</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div  class="px-2 py-1.5 bg-gray-50 rounded-sm">
+                    <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Name</h2>
+                    <p class="text-gray-600 font-semibold">{{ $csa->name }}</p>
                 </div>
 
-                <div>
-                    <h2 class="text-gray-600 text-sm font-medium">Username</h2>
-                    <p class="text-gray-800 font-semibold">{{ $csa->username }}</p>
+                <div  class="px-2 py-1.5 bg-gray-50 rounded-sm">
+                    <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Username</h2>
+                    <p class="text-gray-600 font-semibold">{{ $csa->username }}</p>
                 </div>
 
-                <div>
-                    <h2 class="text-gray-600 text-sm font-medium">Email</h2>
-                    <p class="text-gray-800 font-semibold">{{ $csa->email ?? '-' }}</p>
+                <div  class="px-2 py-1.5 bg-gray-50 rounded-sm">
+                    <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Email</h2>
+                    <p class="text-gray-600 font-semibold">{{ $csa->email ?? '-' }}</p>
                 </div>
 
-                <div>
-                    <h2 class="text-gray-600 text-sm font-medium">Zone</h2>
-                    <p class="text-gray-800 font-semibold">{{ $csa->zone?->name ?? '-' }}</p>
+                <div  class="px-2 py-1.5 bg-gray-50 rounded-sm">
+                    <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Zone</h2>
+                    <p class="text-gray-600 font-semibold">{{ $csa->zone?->name ?? '-' }}</p>
                 </div>
 
-                <div>
-                    <h2 class="text-gray-600 text-sm font-medium">Last Login</h2>
-                    <p class="text-gray-800 font-semibold">
+                <div  class="px-2 py-1.5 bg-gray-50 rounded-sm">
+                    <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Last Login</h2>
+                    <p class="text-gray-600 font-semibold">
                         {{ $csa->last_login_at ? $csa->last_login_at->diffForHumans() : 'Never' }}
                     </p>
                 </div>
 
-                <div>
-                    <h2 class="text-gray-600 text-sm font-medium">Status</h2>
+                <div  class="px-2 py-1.5 bg-gray-50 rounded-sm">
+                    <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Status</h2>
                     @if($csa->last_login_at && $csa->last_login_at->gt(now()->subDays(7)))
                         <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded">
                             Active
@@ -119,12 +119,12 @@
                     <tbody class="bg-white divide-y divide-gray-100">
                         @foreach($assignments as $assignment)
                             <tr class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 text-sm text-gray-800">{{ $assignment->zone->name ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-800">{{ $assignment->dma?->name ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-800">{{ $assignment->billingCycle->name ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-800">{{ $assignment->target ?? '0' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-800">{{ $assignment->assignment_type ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-800 capitalize">{{ $assignment->status }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->zone->name ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->dma?->name ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->billingCycle->name ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->target ?? '0' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->assignment_type ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600 capitalize">{{ $assignment->status }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->assigned_at?->format('Y-m-d') ?? '-' }}</td>
                             </tr>
                         @endforeach

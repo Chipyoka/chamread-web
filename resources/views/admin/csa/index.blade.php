@@ -38,7 +38,7 @@
                             <tr class="hover:bg-gray-50 transition">
 
                                 <!-- Name -->
-                                <td class="px-6 py-4 text-sm text-gray-800 font-medium">
+                                <td class="px-6 py-4 text-sm text-gray-600 font-medium">
                                     {{ $csa->name }}
                                 </td>
 
