@@ -70,5 +70,34 @@ class AccountsController extends Controller
 
         return redirect()->route('admin.accounts.index')->with('success', 'Customer account created successfully.');
     }
+
+    /**
+     * Show account details:
+     * - We show all account details (all column)
+     * - We show consuption trend chart for last 6 readings (reading.previous_reading - reading.current_reading)
+     * - We show past 6 readings
+     */
+    public function show(CustomerAccount $account){
+        $readings = $account->readings()->latest()->take(6)->get();
+
+        // Prepare data for consumption trend chart
+        $chartData = $readings->reverse()->map(function($reading) {
+            return [
+                'date' => $reading->created_at->format('M Y'),
+                'consumption' => $reading->current_reading - $reading->previous_reading
+            ];
+        });
+
+          $chartDataT = collect([
+        ['date' => 'Jan 2026', 'consumption' => 120],
+        ['date' => 'Feb 2026', 'consumption' => 98],
+        ['date' => 'Mar 2026', 'consumption' => 10],
+        ['date' => 'Apr 2026', 'consumption' => 40],
+        ['date' => 'May 2026', 'consumption' => 100],
+        ['date' => 'Jun 2026', 'consumption' => 155],
+    ]);
+
+        return view('admin.account.show', compact('account', 'readings', 'chartData', 'chartDataT'));
+    }
  
 }

@@ -45,16 +45,34 @@ class CustomerAccount extends Model
         return $this->belongsTo(DMA::class);
     }
     
+    /**
+     * Readings with this account's account_number
+     */
+    public function readings()
+    {
+        return $this->hasMany(Reading::class, 'account_number');
+    }
+
+    /**
+     * Location derived from address for GPS Service
+     */
     public function location()
     {
         return $this->hasOne(AccountLocation::class);
     }
 
+    /**
+     * GPS checks for this account
+     */
     public function gpsChecks()
     {
         return $this->hasMany(ReadingGpsCheck::class);
     }
 
+
+    /**
+     * Exceptions for this account
+     */
     public function exceptions()
     {
         return $this->hasMany(SystemException::class);

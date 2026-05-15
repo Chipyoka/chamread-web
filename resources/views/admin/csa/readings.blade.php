@@ -33,7 +33,7 @@
 
         <!-- CSA Readings -->
         <div class="bg-white border border-gray-200 rounded-md p-6 space-y-4">
-            <h3 class="text-lg font-semibold text-gray-800">Readings</h3>
+            <h3 class="text-gray-400 text-xs uppercase my-2">Readings</h3>
 
             @if($readings->count() > 0)
                 <table class="min-w-full divide-y divide-gray-200">
