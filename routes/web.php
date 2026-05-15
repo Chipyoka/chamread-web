@@ -68,6 +68,7 @@ Route::prefix('admin')
             Route::post('/{csa}/assign', [CsaController::class, 'storeAssignment'])->name('assign.store');
 
             Route::get('/{csa}/readings', [CsaController::class, 'csaReadings'])->name('readings');
+            Route::get('/{csa}/accounts', [CsaController::class, 'assignedAccounts'])->name('accounts');
         });
 
 

@@ -26,6 +26,10 @@ class Reading extends Model
         return $this->belongsTo(BillingCycle::class);
     }
 
+    public function account()
+{
+    return $this->belongsTo(CustomerAccount::class, 'account_number');
+}
     public function alerts()
     {
         return $this->hasMany(Alert::class);

@@ -24,7 +24,6 @@
                     <thead class="bg-gray-50">
                         <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                             <th class="px-6 py-3">Name</th>
-                            <th class="px-6 py-3">Email</th>
                             <th class="px-6 py-3">Zone</th>
                             <th class="px-6 py-3">Status</th>
                             <th class="px-6 py-3">Last Login</th>
@@ -40,11 +39,6 @@
                                 <!-- Name -->
                                 <td class="px-6 py-4 text-sm text-gray-600 font-medium">
                                     {{ $csa->name }}
-                                </td>
-
-                                <!-- Email -->
-                                <td class="px-6 py-4 text-sm text-gray-600">
-                                    {{ $csa->email }}
                                 </td>
 
                                   <!-- Zone -->
@@ -92,7 +86,7 @@
                                     </x-micro-button>
 
 
-                                    <!-- Edit -->
+                                    <!-- readings -->
                                     <x-micro-button
                                         color="purple"
                                         href="{{ route('admin.csas.readings', $csa) }}"
@@ -100,6 +94,16 @@
                                         size="sm"
                                     >
                                         Readings
+                                    </x-micro-button>
+
+                                    <!-- Csa assigned accounts -->
+                                    <x-micro-button
+                                        color="slate"
+                                        href="{{ route('admin.csas.accounts', $csa) }}"
+                                        icon="file-text"
+                                        size="sm"
+                                    >
+                                        Accounts
                                     </x-micro-button>
                                 </td>
                             </tr>

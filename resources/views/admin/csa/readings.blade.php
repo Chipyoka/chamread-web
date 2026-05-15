@@ -11,6 +11,15 @@
             <div class="flex items-center space-x-2">
            
                  <x-micro-button
+                    color="slate"
+                    href="{{ route('admin.csas.accounts', $csa) }}"
+                    icon="file-text"
+                    size="md"
+                >
+                    View Accounts
+                </x-micro-button>
+
+                 <x-micro-button
                     variant="view"
                     href="{{ route('admin.csas.show', $csa) }}"
                     icon="user"

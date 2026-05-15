@@ -9,37 +9,40 @@
             </div>
 
             <div class="flex items-center space-x-2">
+                <div class="flex mr-4 px-2 space-x-2">
+
+                    <x-micro-button
+                       variant="edit"
+                       href="{{ route('admin.csas.edit', $csa) }}"
+                       icon="edit"
+                       size="md"
+                   >
+                       Edit CSA
+                   </x-micro-button>
+    
+                    <x-micro-button
+                       color="purple"
+                       href="{{ route('admin.csas.assign', $csa) }}"
+                       icon="map-pin"
+                       size="md"
+                   >
+                       Assign
+                   </x-micro-button>
+    
+                   <form action="{{ route('admin.csas.destroy', $csa) }}" class="delete-form" method="POST" onsubmit="return confirm('Delete this CSA?')">
+                       @csrf
+                       @method('DELETE')
+                        <x-micro-button
+                       variant="delete"
+                       icon="trash"
+                       size="md"
+                       type="submit"
+                   >
+                      Delete
+                   </x-micro-button>
+                   </form>
+                </div>
            
-                 <x-micro-button
-                    variant="edit"
-                    href="{{ route('admin.csas.edit', $csa) }}"
-                    icon="edit"
-                    size="md"
-                >
-                    Edit CSA
-                </x-micro-button>
-
-                 <x-micro-button
-                    color="purple"
-                    href="{{ route('admin.csas.assign', $csa) }}"
-                    icon="map-pin"
-                    size="md"
-                >
-                    Assign
-                </x-micro-button>
-
-                <form action="{{ route('admin.csas.destroy', $csa) }}" class="delete-form" method="POST" onsubmit="return confirm('Delete this CSA?')">
-                    @csrf
-                    @method('DELETE')
-                     <x-micro-button
-                    variant="delete"
-                    icon="trash"
-                    size="md"
-                    type="submit"
-                >
-                   Delete
-                </x-micro-button>
-                </form>
 
                  <!-- back to list -->
                 <x-micro-button

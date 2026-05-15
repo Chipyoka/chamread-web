@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Zone;
+use App\Models\Reading;
 use App\Models\Dma;
+use App\Models\CustomerAccount;
 use App\Models\BillingCycle;
 use App\Models\CsaAssignment;
 use Illuminate\Http\Request;
@@ -380,6 +382,42 @@ class CsaController extends Controller
         ));
     }
 
+
+    /**
+     * Get assigned accounts: all customer accounts with the same zone_id as the CSA
+     */
+    public function assignedAccounts(User $csa)
+    {
+        $this->ensureCSA($csa);
+
+        $currentCycle = BillingCycle::latest()->first();
+
+        // Step 1: Fetch accounts
+        $accounts = CustomerAccount::where('zone_id', $csa->zone_id)
+            ->with(['zone', 'dma'])
+            ->latest()
+            ->paginate(10);
+
+        // Step 2: Fetch all readings for these accounts in ONE query
+        $readings = Reading::where('billing_cycle_id', $currentCycle->id)
+            ->whereIn('account_number', $accounts->pluck('id'))
+            ->get()
+            ->groupBy('account_number');
+
+        // Step 3: Attach computed status to each account
+        $accounts->getCollection()->transform(function ($account) use ($readings) {
+
+            $reading = $readings->get($account->id)?->first();
+
+            $account->read_status = $reading
+                ? $reading->status
+                : 'NOT_READ';
+
+            return $account;
+        });
+
+        return view('admin.csa.accounts', compact('accounts', 'csa'));
+    }
     /**
      * Ensure user is CSA
      */
