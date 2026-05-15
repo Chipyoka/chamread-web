@@ -11,6 +11,7 @@ use App\Models\BillingCycle;
 use App\Models\CsaAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 use App\Services\AuditLogService;
 
@@ -92,16 +93,51 @@ class AccountsController extends Controller
             ];
         });
 
-          $chartDataT = collect([
-        ['date' => 'Jan 2026', 'consumption' => 120],
-        ['date' => 'Feb 2026', 'consumption' => 98],
-        ['date' => 'Mar 2026', 'consumption' => 10],
-        ['date' => 'Apr 2026', 'consumption' => 40],
-        ['date' => 'May 2026', 'consumption' => 100],
-        ['date' => 'Jun 2026', 'consumption' => 155],
-    ]);
+        return view('admin.account.show', compact('account', 'readings', 'chartData', 'assignedCsa'));
+    }
 
-        return view('admin.account.show', compact('account', 'readings', 'chartData', 'chartDataT', 'assignedCsa'));
+    /**
+     * Generate a pdf as an export of the account details page
+     */
+     public function export(CustomerAccount $account)
+    {
+        $readings = $account->readings()
+            ->latest()
+            ->take(6)
+            ->get();
+
+        $assignedCsa = User::where('zone_id', $account->zone_id)
+            ->where('role', 'CSA')
+            ->first();
+
+        $chartData = $readings->reverse()->map(function ($reading) {
+            return [
+                'date' => $reading->created_at->format('M Y'),
+                'consumption' =>
+                    $reading->current_reading - $reading->previous_reading
+            ];
+        });
+
+        $pdf = Pdf::loadView('admin.account.pdf', [
+            'account' => $account,
+            'readings' => $readings,
+            'chartData' => $chartData,
+            'assignedCsa' => $assignedCsa,
+            'date' => now()->format('Y-m-d H-i-s'),
+            'user' => auth()->user(),
+        ]);
+
+        $fileName = 'ACCOUNT-' . $account->account_number . '-REPORT-' . now()->format('Y-m-d_H-i-s') . '.pdf';
+
+        // Log the report generation
+        $this->auditLog->log('EXPORT', 'Customer account report created', [
+            'account_id' => $account->id,
+            'account_number' => $account->account_number,
+            'file_name' => $fileName,
+            'performed_by' => auth()->user()->id
+        ]);
+
+        return $pdf->download($fileName);
     }
  
 }

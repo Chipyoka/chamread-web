@@ -14,6 +14,17 @@
             
                  <!-- back to list -->
                 <x-micro-button
+                    color="slate"
+                    href="{{ route('admin.accounts.export', $account) }}"
+                    icon="upload"
+                    size="md"
+                >
+                    Export
+                </x-micro-button>
+
+
+                 <!-- back to list -->
+                <x-micro-button
                     variant="edit"
                     href="{{ route('admin.accounts.index') }}"
                     icon="arrow-left"

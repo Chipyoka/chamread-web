@@ -92,7 +92,8 @@ Route::prefix('admin')
             Route::get('/{account}/edit', [AccountsController::class, 'edit'])->name('edit');
             Route::put('/{account}', [AccountsController::class, 'update'])->name('update');
             Route::delete('/{account}', [AccountsController::class, 'destroy'])->name('destroy');
-
+            
+            Route::get('/{account}/export', [AccountsController::class, 'export'])->name('export');
            
         });
 
