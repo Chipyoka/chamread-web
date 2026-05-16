@@ -43,10 +43,19 @@ class AssignmentsController extends Controller
             ->get();
 
 
+
         // Get CSA readings for current billing cycle
         $readings = Reading::where('csa_id', $user->id)
             ->where('billing_cycle_id', $currentCycle->id)
             ->get();
+
+        //Get top 5 customer accounts withing the CSA's assigned zones/dmas for the current billing cycle
+        //lets get the recent assignment's zone id.
+        $assignedZone = $assignments->pluck('zone_id')->toArray();
+
+        $topAccounts = CustomerAccount::whereIn('zone_id', $assignedZone)
+            ->take(5)
+            ->get(); 
 
         // Compute stats
         $totalTarget = $assignments->sum('target');
@@ -88,6 +97,15 @@ class AssignmentsController extends Controller
                         'photo_url' => $r->photo_path,
                         'reading_time' => $r->reading_time,
                         'reason' => $r->reason_code,
+                    ];
+                }),
+                'top_accounts' => $topAccounts->map(function ($a) {
+                    return [
+                        'id' => $a->id,
+                        'account_number' => $a->account_number,
+                        'name' => $a->name,
+                        'address' => $a->address,
+                        'phone' => $a->phone,
                     ];
                 }),
                 'stats' => [
