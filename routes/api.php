@@ -1,5 +1,6 @@
 <?php
 use App\Http\Controllers\Api\AssignmentsController;
+use App\Http\Controllers\Api\ReadingsController;
 use App\Http\Controllers\Api\AuthController;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
@@ -33,6 +34,18 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         */
         Route::prefix('assignments')->name('assignments.')->group(function () {
             Route::get('/current', [AssignmentsController::class, 'current'])->name('current');
+        });
+
+
+        /*
+        |------------------------------------------------------------------
+        | Readings Routes (CSA)
+        |------------------------------------------------------------------
+        | Currently saves one reading at a time. Can be expanded later for batch uploads or updates.
+        */
+        Route::prefix('readings')->name('readings.')->group(function () {
+            Route::post('/save', [ReadingsController::class, 'store'])->name('store');
+            Route::post('/batch', [ReadingsController::class, 'batchStore'])->name('batchStore');
         });
 
     });
