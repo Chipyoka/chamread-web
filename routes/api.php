@@ -2,6 +2,7 @@
 use App\Http\Controllers\Api\AssignmentsController;
 use App\Http\Controllers\Api\ReadingsController;
 use App\Http\Controllers\Api\AccountsController;
+use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\AuthController;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
@@ -24,6 +25,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::get('/me', [AuthController::class, 'me'])->name('me');
             Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
             Route::post('/logout-all', [AuthController::class, 'logoutAll'])->name('logoutAll');
+
+            Route::post('/password/update', [ProfileController::class, 'updatePassword'])->name('updatePassword');
         });
 
         /*
