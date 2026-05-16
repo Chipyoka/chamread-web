@@ -1,6 +1,7 @@
 <?php
 use App\Http\Controllers\Api\AssignmentsController;
 use App\Http\Controllers\Api\ReadingsController;
+use App\Http\Controllers\Api\AccountsController;
 use App\Http\Controllers\Api\AuthController;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
@@ -46,6 +47,18 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::prefix('readings')->name('readings.')->group(function () {
             Route::post('/save', [ReadingsController::class, 'store'])->name('store');
             Route::post('/batch', [ReadingsController::class, 'batchStore'])->name('batchStore');
+        });
+
+        /*
+        |------------------------------------------------------------------
+        | Customer accounts Routes (CSA)
+        |------------------------------------------------------------------
+        | Currently search an account, and update details. For now we only do phone number updates. Can be expanded later for more account details, updates, or actions.
+        */
+        Route::prefix('accounts')->name('accounts.')->group(function () {
+            Route::post('/search', [AccountsController::class, 'search'])->name('search');
+            Route::patch('/{account}/update', [AccountsController::class, 'updateAccount'])->name('update');
+            Route::get('/download', [AccountsController::class, 'downloadZoneAccounts'])->name('downloadZoneAccounts');
         });
 
     });
