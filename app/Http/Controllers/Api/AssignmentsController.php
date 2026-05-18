@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\CsaAssignment;
 use App\Models\BillingCycle;
 use App\Models\Reading;
+use App\Models\CustomerAccount;
 
 class AssignmentsController extends Controller
 {
