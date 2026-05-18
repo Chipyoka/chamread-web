@@ -15,6 +15,12 @@ class Reading extends Model
         'reading_time','synced_at',
         'edited_by_id','edit_reason'
     ];
+      protected $casts = [
+        'synced_at' => 'datetime',
+        'reading_time' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 
     public function csa()
     {
@@ -27,9 +33,25 @@ class Reading extends Model
     }
 
     public function account()
-{
-    return $this->belongsTo(CustomerAccount::class, 'account_number');
-}
+    {
+        return $this->belongsTo(CustomerAccount::class, 'account_number');
+    }
+
+    public function reason()
+    {
+        return $this->belongsTo(NonReadReason::class);
+    }
+
+    public function zone()
+    {
+        return $this->belongsTo(Zone::class);
+    }
+
+    public function dma()
+    {
+        return $this->belongsTo(DMA::class);
+    }
+
     public function alerts()
     {
         return $this->hasMany(Alert::class);

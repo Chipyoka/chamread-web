@@ -23,11 +23,11 @@ class AdminUserSeeder extends Seeder
         }
 
         DB::table('users')->insert([
-            'name' => 'Administrator',
+            'name' => 'Super Admin',
             'username' => 'admin',
             'email' => 'admin@example.com',
-            'photo_url' => '/images/default-avatar.png', // optional default photo
-            'role' => 'admin',
+            'photo_url' => 'https://res.cloudinary.com/dkn7ezavy/image/upload/v1739038408/profile-men_ma3tqb.jpg', // optional default photo
+            'role' => 'ADMIN',
             'email_verified_at' => Carbon::now(),
             'password' => Hash::make('Admin@123'), // choose a secure default
             'remember_token' => Str::random(10),

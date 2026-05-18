@@ -30,7 +30,12 @@ class ReadingsController extends Controller
     public function index()
     {
         $currentCycle = BillingCycle::where('status', 'active')->first();
-        $readings = Reading::where('billing_cycle_id', $currentCycle->id)->paginate(10);
+        $readings = [];
+
+        if($currentCycle) {
+            $readings = Reading::where('billing_cycle_id', $currentCycle->id)->paginate(10);
+        }
+
 
 
         return view('admin.reading.index', compact(

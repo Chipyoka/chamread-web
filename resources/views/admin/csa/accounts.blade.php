@@ -90,13 +90,13 @@
                                 <td class="px-6 py-4 text-sm text-gray-600">
                                     <span class="
                                         px-2 py-1 text-xs rounded uppercase
-                                        @if($account->read_status === 'READ')
+                                        @if($account->read_status === 'read')
                                             bg-green-100 text-green-700
                                         @else
                                             bg-red-100 text-red-700
                                         @endif
                                     ">
-                                        {{ $account->read_status === 'READ' ? 'Read' : 'Not read' }}
+                                        {{ $account->read_status === 'read' ? 'Read' : 'Not read' }}
                                     </span>
                                 </td>
 

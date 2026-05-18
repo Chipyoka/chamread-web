@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('readings', function (Blueprint $table) {
             $table->id();
 
-            $table->string('account_number');
+            $table->foreignId('account_number')->constrained('customer_accounts','account_number');
 
             $table->foreignId('csa_id')->constrained('users');
             $table->foreignId('billing_cycle_id')->constrained();
@@ -26,7 +26,12 @@ return new class extends Migration
             $table->decimal('current_reading',12,3)->nullable();
 
             $table->enum('status',['read','not_read']);
-            $table->string('reason_code')->nullable();
+            $table->foreignId('reason_code')
+            ->nullable()
+            ->constrained('non_read_reasons')
+            ->nullOnDelete();
+            
+            $table->string('comment')->nullable();
 
             $table->string('photo_path',500)->nullable();
             $table->decimal('latitude',10,8)->nullable();

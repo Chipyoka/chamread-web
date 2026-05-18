@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('alerts', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('reading_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('reading_id')->constrained('readings')->cascadeOnDelete();
             $table->string('account_number');
 
             $table->enum('type', [

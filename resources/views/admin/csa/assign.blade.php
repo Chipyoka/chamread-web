@@ -14,12 +14,6 @@
             </a>
         </div>
 
-        <!-- Flash Messages -->
-        @if(session('success'))
-            <div class="px-4 py-3 bg-green-50 text-green-700 text-sm rounded-md">
-                {{ session('success') }}
-            </div>
-        @endif
 
         <!-- Assignment Form -->
         <form action="{{ route('admin.csas.assign.store', $csa) }}" method="POST" class="space-y-6 bg-white p-6 rounded-lg shadow-sm">
@@ -47,9 +41,12 @@
 
             <!-- DMA -->
             <div>
-                <x-input-label for="dma_id" :value="__('DMA (optional)')" />
+                <x-input-label for="dma_id" :value="__('DMA')" />
                 <select id="dma_id" name="dma_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-primary focus:ring-opacity-50">
                     <option value="">-- Select DMA --</option>
+                    @foreach($dmas as $dma)
+                        <option value="{{ $dma->id }}">{{ $dma->name }}</option>
+                    @endforeach
                 </select>
                 <x-input-error :messages="$errors->get('dma_id')" class="mt-2" />
             </div>
@@ -130,30 +127,4 @@
         </div>
 
     </div>
-
-    <!-- Scripts -->
-    <script>
-        const zoneSelect = document.getElementById('zone_id');
-        const dmaSelect = document.getElementById('dma_id');
-
-        // Fetch DMAs dynamically when zone changes
-        zoneSelect.addEventListener('change', function() {
-            const zoneId = this.value;
-            dmaSelect.innerHTML = '<option value="">-- Select DMA --</option>'; // reset
-
-            if (!zoneId) return;
-
-            fetch(`/admin/zones/${zoneId}/dmas`)
-                .then(res => res.json())
-                .then(data => {
-                    data.forEach(dma => {
-                        const option = document.createElement('option');
-                        option.value = dma.id;
-                        option.textContent = dma.name;
-                        dmaSelect.appendChild(option);
-                    });
-                })
-                .catch(err => console.error('Failed to load DMAs:', err));
-        });
-    </script>
 </x-app-layout>

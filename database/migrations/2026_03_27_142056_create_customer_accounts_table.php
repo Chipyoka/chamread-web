@@ -24,6 +24,7 @@ return new class extends Migration
             $table->foreignId('zone_id')->constrained();
             $table->foreignId('dma_id')->constrained();
             $table->string('billing_area')->nullable();
+            $table->string('status')->default('active');
 
             $table->timestamps();
 

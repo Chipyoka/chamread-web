@@ -7,7 +7,7 @@
             <div class="min-h-60 bg-white border rounded-md border-gray-200  px-6 py-4 ">
                 <p class="text-gray-400 text-xs uppercase mt-2">Current billing cycle</p>
                 <div class="flex items-center justify-between my-4">
-                <h2 class="text-xl font-semibold">{{ $currentCycle->name }}</h2>
+                <h2 class="text-xl font-semibold">{{ $currentCycle->name ?? 'Not Set' }}</h2>
 
 
                 @if(Auth::user()->role === 'ADMIN' || Auth::user()->role === 'SUPERVISOR')
@@ -26,11 +26,11 @@
                 <!-- Date cards -->
                 <div class="cursor-default grid grid-cols-2 gap-x-4 gap-y-8 my-2">
                     <div class="bg-blue-50/70 p-4 rounded-sm border border-blue-100 hover:shadow-sm hover:border-blue-200 transition-all duration-300 ease-in-out">
-                        <p class="text-lg font-medium">{{ \Carbon\Carbon::parse($currentCycle->start_date)->format('d M, Y') }}</p>
+                        <p class="text-lg font-medium">{{ $currentCycle?->start_date ? \Carbon\Carbon::parse($currentCycle->start_date)->format('d M, Y') : '-' }}</p>
                         <p class="text-gray-500 text-xs uppercase">Start date</p>
                     </div>
                     <div class="bg-blue-50/70 p-4 rounded-sm border border-blue-100 hover:shadow-sm hover:border-blue-200 transition-all duration-300 ease-in-out">
-                        <p class="text-lg font-medium">{{ \Carbon\Carbon::parse($currentCycle->end_date)->format('d M, Y') }}</p>
+                        <p class="text-lg font-medium">{{ $currentCycle?->end_date ? \Carbon\Carbon::parse($currentCycle->end_date)->format('d M, Y') : '-' }}</p>
                         <p class="text-gray-500 text-xs uppercase">End date</p>
                     </div>
                 </div>
@@ -57,7 +57,7 @@
                         </div>
                     @else
                         @php
-                            $labels = $topCsas->map(fn($u) => $u->username)->values();
+                            $labels = $topCsas->map(fn($u) => $u->csa_name)->values();
                             $counts = $topCsas->map(fn($u) => $u->total_readings)->values();
                         @endphp
                        <x-charts.bar-chart

@@ -69,7 +69,7 @@
                 <select required name="zone_id" id="zone_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-primary focus:ring-opacity-50">
                     <option value="">-- Select Zone --</option>
                     @foreach($zones as $zone)
-                        <option value="{{ $zone->id }}" {{ old('zone_id', $csa->zone?->id) == $zone->id ? 'selected' : '' }}>
+                        <option value="{{ $zone->id }}" {{ old('zone_id', $csa->zone_id ?? '') == $zone->id ? 'selected' : '' }}>
                             {{ $zone->name }}
                         </option>
                     @endforeach

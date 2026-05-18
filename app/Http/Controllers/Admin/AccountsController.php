@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Zone;
 use App\Models\CustomerAccount;
 use App\Models\Dma;
+use App\Models\Reading;
 use App\Models\BillingCycle;
 use App\Models\CsaAssignment;
 use Illuminate\Http\Request;
@@ -79,7 +80,7 @@ class AccountsController extends Controller
      * - We show past 6 readings
      */
     public function show(CustomerAccount $account){
-        $readings = $account->readings()->latest()->take(6)->get();
+        $readings = Reading::where('account_number', $account->account_number)->latest()->take(6)->get();
 
         $assignedCsa = User::where('zone_id', $account->zone_id)
             ->where('role', 'CSA')
@@ -101,7 +102,7 @@ class AccountsController extends Controller
      */
      public function export(CustomerAccount $account)
     {
-        $readings = $account->readings()
+        $readings = Reading::where('account_number', $account->account_number)
             ->latest()
             ->take(6)
             ->get();

@@ -143,9 +143,6 @@
                     </tbody>
                 </table>
 
-                <div class="p-4">
-                    {{ $readings->links() }}
-                </div>
             @else
                 <p class="text-gray-500 text-sm">No readings found for this account.</p>
             @endif

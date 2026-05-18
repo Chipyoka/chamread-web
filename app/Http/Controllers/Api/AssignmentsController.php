@@ -49,6 +49,8 @@ class AssignmentsController extends Controller
         $readings = Reading::where('csa_id', $user->id)
             ->where('billing_cycle_id', $currentCycle->id)
             ->get();
+        
+
 
         //Get top 5 customer accounts withing the CSA's assigned zones/dmas for the current billing cycle
         //lets get the recent assignment's zone id.
@@ -91,13 +93,17 @@ class AssignmentsController extends Controller
                     return [
                         'id' => $r->id,
                         'account_number' => $r->account_number,
-                        'meter_number' => $r->meter_number,
                         'current_reading' => $r->current_reading,
-                        'billing_area' => $r->billing_area,
-                        'customer_name' => $r->account->name ?? null,
+                        'account' => $r->account ? [
+                            'name' => $r->account->name,
+                            'address' => $r->account->address,
+                            'billing_area' => $r->account->billing_area,
+                            'meter_number' => $r->account->meter_number,
+                        ] : null,
                         'photo_url' => $r->photo_path,
                         'reading_time' => $r->reading_time,
-                        'reason' => $r->reason_code,
+                        'reason' => $r->reason->name ?? null,
+                        'comment' => $r->comment,
                     ];
                 }),
                 'top_accounts' => $topAccounts->map(function ($a) {

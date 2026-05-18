@@ -21,6 +21,8 @@ return new class extends Migration
             $table->string('photo_url')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+
+            $table->foreignId('zone_id')->nullable()->constrained('zones')->nullOnDelete();
             
             $table->string('device_id')->nullable();
             

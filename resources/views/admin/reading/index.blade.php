@@ -12,17 +12,18 @@
         <!-- Table -->
         <div class="bg-white rounded-md p-4 space-y-4 border border-gray-200 overflow-hidden">
 
-            @if($readings->count() > 0)
+            @if(count($readings) > 0)
 
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                             <th class="px-6 py-3">Account #</th>
-                            <th class="px-6 py-3">Meter #</th>
-                            <th class="px-6 py-3">Name</th>
-                            <th class="px-6 py-3">Phone</th>
-                            <th class="px-6 py-3">Zone</th>
-                            <th class="px-6 py-3">Billing Area</th>
+                            <th class="px-6 py-3">Prev (m3)</th>
+                            <th class="px-6 py-3">Current (m3)</th>
+                            <th class="px-6 py-3">Consumption (m3)</th>
+                            <th class="px-6 py-3">Status</th>
+                            <th class="px-6 py-3">Reason</th>
+                            <th class="px-6 py-3">Reading Time</th>
                             <th class="px-6 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -39,43 +40,44 @@
 
                                 <!-- Meter Number -->
                                 <td class="px-6 py-4 text-sm text-gray-600">
-                                    {{ $reading->meter_number ?? '-' }}
+                                    {{ $reading->previous_reading ?? '0' }}
                                 </td>
 
                                 <!-- Name -->
                                 <td class="px-6 py-4 text-sm text-gray-600 font-medium">
-                                    {{ $reading->name }}
+                                    {{ $reading->current_reading ?? '0' }}
                                 </td>
 
                                 <!-- Phone -->
                                 <td class="px-6 py-4 text-sm text-gray-600">
-                                    {{ $reading->phone ?? '-' }}
+                                   @php
+                                        $consumption = (($reading->current_reading ?? 0) - ($reading->previous_reading ?? 0));
+                                    @endphp
+
+                                    {{ number_format($consumption, 3, '.', '') }}
                                 </td>
                                 
 
                                   <!-- Zone -->
-                                <td class="px-6 py-4 text-sm text-gray-600">
-                                    {{ $reading->zone->name ?? '-' }}
+                                <td class="px-6 py-4 text-sm text-gray-600 uppercase">
+                                    {{ $reading->status ?? '-' }}
+                                </td>
+
+                                <td class="px-6 py-4 text-sm text-gray-600 uppercase">
+                                    {{ $reading->reason->name ?? '-' }}
                                 </td>
 
 
                                     <!-- Billing Area -->
                                 <td class="px-6 py-4 text-sm text-gray-600">
-                                    {{ $reading->billing_area ?? '-' }}
+                                    {{ $reading->reading_time->format('Y-m-d H:i:s') ?? '-' }}
                                 </td>
 
                                 <!-- Actions -->
                                 <td class="px-6 py-4 text-right text-sm space-x-2">
 
                                     <!-- View -->
-                                    <x-micro-button
-                                        href="{{ route('admin.readings.show', $reading) }}"
-                                        color="blue"
-                                        icon="eye"
-                                        size="sm"
-                                    >
-                                        View Details
-                                    </x-micro-button>
+                               
 
                                 </td>
                             </tr>

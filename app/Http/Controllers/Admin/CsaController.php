@@ -57,6 +57,7 @@ class CsaController extends Controller
                 'username' => 'required|string|max:100|unique:users,username',
                 'email' => 'nullable|email|unique:users,email',
                 'password' => 'required|string|min:6',
+                'zone_id' => 'nullable|exists:zones,id',
             ]);
 
             $data['password'] = Hash::make($data['password']);
@@ -123,7 +124,8 @@ class CsaController extends Controller
             'username' => "required|string|max:100|unique:users,username,{$csa->id}",
             'email' => "nullable|email|unique:users,email,{$csa->id}",
             'status' => 'required|in:ACTIVE,SUSPENDED,INACTIVE',
-            'password' => 'nullable|min:6'
+            'password' => 'nullable|min:6',
+            'zone_id' => 'nullable|exists:zones,id',
         ]);
 
         // Capture original state (before update)
@@ -284,7 +286,7 @@ class CsaController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.csas.assign', $csa->id)
+            ->route('admin.csas.show', $csa->id)
             ->with('success', 'Assignment saved successfully.');
      }
 
@@ -400,14 +402,14 @@ class CsaController extends Controller
 
         // Step 2: Fetch all readings for these accounts in ONE query
         $readings = Reading::where('billing_cycle_id', $currentCycle->id)
-            ->whereIn('account_number', $accounts->pluck('id'))
+            ->whereIn('account_number', $accounts->pluck('account_number'))
             ->get()
             ->groupBy('account_number');
 
         // Step 3: Attach computed status to each account
         $accounts->getCollection()->transform(function ($account) use ($readings) {
 
-            $reading = $readings->get($account->id)?->first();
+            $reading = $readings->get($account->account_number)?->first();
 
             $account->read_status = $reading
                 ? $reading->status
