@@ -92,9 +92,10 @@ class AssignmentsController extends Controller
                 'readings' => $readings->map(function ($r) {
                     return [
                         'id' => $r->id,
-                        'account_number' => $r->account_number,
                         'current_reading' => $r->current_reading,
                         'account' => $r->account ? [
+                            'id' => $r->account->id,
+                            'account_number' => $r->account->account_number,
                             'name' => $r->account->name,
                             'address' => $r->account->address,
                             'billing_area' => $r->account->billing_area,

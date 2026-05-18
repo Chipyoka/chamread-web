@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('readings', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('account_number')->constrained('customer_accounts','account_number');
+            $table->foreignId('account_id')->constrained('customer_accounts');
 
             $table->foreignId('csa_id')->constrained('users');
             $table->foreignId('billing_cycle_id')->constrained();
@@ -42,10 +42,10 @@ return new class extends Migration
 
             $table->timestamps();
 
-            $table->unique(['account_number','billing_cycle_id']);
+            $table->unique(['account_id','billing_cycle_id']);
 
             $table->index(['csa_id','billing_cycle_id']);
-            $table->index(['account_number','billing_cycle_id']);
+            $table->index(['account_id','billing_cycle_id']);
             $table->index(['zone_id','dma_id']);
             $table->index('status');
             $table->index('reading_time');

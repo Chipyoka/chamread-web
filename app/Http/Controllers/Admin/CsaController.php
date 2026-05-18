@@ -322,7 +322,7 @@ class CsaController extends Controller
                 'latitude',
                 'longitude',
                 'created_at',
-                'account_number',
+                'account_id',
             ])
             ->map(function ($reading) {
 
@@ -335,7 +335,7 @@ class CsaController extends Controller
 
                     'time' => $reading->created_at?->format('Y-m-d H:i:s'),
 
-                    'account' => $reading->account_number,
+                    'account' => $reading->account?->account_number ?? 'N/A',
                 ];
             })
             ->unique(fn ($point) => $point['lat'] . ',' . $point['lng'])
@@ -402,14 +402,14 @@ class CsaController extends Controller
 
         // Step 2: Fetch all readings for these accounts in ONE query
         $readings = Reading::where('billing_cycle_id', $currentCycle->id)
-            ->whereIn('account_number', $accounts->pluck('account_number'))
+            ->whereIn('account_id', $accounts->pluck('id'))
             ->get()
-            ->groupBy('account_number');
+            ->groupBy('account_id');
 
         // Step 3: Attach computed status to each account
         $accounts->getCollection()->transform(function ($account) use ($readings) {
 
-            $reading = $readings->get($account->account_number)?->first();
+            $reading = $readings->get($account->id)?->first();
 
             $account->read_status = $reading
                 ? $reading->status

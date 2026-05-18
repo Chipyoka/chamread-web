@@ -34,7 +34,7 @@ class Reading extends Model
 
     public function account()
     {
-        return $this->belongsTo(CustomerAccount::class, 'account_number');
+        return $this->belongsTo(CustomerAccount::class);
     }
 
     public function reason()

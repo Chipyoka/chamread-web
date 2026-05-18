@@ -48,7 +48,7 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                            <th class="px-6 py-3">Account Number</th>
+                            <th class="px-6 py-3">Account</th>
                             <th class="px-6 py-3">Zone</th>
                             <th class="px-6 py-3">DMA</th>
                             <th class="px-6 py-3">Prev</th>
@@ -61,7 +61,7 @@
                     <tbody class="bg-white divide-y divide-gray-100">
                         @foreach($readings as $reading)
                             <tr class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->account_number ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->account?->account_number ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->zone->name ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->dma?->name ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->previous_reading ?? '-' }}</td>

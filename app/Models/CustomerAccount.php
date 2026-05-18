@@ -50,7 +50,7 @@ class CustomerAccount extends Model
      */
     public function readings()
     {
-        return $this->hasMany(Reading::class, 'account_number');
+        return $this->hasMany(Reading::class, 'account_id');
     }
 
     /**
