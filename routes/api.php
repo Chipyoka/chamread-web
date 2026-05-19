@@ -50,6 +50,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::prefix('readings')->name('readings.')->group(function () {
             Route::post('/save', [ReadingsController::class, 'store'])->name('store');
             Route::post('/batch', [ReadingsController::class, 'batchStore'])->name('batchStore');
+            Route::get('/reasons', [ReadingsController::class, 'reasons'])->name('reasons');
         });
 
         /*

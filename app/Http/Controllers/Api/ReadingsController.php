@@ -14,6 +14,24 @@ use Throwable;
 class ReadingsController extends Controller
 {
     /**
+     * Fetch all reasons for not reading a meter
+     */
+    public function reasons()
+    {
+        $reasons = DB::table('non_read_reasons')
+            ->select('id', 'code', 'name')
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $reasons,
+        ]);
+    }
+
+
+    /**
      * Store a new reading
      * This endpoint is for syncing a single reading from the mobile app
      */
@@ -37,7 +55,7 @@ class ReadingsController extends Controller
             'current_reading'   => 'nullable|numeric',
 
             'status'            => 'required|in:read,not_read',
-            'reason_code'       => 'nullable|string|max:255',
+            'reason_code' =>   'nullable|exists:non_read_reasons,id',
             'comment'       => 'nullable|string|max:255',
 
             'photo'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
