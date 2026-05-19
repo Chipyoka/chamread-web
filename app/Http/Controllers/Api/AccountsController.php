@@ -5,8 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\CsaAssignment;
 use App\Models\CustomerAccount;
+use App\Models\BillingCycle;
+use App\Models\Reading;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+
 
 class AccountsController extends Controller
 {
@@ -37,7 +42,7 @@ class AccountsController extends Controller
 
         $assignment = CsaAssignment::where('csa_id', $user->id)
             ->where('assignment_type', 'primary')
-            ->where('is_active', true)
+            ->where('status', 'active')
             ->first();
 
         if (!$assignment) {
@@ -129,7 +134,7 @@ class AccountsController extends Controller
 
         $assignment = CsaAssignment::where('csa_id', $user->id)
             ->where('assignment_type', 'primary')
-            ->where('is_active', true)
+            ->where('status', 'active')
             ->first();
 
         if (!$assignment) {
@@ -211,9 +216,9 @@ class AccountsController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $assignment =  CsaAssignment::where('csa_id', $user->id)
+        $assignment = CsaAssignment::where('csa_id', $user->id)
             ->where('assignment_type', 'primary')
-            ->where('is_active', true)
+            ->where('status', 'active')
             ->first();
 
         if (!$assignment) {
@@ -221,6 +226,21 @@ class AccountsController extends Controller
                 'success' => false,
                 'message' => 'No active CSA assignment found',
             ], 403);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Resolve Current Billing Cycle
+        |--------------------------------------------------------------------------
+        */
+
+        $currentCycle = BillingCycle::latest()->first();
+
+        if (!$currentCycle) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No billing cycle found',
+            ], 500);
         }
 
         /*
@@ -235,11 +255,12 @@ class AccountsController extends Controller
             'csa_id' => $user->id,
             'zone_id' => $assignment->zone_id,
             'target' => $targetLimit,
+            'billing_cycle_id' => $currentCycle->id,
         ]);
 
         /*
         |--------------------------------------------------------------------------
-        | Fetch Accounts in Zone (bounded by target)
+        | Fetch Accounts
         |--------------------------------------------------------------------------
         */
 
@@ -254,12 +275,52 @@ class AccountsController extends Controller
             ->get([
                 'id',
                 'account_number',
-                'customer_name',
-                'phone_number',
+                'name',
+                'phone',
                 'zone_id',
                 'dma_id',
-                'address'
+                'address',
+                'billing_area',
+                'meter_number'
             ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Resolve Previous Readings (optimized batch lookup)
+        |--------------------------------------------------------------------------
+        */
+
+        $accountIds = $accounts->pluck('id');
+
+        $previousReadings = Reading::query()
+            ->select(
+                'account_id',
+                'current_reading',
+                'billing_cycle_id'
+            )
+            ->whereIn('account_id', $accountIds)
+            ->where('billing_cycle_id', '<', $currentCycle->id)
+            ->whereNotNull('current_reading')
+            ->orderByDesc('billing_cycle_id')
+            ->get()
+            ->groupBy('account_id')
+            ->map(function ($group) {
+                return optional($group->first())->current_reading;
+            });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Attach Previous Readings
+        |--------------------------------------------------------------------------
+        */
+
+        $accounts = $accounts->map(function ($account) use ($previousReadings) {
+
+            $account->previous_reading =
+                $previousReadings[$account->id] ?? 0;
+
+            return $account;
+        });
 
         /*
         |--------------------------------------------------------------------------
@@ -268,9 +329,14 @@ class AccountsController extends Controller
         */
 
         $payload = [
+            'billing_cycle_id' => $currentCycle->id,
+
             'zone_id' => $assignment->zone_id,
+
             'target_limit' => $targetLimit,
+
             'total_available_in_zone' => $totalAvailable,
+
             'downloaded_count' => $accounts->count(),
 
             'accounts' => $accounts,

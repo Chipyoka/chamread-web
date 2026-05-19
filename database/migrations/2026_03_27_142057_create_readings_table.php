@@ -26,6 +26,7 @@ return new class extends Migration
             $table->decimal('current_reading',12,3)->nullable();
 
             $table->enum('status',['read','not_read']);
+            
             $table->foreignId('reason_code')
             ->nullable()
             ->constrained('non_read_reasons')

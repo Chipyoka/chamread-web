@@ -96,7 +96,7 @@ class AssignmentsController extends Controller
                         'account' => $r->account ? [
                             'id' => $r->account->id,
                             'account_number' => $r->account->account_number,
-                            'name' => $r->account->name,
+                            'customer_name' => $r->account->name,
                             'address' => $r->account->address,
                             'billing_area' => $r->account->billing_area,
                             'meter_number' => $r->account->meter_number,
@@ -111,9 +111,11 @@ class AssignmentsController extends Controller
                     return [
                         'id' => $a->id,
                         'account_number' => $a->account_number,
-                        'name' => $a->name,
+                        'customer_name' => $a->name,
                         'address' => $a->address,
                         'phone' => $a->phone,
+                        'billing_area' => $a->billing_area,
+                        'meter_number' => $a->meter_number,
                     ];
                 }),
                 'stats' => [

@@ -7,13 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class Reading extends Model
 {
     protected $fillable = [
-        'account_number','csa_id','billing_cycle_id',
+         'account_id','account_number','csa_id','billing_cycle_id',
         'zone_id','dma_id',
         'previous_reading','current_reading',
         'status','reason_code',
         'photo_path','latitude','longitude',
-        'reading_time','synced_at',
-        'edited_by_id','edit_reason'
+        'reading_time','synced_at','comment'
     ];
       protected $casts = [
         'synced_at' => 'datetime',

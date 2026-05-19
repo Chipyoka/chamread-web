@@ -26,7 +26,8 @@ class ReadingsController extends Controller
         ]);
 
         $validated = $request->validate([
-            'account_number'     => 'required|string|max:255',
+            'account_id'     => 'required|exists:customer_accounts,id',
+            'account_number' => 'required|string|max:255',
 
             'billing_cycle_id'  => 'required|exists:billing_cycles,id',
 
@@ -37,6 +38,7 @@ class ReadingsController extends Controller
 
             'status'            => 'required|in:read,not_read',
             'reason_code'       => 'nullable|string|max:255',
+            'comment'       => 'nullable|string|max:255',
 
             'photo'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
 
@@ -49,6 +51,36 @@ class ReadingsController extends Controller
         DB::beginTransaction();
 
         try {
+            /*
+            |--------------------------------------------------------------------------
+            | Prevent Duplicate Reading Per Billing Cycle
+            |--------------------------------------------------------------------------
+            */
+
+            $existingReading = Reading::where('account_id', $validated['account_id'])
+                ->where('billing_cycle_id', $validated['billing_cycle_id'])
+                ->first();
+
+            if ($existingReading) {
+
+                DB::rollBack();
+
+                Log::warning('Duplicate reading attempt blocked', [
+                    'account_id' => $validated['account_id'],
+                    'billing_cycle_id' => $validated['billing_cycle_id'],
+                    'existing_reading_id' => $existingReading->id,
+                    'csa_id' => auth()->id(),
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'A reading for this account already exists in the current cycle.',
+                    'error_code' => 'DUPLICATE_READING',
+                    'data' => [
+                        'reading_id' => $existingReading->id,
+                    ]
+                ], 409);
+            }
 
             $photoPath = null;
 
@@ -58,7 +90,7 @@ class ReadingsController extends Controller
             |--------------------------------------------------------------------------
             */
 
-            $lastReading = Reading::where('account_number', $validated['account_number'])
+            $lastReading = Reading::where('account_id', $validated['account_id'])
                 ->where('billing_cycle_id', '<', $validated['billing_cycle_id'])
                 ->whereNotNull('current_reading')
                 ->orderByDesc('billing_cycle_id')
@@ -69,7 +101,7 @@ class ReadingsController extends Controller
                 : $validated['current_reading'];
 
             Log::info('Previous reading resolved', [
-                'account_number' => $validated['account_number'],
+                'account_id' => $validated['account_id'],
                 'previous_reading' => $previousReading,
             ]);
 
@@ -86,8 +118,9 @@ class ReadingsController extends Controller
                 $hash = strtoupper(Str::random(6));
 
                 $filename = sprintf(
-                    '%s_%s.%s',
+                    '%s_%s_%s.%s',
                     $validated['account_number'],
+                    $validated['reading_time']->format('Ymd_His'),
                     $hash,
                     $photo->getClientOriginalExtension()
                 );
@@ -110,7 +143,7 @@ class ReadingsController extends Controller
             */
 
             $reading = Reading::create([
-                'account_number'    => $validated['account_number'],
+                'account_id'    => $validated['account_id'],
 
                 'csa_id'            => auth()->id(),
                 'billing_cycle_id' => $validated['billing_cycle_id'],
@@ -123,6 +156,7 @@ class ReadingsController extends Controller
 
                 'status'            => $validated['status'],
                 'reason_code'       => $validated['reason_code'] ?? null,
+                'comment'       => $validated['comment'] ?? null,
 
                 'photo_path'        => $photoPath,
 
@@ -138,7 +172,7 @@ class ReadingsController extends Controller
 
             Log::info('Reading saved successfully', [
                 'reading_id' => $reading->id,
-                'account_number' => $reading->account_number,
+                'account_id' => $reading->account_id,
             ]);
 
             return response()->json([
@@ -154,7 +188,7 @@ class ReadingsController extends Controller
             DB::rollBack();
 
             Log::error('Reading sync failed', [
-                'account_number' => $request->account_number,
+                'account_id' => $request->account_id,
                 'error' => $e->getMessage(),
                 'line' => $e->getLine(),
             ]);
