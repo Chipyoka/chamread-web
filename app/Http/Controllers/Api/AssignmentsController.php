@@ -105,6 +105,7 @@ class AssignmentsController extends Controller
                         'reading_time' => $r->reading_time,
                         'reason' => $r->reason->name ?? null,
                         'comment' => $r->comment,
+                        'status' => $r->status,
                     ];
                 }),
                 'top_accounts' => $topAccounts->map(function ($a) {
