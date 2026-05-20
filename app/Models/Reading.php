@@ -19,6 +19,9 @@ class Reading extends Model
         'reading_time' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        
+        'previous_reading' => 'float',
+        'current_reading' => 'float',
     ];
 
     public function csa()

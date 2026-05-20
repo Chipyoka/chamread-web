@@ -79,11 +79,11 @@
                 <!-- METRIC CARDS -->
                 <div class=" grid grid-cols-4 gap-x-4 gap-y-8">
     
-                    <!-- card total assigned-->
+                    <!-- card total assigned accounts within current cycle-->
                     <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-primary rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
                         <div class="">
-                            <h2 class="text-3xl font-bold text-primary">{{ $assignedCsas ?? 0}}</h2>
-                            <p class="text-gray-500 text-xs uppercase mt-2">Total Assigned</p>
+                            <h2 class="text-3xl font-bold text-primary">{{ $totalAssignedAccounts ?? 0}}</h2>
+                            <p class="text-gray-500 text-xs uppercase mt-2">Total Accounts Assigned</p>
                         </div>
                         <div class="flex items-center justify-center p-4 bg-blue-100/70 rounded-full">
                             <i data-lucide="list" class="w-7 h-7 text-primary"></i>
@@ -94,7 +94,7 @@
                     <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-green-500 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
                         <div class="">
                             <h2 class="text-3xl font-bold text-green-500">{{ $accountsRead ?? 0 }}</h2>
-                            <p class="text-gray-500 text-xs uppercase mt-2">Accounts Read</p>
+                            <p class="text-gray-500 text-xs uppercase mt-2">Marked Read</p>
                         </div>
                         <div class="flex items-center justify-center p-4 bg-green-100/70 rounded-full">
                             <i data-lucide="circle-check" class="w-7 h-7 text-green-500"></i>
@@ -105,7 +105,7 @@
                     <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-red-400 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
                         <div class="">
                             <h2 class="text-3xl font-bold text-red-400">{{$accountsNotRead ?? 0}}</h2>
-                            <p class="text-gray-500 text-xs uppercase mt-2">Accounts Not Read</p>
+                            <p class="text-gray-500 text-xs uppercase mt-2">Marked Not Read</p>
                         </div>
                         <div class="flex items-center justify-center p-4 bg-red-100/70 rounded-full">
                             <i data-lucide="circle-x" class="w-7 h-7 text-red-400"></i>
@@ -126,7 +126,7 @@
                     <!-- card zero consumption-->
                     <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-slate-400 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
                         <div class="">
-                            <h2 class="text-3xl font-bold text-slate-400">{{ $accountsZeroConsumption ?? 0 }}</h2>
+                            <h2 class="text-3xl font-bold text-slate-400">{{ $zeroConsumption ?? 0 }}</h2>
                             <p class="text-gray-500 text-xs uppercase mt-2">zero consumption Accounts</p>
                         </div>
                         <div class="flex items-center justify-center p-4 bg-slate-100/70 rounded-full">

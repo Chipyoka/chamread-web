@@ -76,8 +76,18 @@ public function index()
         )->count();
 
         // Completion rate
-        $completionRate = $totalReadings > 0
-            ? round(($assignedCsas / $totalReadings) * 100, 2)
+        $assignedZoneIds = CsaAssignment::where(
+            'billing_cycle_id',
+            $currentCycle->id
+        )->pluck('zone_id');
+
+        $totalAssignedAccounts = CustomerAccount::whereIn(
+            'zone_id',
+            $assignedZoneIds
+        )->count();
+
+        $completionRate = $totalAssignedAccounts > 0
+            ? round(($totalReadings / $totalAssignedAccounts) * 100, 2)
             : 0;
 
         /*
@@ -128,10 +138,9 @@ public function index()
         | Zero Consumption
         |--------------------------------------------------------------------------
         */
-        $zeroConsumption = Reading::whereColumn(
-                'previous_reading',
-                'current_reading'
-            )
+        $zeroConsumption = Reading::whereNotNull('previous_reading')
+            ->whereNotNull('current_reading')
+            ->whereRaw('ABS(current_reading - previous_reading) < 0.001')
             ->where('billing_cycle_id', $currentCycle->id)
             ->count();
     }
@@ -163,7 +172,8 @@ public function index()
         'accountsAbnormal',
         'zeroConsumption',
         'billingAreaEdits',
-        'gpsMismatch'
+        'gpsMismatch',
+        'totalAssignedAccounts',
     ))->with(
         'success',
         'Dashboard loaded successfully!'
