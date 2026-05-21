@@ -43,5 +43,12 @@ class ReadingsController extends Controller
         ));
     }
 
+    /**
+     * show reading with associated account
+     */
+    public function show(Reading $reading){
+    
+        return view('admin.reading.show', compact('reading',));
+    }
  
 }

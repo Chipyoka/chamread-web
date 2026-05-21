@@ -22,7 +22,6 @@
                             <th class="px-6 py-3">Current (m3)</th>
                             <th class="px-6 py-3">Consumption (m3)</th>
                             <th class="px-6 py-3">Status</th>
-                            <th class="px-6 py-3">Reason</th>
                             <th class="px-6 py-3">Reading Time</th>
                             <th class="px-6 py-3 text-right">Actions</th>
                         </tr>
@@ -33,22 +32,22 @@
                         @foreach($readings as $reading)
                             <tr class="hover:bg-gray-50 transition">
 
-                                <!-- reading Number -->
+                                <!-- Account Number -->
                                 <td class="px-6 py-4 text-sm text-gray-600 font-medium">
-                                    {{ $reading->account_number }}
+                                    {{ $reading->account->account_number }}
                                 </td>
 
-                                <!-- Meter Number -->
+                                <!-- Previous reading -->
                                 <td class="px-6 py-4 text-sm text-gray-600">
-                                    {{ $reading->previous_reading ?? '0' }}
+                                   {{ number_format((float) ($reading->previous_reading ?: 0), 3) }}
                                 </td>
 
-                                <!-- Name -->
+                                <!-- current reading -->
                                 <td class="px-6 py-4 text-sm text-gray-600 font-medium">
-                                    {{ $reading->current_reading ?? '0' }}
+                                    {{ number_format((float) ($reading->current_reading ?: 0), 3) }}
                                 </td>
 
-                                <!-- Phone -->
+                                <!-- Consumption (hot loading) -->
                                 <td class="px-6 py-4 text-sm text-gray-600">
                                    @php
                                         $consumption = (($reading->current_reading ?? 0) - ($reading->previous_reading ?? 0));
@@ -58,17 +57,22 @@
                                 </td>
                                 
 
-                                  <!-- Zone -->
-                                <td class="px-6 py-4 text-sm text-gray-600 uppercase">
-                                    {{ $reading->status ?? '-' }}
+                                  <!-- Reading status -->
+                                     <td class="px-6 py-4 text-sm text-gray-600">
+                                    <span class="
+                                        px-2 py-1 text-xs rounded uppercase
+                                        @if($reading->status === 'read')
+                                            bg-green-100 text-green-700
+                                        @else
+                                            bg-red-100 text-red-700
+                                        @endif
+                                    ">
+                                        {{ $reading->status === 'read' ? 'Read' : 'Not read' }}
+                                    </span>
                                 </td>
 
-                                <td class="px-6 py-4 text-sm text-gray-600 uppercase">
-                                    {{ $reading->reason->name ?? '-' }}
-                                </td>
 
-
-                                    <!-- Billing Area -->
+                                    <!-- Reading time -->
                                 <td class="px-6 py-4 text-sm text-gray-600">
                                     {{ $reading->reading_time->format('Y-m-d H:i:s') ?? '-' }}
                                 </td>
@@ -77,7 +81,14 @@
                                 <td class="px-6 py-4 text-right text-sm space-x-2">
 
                                     <!-- View -->
-                               
+                                    <x-micro-button
+                                        href="{{ route('admin.readings.show', $reading) }}"
+                                        color="blue"
+                                        icon="eye"
+                                        size="sm"
+                                    >
+                                        View
+                                    </x-micro-button>
 
                                 </td>
                             </tr>

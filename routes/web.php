@@ -97,6 +97,25 @@ Route::prefix('admin')
            
         });
 
+        /**
+         * =====================================================
+         * READINGS MANAGEMENT
+         * =====================================================
+         */
+        Route::prefix('readings')->name('readings.')->group(function () {
+
+            /**
+             * -------------------------------
+             * CORE CRUD
+             * -------------------------------
+             */
+            Route::get('/', [ReadingsController::class, 'index'])->name('index');
+            Route::get('/{reading}', [ReadingsController::class, 'show'])->name('show');
+            
+            Route::get('/{reading}/export', [ReadingsController::class, 'export'])->name('export');
+           
+        });
+
     });
 
 require __DIR__.'/auth.php';

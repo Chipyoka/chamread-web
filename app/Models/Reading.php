@@ -19,7 +19,7 @@ class Reading extends Model
         'reading_time' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
-        
+
         'previous_reading' => 'float',
         'current_reading' => 'float',
     ];
@@ -41,7 +41,7 @@ class Reading extends Model
 
     public function reason()
     {
-        return $this->belongsTo(NonReadReason::class);
+        return $this->belongsTo(NonReadReason::class, 'reason_code');
     }
 
     public function zone()
