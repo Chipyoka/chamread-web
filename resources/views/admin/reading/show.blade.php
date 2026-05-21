@@ -13,9 +13,15 @@
             <div class="flex items-center space-x-2">
            
             
-                 <!-- back to list -->
-           
-
+                 <!-- export reading-->
+                <x-micro-button
+                    color="purple"
+                    href="{{ route('admin.readings.export', $reading) }}"
+                    icon="upload"
+                    size="md"
+                >
+                    Export
+                </x-micro-button>
 
                  <!-- back to list -->
                 <x-micro-button

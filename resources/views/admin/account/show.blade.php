@@ -12,9 +12,9 @@
             <div class="flex items-center space-x-2">
            
             
-                 <!-- back to list -->
+                 <!-- export account -->
                 <x-micro-button
-                    color="slate"
+                    color="purple"
                     href="{{ route('admin.accounts.export', $account) }}"
                     icon="upload"
                     size="md"
@@ -119,9 +119,8 @@
                     <thead class="bg-gray-50">
                         <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                             <th class="px-6 py-3">Zone</th>
-                            <th class="px-6 py-3">DMA</th>
                             <th class="px-6 py-3">Billing Cycle</th>
-                            <th class="px-6 py-3">Previous Reading</th>
+                            <th class="px-6 py-3">Prev Reading</th>
                             <th class="px-6 py-3">Current Reading</th>
                             <th class="px-6 py-3">Status</th>
                             <th class="px-6 py-3">Reading Time</th>
@@ -132,12 +131,22 @@
                         @foreach($readings as $reading)
                             <tr class="hover:bg-gray-50 transition">
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->zone->name ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->dma?->name ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->billingCycle->name ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->previous_reading }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->current_reading ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600 capitalize">{{ $reading->status }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->reading_time?->format('Y-m-d') ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ number_format((float) ($reading->previous_reading ?: 0), 3) }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ number_format((float) ($reading->current_reading ?: 0), 3) }}</td>
+                                   <td class="px-6 py-4 text-sm text-gray-600">
+                                    <span class="
+                                        px-2 py-1 text-xs rounded uppercase
+                                        @if($reading->status === 'read')
+                                            bg-green-100 text-green-700
+                                        @else
+                                            bg-red-100 text-red-700
+                                        @endif
+                                    ">
+                                        {{ $reading->status === 'read' ? 'Read' : 'Not read' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->reading_time->format('Y-m-d H:i:s') ?? '-' }}</td>
                             </tr>
                         @endforeach
                     </tbody>
