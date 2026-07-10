@@ -66,8 +66,20 @@
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->dma?->name ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->previous_reading ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->current_reading ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600 capitalize">{{ $reading->status }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->reading_time?->format('Y-m-d') ?? '-' }}</td>
+                                          <!-- Reading status -->
+                                     <td class="px-6 py-4 text-sm text-gray-600">
+                                    <span class="
+                                        px-2 py-1 text-xs rounded uppercase
+                                        @if($reading->status === 'read')
+                                            bg-green-100 text-green-700
+                                        @else
+                                            bg-red-100 text-red-700
+                                        @endif
+                                    ">
+                                        {{ $reading->status === 'read' ? 'Read' : 'Not read' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->reading_time?->format('Y-m-d H:i:s') ?? '-' }}</td>
                             </tr>
                         @endforeach
                     </tbody>

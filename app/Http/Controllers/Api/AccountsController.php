@@ -260,12 +260,15 @@ class AccountsController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Fetch Accounts
+        | Fetch Accounts : Exclude those already read for the current billing cycle.
         |--------------------------------------------------------------------------
         */
 
         $accountsQuery = CustomerAccount::query()
             ->where('zone_id', $assignment->zone_id)
+            ->whereDoesntHave('readings', function ($query) use ($currentCycle) {
+                $query->where('billing_cycle_id', $currentCycle->id);
+            })
             ->orderBy('account_number', 'asc');
 
         $totalAvailable = (clone $accountsQuery)->count();

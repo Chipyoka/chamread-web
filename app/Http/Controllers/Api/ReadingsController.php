@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Reading;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -30,6 +31,17 @@ class ReadingsController extends Controller
         ]);
     }
 
+    /**
+     * Normalize a validated date value into a Carbon instance.
+     * Laravel's validate() does not cast 'date' rule fields, so this
+     * guards against getting a raw string vs a DateTimeInterface.
+     */
+    private function resolveReadingTime($value): Carbon
+    {
+        return $value instanceof \DateTimeInterface
+            ? Carbon::instance($value)
+            : Carbon::parse($value);
+    }
 
     /**
      * Store a new reading
@@ -55,8 +67,8 @@ class ReadingsController extends Controller
             'current_reading'   => 'nullable|numeric',
 
             'status'            => 'required|in:read,not_read',
-            'reason_code' =>   'nullable|exists:non_read_reasons,id',
-            'comment'       => 'nullable|string|max:255',
+            'reason_code'       => 'nullable|exists:non_read_reasons,id',
+            'comment'           => 'nullable|string|max:255',
 
             'photo'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
 
@@ -66,7 +78,11 @@ class ReadingsController extends Controller
             'reading_time'      => 'required|date',
         ]);
 
+        $readingTime = $this->resolveReadingTime($validated['reading_time']);
+
         DB::beginTransaction();
+
+        $photoPath = null;
 
         try {
             /*
@@ -99,8 +115,6 @@ class ReadingsController extends Controller
                     ]
                 ], 409);
             }
-
-            $photoPath = null;
 
             /*
             |--------------------------------------------------------------------------
@@ -138,7 +152,7 @@ class ReadingsController extends Controller
                 $filename = sprintf(
                     '%s_%s_%s.%s',
                     $validated['account_number'],
-                    $validated['reading_time']->format('Ymd_His'),
+                    $readingTime->format('Ymd_His'),
                     $hash,
                     $photo->getClientOriginalExtension()
                 );
@@ -174,14 +188,14 @@ class ReadingsController extends Controller
 
                 'status'            => $validated['status'],
                 'reason_code'       => $validated['reason_code'] ?? null,
-                'comment'       => $validated['comment'] ?? null,
+                'comment'           => $validated['comment'] ?? null,
 
                 'photo_path'        => $photoPath,
 
                 'latitude'          => $validated['latitude'] ?? null,
                 'longitude'         => $validated['longitude'] ?? null,
 
-                'reading_time'      => $validated['reading_time'],
+                'reading_time'      => $readingTime,
 
                 'synced_at'         => now(),
             ]);
@@ -240,6 +254,10 @@ class ReadingsController extends Controller
      * Batch reading processing
      * This endpoint is for storing multiple readings in one request
      * Mobile app can send an array of readings to this endpoint for bulk sync
+     *
+     * Mirrors store() for validation, duplicate protection, and persistence -
+     * the only differences are: it loops over many readings, and photos arrive
+     * as base64 strings (photo_base64) instead of multipart file uploads.
      */
     public function batchStore(Request $request)
     {
@@ -261,6 +279,8 @@ class ReadingsController extends Controller
 
             DB::beginTransaction();
 
+            $photoPath = null;
+
             try {
 
                 /*
@@ -270,8 +290,8 @@ class ReadingsController extends Controller
                 */
 
                 $validated = validator($readingData, [
-
-                    'account_number'     => 'required|string|max:255',
+                    'account_id'     => 'required|exists:customer_accounts,id',
+                    'account_number' => 'required|string|max:255',
 
                     'billing_cycle_id'  => 'required|exists:billing_cycles,id',
 
@@ -281,7 +301,8 @@ class ReadingsController extends Controller
                     'current_reading'   => 'nullable|numeric',
 
                     'status'            => 'required|in:read,not_read',
-                    'reason_code'       => 'nullable|string|max:255',
+                    'reason_code'       => 'nullable|exists:non_read_reasons,id',
+                    'comment'           => 'nullable|string|max:255',
 
                     'latitude'          => 'nullable|numeric',
                     'longitude'         => 'nullable|numeric',
@@ -290,9 +311,46 @@ class ReadingsController extends Controller
 
                 ])->validate();
 
+                $readingTime = $this->resolveReadingTime($validated['reading_time']);
+
                 Log::info('Processing batch reading', [
                     'account_number' => $validated['account_number'],
                 ]);
+
+                /*
+                |--------------------------------------------------------------------------
+                | Prevent Duplicate Reading Per Billing Cycle
+                |--------------------------------------------------------------------------
+                */
+
+                $existingReading = Reading::where('account_id', $validated['account_id'])
+                    ->where('billing_cycle_id', $validated['billing_cycle_id'])
+                    ->first();
+
+                if ($existingReading) {
+
+                    DB::rollBack();
+
+                    $failed++;
+
+                    Log::warning('Duplicate reading attempt blocked (batch)', [
+                        'index' => $index,
+                        'account_id' => $validated['account_id'],
+                        'billing_cycle_id' => $validated['billing_cycle_id'],
+                        'existing_reading_id' => $existingReading->id,
+                        'csa_id' => auth()->id(),
+                    ]);
+
+                    $results[] = [
+                        'account_number' => $validated['account_number'],
+                        'success' => false,
+                        'message' => 'A reading for this account already exists in the current cycle.',
+                        'error_code' => 'DUPLICATE_READING',
+                        'reading_id' => $existingReading->id,
+                    ];
+
+                    continue;
+                }
 
                 /*
                 |--------------------------------------------------------------------------
@@ -300,7 +358,7 @@ class ReadingsController extends Controller
                 |--------------------------------------------------------------------------
                 */
 
-                $lastReading = Reading::where('account_number', $validated['account_number'])
+                $lastReading = Reading::where('account_id', $validated['account_id'])
                     ->where('billing_cycle_id', '<', $validated['billing_cycle_id'])
                     ->whereNotNull('current_reading')
                     ->orderByDesc('billing_cycle_id')
@@ -319,8 +377,6 @@ class ReadingsController extends Controller
                 | photo_base64
                 |--------------------------------------------------------------------------
                 */
-
-                $photoPath = null;
 
                 if (!empty($readingData['photo_base64'])) {
 
@@ -353,11 +409,12 @@ class ReadingsController extends Controller
                         throw new \Exception('Invalid base64 image');
                     }
 
-                    $hash = strtoupper(\Str::random(6));
+                    $hash = strtoupper(Str::random(6));
 
                     $filename = sprintf(
-                        '%s_%s.%s',
+                        '%s_%s_%s.%s',
                         $validated['account_number'],
+                        $readingTime->format('Ymd_His'),
                         $hash,
                         $extension
                     );
@@ -378,7 +435,7 @@ class ReadingsController extends Controller
                 */
 
                 $reading = Reading::create([
-                    'account_number'    => $validated['account_number'],
+                    'account_id'    => $validated['account_id'],
 
                     'csa_id'            => auth()->id(),
                     'billing_cycle_id' => $validated['billing_cycle_id'],
@@ -391,13 +448,14 @@ class ReadingsController extends Controller
 
                     'status'            => $validated['status'],
                     'reason_code'       => $validated['reason_code'] ?? null,
+                    'comment'           => $validated['comment'] ?? null,
 
                     'photo_path'        => $photoPath,
 
                     'latitude'          => $validated['latitude'] ?? null,
                     'longitude'         => $validated['longitude'] ?? null,
 
-                    'reading_time'      => $validated['reading_time'],
+                    'reading_time'      => $readingTime,
 
                     'synced_at'         => now(),
                 ]);
@@ -418,22 +476,40 @@ class ReadingsController extends Controller
                     'account_number' => $validated['account_number'],
                 ]);
 
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
 
                 DB::rollBack();
 
                 $failed++;
 
+                /*
+                |--------------------------------------------------------------------------
+                | Cleanup orphaned photo
+                |--------------------------------------------------------------------------
+                */
+
+                if ($photoPath && Storage::disk('public')->exists($photoPath)) {
+
+                    Storage::disk('public')->delete($photoPath);
+
+                    Log::warning('Orphaned batch photo deleted', [
+                        'photo_path' => $photoPath,
+                    ]);
+                }
+
                 Log::error('Batch reading failed', [
                     'index' => $index,
                     'account_number' => $readingData['account_number'] ?? null,
                     'error' => $e->getMessage(),
+                    'line' => $e->getLine(),
                 ]);
 
                 $results[] = [
                     'account_number' => $readingData['account_number'] ?? null,
                     'success' => false,
-                    'message' => $e->getMessage(),
+                    'message' => app()->environment('production')
+                        ? 'Failed to sync reading'
+                        : $e->getMessage(),
                 ];
             }
         }
