@@ -1,35 +1,57 @@
 <div class="min-h-[85dvh] max-h-dvh w-60 bg-white flex flex-col px-6 py-3 border-r border-gray-200">
-    <nav class="flex-1 mt-4">
-        @php
-            $userRole = auth()->user()->role ?? 'CSA';
-            $tabs = [
-                ['name' => 'Dashboard', 'route' => 'dashboard.index', 'icon' => 'home', 'roles' => ['CSA','SUPERVISOR','ADMIN'], 'pattern' => 'dashboard.*'],
-                ['name' => 'CSAs', 'route' => 'admin.csas.index', 'icon' => 'users', 'roles' => ['SUPERVISOR','ADMIN'], 'pattern' => 'admin.csas.*'],
-                ['name' => 'Accounts', 'route' => 'admin.accounts.index', 'icon' => 'file-text', 'roles' => ['SUPERVISOR','ADMIN'], 'pattern' => 'admin.accounts.*'],
-                ['name' => 'Readings', 'route' => 'readings.index', 'icon' => 'list-todo', 'roles' => ['SUPERVISOR','ADMIN'], 'pattern' => 'readings.*'],
-                ['name' => 'Analytics', 'route' => 'analytics.index', 'icon' => 'bar-chart-2', 'roles' => ['ADMIN'], 'pattern' => 'analytics.*'],
-                ['name' => 'Admin', 'route' => 'admin.settings', 'icon' => 'settings', 'roles' => ['ADMIN'], 'pattern' => 'ADMIN.*'],
-                ['name' => 'Audit', 'route' => 'audit.index', 'icon' => 'clipboard', 'roles' => ['ADMIN'], 'pattern' => 'audit.*'],
-            ];
-        @endphp
+    <nav class="flex-1 mt-4 space-y-1">
+        @foreach ($groups as $group)
 
-        <ul class="space-y-2 text-gray-600">
-            @foreach ($tabs as $tab)
-                @if (in_array($userRole, $tab['roles']))
-                    @php
-                        $isActive = request()->routeIs($tab['pattern']);
-                    @endphp
-                    <li>
-                        <a href="{{ route($tab['route']) }}"
-                           class="flex items-center px-3 py-2 text-sm rounded-sm transition-all duration-200 ease-in {{ $isActive ? 'bg-primary text-white font-semibold' : 'text-gray-400 hover:bg-gray-100/80 hover:text-gray-500' }}">
-                            <i data-lucide="{{ $tab['icon'] }}" class="w-4 h-4 mr-2"></i>
-                            <span>{{ $tab['name'] }}</span>
-                        </a>
-                    </li>
-                @endif
-            @endforeach
-        </ul>
+            @if ($group['type'] === 'link')
+                {{-- Standalone link (no children) --}}
+                <a href="{{ $group['href'] }}"
+                   class="flex items-center px-3 py-2 text-sm rounded-md transition-colors duration-150
+                          {{ $group['active']
+                              ? 'bg-gray-100 text-gray-600 font-semibold'
+                              : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700' }}">
+                    <i data-lucide="{{ $group['icon'] }}" class="w-4 h-4 mr-2 shrink-0"></i>
+                    <span>{{ $group['name'] }}</span>
+                </a>
 
+            @else
+                {{-- Group: parent expands only, never navigates, no icon --}}
+                <div x-data="{ open: @js($group['hasActiveChild']) }">
+                    <button type="button"
+                            @click="open = !open"
+                            class="w-full flex items-center justify-between px-3 py-2 text-sm  tracking-wide rounded-md transition-colors duration-150
+                                   {{ $group['hasActiveChild']
+                                       ? 'text-gray-700'
+                                       : 'text-gray-500  hover:text-gray-600' }}">
+                        <span>{{ $group['name'] }}</span>
+                        <i data-lucide="chevron-right"
+                           class="w-3.5 h-3.5 transition-transform duration-150"
+                           :class="open ? 'rotate-90' : ''"></i>
+                    </button>
+
+                    <ul x-show="open"
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0 -translate-y-1"
+                        x-transition:enter-end="opacity-100 translate-y-0"
+                        class="mt-1 space-y-1 ml-4"
+                        @if(! $group['hasActiveChild']) style="display:none" @endif>
+                        @foreach ($group['children'] as $child)
+                            <li>
+                                <a href="{{ $child['href'] }}"
+                                   class="flex items-center px-3 py-2 rounded-md transition-colors duration-150 text-sm
+                                          {{ $child['active']
+                                              ? 'bg-gray-100 text-gray-600 font-semibold'
+                                              : 'text-gray-500 hover:bg-gray-100/60 hover:text-gray-700' }}">
+                                    <i data-lucide="{{ $child['icon'] }}" class="w-4 h-4 mr-2 shrink-0"></i>
+                                    <span>{{ $child['name'] }}</span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+        @endforeach
     </nav>
-    <p class="text-center text-xs text-gray-400">Version: 2.0.0 | ChWSSCL</p>
+
+    <p class="text-center text-sm text-gray-400">Version: 2.0.0 | ChWSSCL</p>
 </div>
