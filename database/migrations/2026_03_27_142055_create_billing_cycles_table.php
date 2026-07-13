@@ -18,6 +18,8 @@ return new class extends Migration
             $table->date('start_date');
             $table->date('end_date');
             $table->date('deadline')->nullable();
+            $table->boolean('can_download')->default(false);
+            $table->boolean('can_upload')->default(false);
 
             $table->enum('status', ['pending','active','locked','closed'])->default('pending');
             $table->timestamps();

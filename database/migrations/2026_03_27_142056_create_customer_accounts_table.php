@@ -14,23 +14,28 @@ return new class extends Migration
         Schema::create('customer_accounts', function (Blueprint $table) {
             $table->id();
 
-            $table->string('account_number');
-            $table->string('meter_number')->nullable();
-
-            $table->string('name')->nullable();
-            $table->string('address')->nullable();
+            // Customer Details
+            $table->string('account_number')->unique();
+            $table->string('customer_name');
+            $table->text('address')->nullable();
             $table->string('phone')->nullable();
 
-            $table->foreignId('zone_id')->constrained();
-            $table->foreignId('dma_id')->constrained();
-            $table->string('billing_area')->nullable();
+            // Meter Information
+            $table->string('meter_number')->nullable()->index();
+            $table->string('customer_category')->nullable();
+
+            // Location
+            $table->foreignId('zone_id')->constrained()->cascadeOnDelete();
+
+            // Account Status
             $table->string('status')->default('active');
 
             $table->timestamps();
 
-            $table->unique(['account_number']);
-            $table->index(['zone_id','dma_id']);
+            // Indexes
             $table->index('account_number');
+            $table->index('phone');
+            $table->index(['zone_id']);
         });
     }
 

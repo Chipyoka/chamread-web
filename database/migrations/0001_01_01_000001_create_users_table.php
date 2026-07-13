@@ -16,16 +16,14 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('username')->unique();
-            $table->enum('role', ['CSA','SUPERVISOR','ADMIN', 'COM', 'MD', 'FINANCE', 'HR', 'TS', 'OTHER'])->default('CSA');
+            $table->enum('role', ['CSA','SUPERVISOR','ADMIN', 'COMMERCIAL', 'MD', 'FINANCE', 'HR', 'TECHNICAL','IT', 'OTHER'])->default('CSA');
             $table->enum('status', ['ACTIVE','SUSPENDED','INACTIVE'])->default('ACTIVE');
             $table->string('photo_url')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
 
             $table->foreignId('zone_id')->nullable()->constrained('zones')->nullOnDelete();
-            
-            $table->string('device_id')->nullable();
-            
+            $table->foreignId('device_id')->nullable()->constrained('devices')->nullOnDelete();
             $table->timestamp('last_login_at')->nullable();
 
             $table->rememberToken();

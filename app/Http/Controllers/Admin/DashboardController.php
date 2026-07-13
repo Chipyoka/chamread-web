@@ -55,6 +55,7 @@ public function index()
     $accountsNotRead = 0;
     $accountsAbnormal = 0;
     $zeroConsumption = 0;
+    $totalAssignedAccounts = 0;
 
     /*
     |--------------------------------------------------------------------------

@@ -13,11 +13,23 @@ return new class extends Migration
     {
         Schema::create('zones', function (Blueprint $table) {
             $table->id();
+
             $table->string('code')->unique();
             $table->string('name');
-            $table->enum('status', ['active','inactive'])->default('active');
+
+            // Administrative hierarchy
+            $table->string('district');
+            $table->string('province');
+
+            $table->enum('status', ['active', 'inactive'])
+                ->default('active');
+
             $table->timestamps();
 
+            $table->index('code');
+            $table->index('name');
+            $table->index('district');
+            $table->index('province');
             $table->index('status');
         });
     }

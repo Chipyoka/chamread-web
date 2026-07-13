@@ -21,7 +21,8 @@ return new class extends Migration
                 'gps_mismatch',
                 'abnormal_reading',
                 'zero_consumption',
-                'repeated_non_read'
+                'repeated_non_read',
+                'other'
             ]);
 
             $table->enum('severity',['low','medium','high'])->default('medium');
