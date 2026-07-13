@@ -23,12 +23,160 @@ class CyclesController extends Controller
     }
 
 
-    /**
-     * Load initial page
+     /**
+     * Display a listing of the resource.
      */
     public function index()
     {
-        return view('default');
+        $billingCycles = BillingCycle::latest()->paginate(10);
+        return view('management.cycles.index', compact('billingCycles'));
+    }
+
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'deadline' => 'nullable|date|after_or_equal:start_date',
+            'can_download' => 'boolean',
+            'can_upload' => 'boolean',
+        ]);
+
+        $billingCycle = BillingCycle::create($validated);
+
+        return redirect()->back()
+            ->with('success', 'Billing cycle created successfully.');
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(BillingCycle $billingCycle)
+    {
+        return view('management.cycles.index', compact('billingCycle'));
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(BillingCycle $billingCycle)
+    {
+        return view('management.cycles.index', compact('billingCycle'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, BillingCycle $billingCycle)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'deadline' => 'nullable|date|after_or_equal:start_date',
+            'can_download' => 'boolean',
+            'can_upload' => 'boolean',
+            'status' => ['required', Rule::in(['pending', 'active', 'locked', 'closed'])],
+        ]);
+
+        $billingCycle->update($validated);
+
+        return redirect()
+            ->route('management.cycles.index')
+            ->with('success', 'Billing cycle updated successfully.');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(BillingCycle $billingCycle)
+    {
+        $billingCycle->delete();
+
+        return redirect()
+            ->route('management.cycles.index')
+            ->with('success', 'Billing cycle deleted successfully.');
+    }
+
+    /**
+     * Toggle download permission.
+     */
+    public function toggleDownload(BillingCycle $billingCycle)
+    {
+        $billingCycle->update([
+            'can_download' => !$billingCycle->can_download
+        ]);
+
+        return back()->with('success', 'Download permission toggled successfully.');
+    }
+
+    /**
+     * Toggle upload permission.
+     */
+    public function toggleUpload(BillingCycle $billingCycle)
+    {
+        $billingCycle->update([
+            'can_upload' => !$billingCycle->can_upload
+        ]);
+
+        return back()->with('success', 'Upload permission toggled successfully.');
+    }
+
+    /**
+     * Extend the deadline.
+     */
+    public function extendDeadline(Request $request, BillingCycle $billingCycle)
+    {
+        $request->validate([
+            'new_deadline' => 'required|date|after:start_date'
+        ]);
+
+        $billingCycle->update([
+            'deadline' => $request->new_deadline
+        ]);
+
+        return back()->with('success', 'Deadline extended successfully.');
+    }
+
+    /**
+     * Update the status.
+     */
+    public function updateStatus(Request $request, BillingCycle $billingCycle)
+    {
+        $request->validate([
+            'status' => ['required', Rule::in(['pending', 'active', 'locked', 'closed'])]
+        ]);
+
+        $billingCycle->update([
+            'status' => $request->status
+        ]);
+
+        return back()->with('success', 'Status updated successfully.');
+    }
+
+    /**
+     * Quick toggle actions from index.
+     */
+    public function quickToggle(Request $request, BillingCycle $billingCycle)
+    {
+        $request->validate([
+            'field' => ['required', Rule::in(['can_download', 'can_upload'])],
+            'value' => 'required|boolean'
+        ]);
+
+        $billingCycle->update([
+            $request->field => $request->value
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Updated successfully.'
+        ]);
     }
 
  

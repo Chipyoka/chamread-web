@@ -26,43 +26,7 @@
         Happy
     </button>
     
-        <x-modal name="confirm-delete" max-width="md">
-            <div class="p-6">
-                <h2 class="text-lg font-semibold text-gray-900">Delete this item?</h2>
-                <p class="mt-2 text-sm text-gray-500">
-                    This action cannot be undone.
-                </p>
-        
-                <div class="mt-6 flex justify-end gap-3">
-                    <button
-                        x-on:click="$dispatch('close-modal', 'confirm-delete')"
-                        class="px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                        Cancel
-                    </button>
-        
-                
-                </div>
-            </div>
-         </x-modal>
-        <x-modal name="confirm-happy" max-width="md">
-            <div class="p-6">
-                <h2 class="text-lg font-semibold text-gray-900">Happy</h2>
-                <p class="mt-2 text-sm text-gray-500">
-                    This action cannot be undone.
-                </p>
-        
-                <div class="mt-6 flex justify-end gap-3">
-                    <button
-                        x-on:click="$dispatch('close-modal', 'confirm-delete')"
-                        class="px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 hover:bg-gray-50"
-                    >
-                        Cancel
-                    </button>
-        
-                
-                </div>
-            </div>
-         </x-modal>
+    
+ 
     </div>
 </x-app-layout>

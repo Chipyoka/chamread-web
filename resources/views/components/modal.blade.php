@@ -54,7 +54,6 @@ $maxWidthClass = [
         x-transition:leave="transition-opacity duration-200 ease-in"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
-        x-on:click="close()"
         class="fixed inset-0 bg-black/60 backdrop-blur-sm"
     ></div>
 

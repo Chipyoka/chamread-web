@@ -151,6 +151,19 @@ Route::middleware(['auth','role:ADMIN,SUPERVISOR'])->group(function () {
          */
         Route::prefix('cycles')->name('cycles.')->group(function () {
             Route::get('/', [CyclesController::class, 'index'])->name('index');
+            Route::get('/create', [CyclesController::class, 'create'])->name('create');
+            Route::post('/', [CyclesController::class, 'store'])->name('store');
+            Route::get('/{billingCycle}', [CyclesController::class, 'show'])->name('show');
+            Route::get('/{billingCycle}/edit', [CyclesController::class, 'edit'])->name('edit');
+            Route::put('/{billingCycle}', [CyclesController::class, 'update'])->name('update');
+            Route::delete('/{billingCycle}', [CyclesController::class, 'destroy'])->name('destroy');
+            
+            // Additional actions
+            Route::patch('/{billingCycle}/toggle-download', [CyclesController::class, 'toggleDownload'])->name('toggle-download');
+            Route::patch('/{billingCycle}/toggle-upload', [CyclesController::class, 'toggleUpload'])->name('toggle-upload');
+            Route::patch('/{billingCycle}/extend-deadline', [CyclesController::class, 'extendDeadline'])->name('extend-deadline');
+            Route::patch('/{billingCycle}/update-status', [CyclesController::class, 'updateStatus'])->name('update-status');
+            Route::patch('/{billingCycle}/quick-toggle', [CyclesController::class, 'quickToggle'])->name('quick-toggle');
         });
 
         /**
