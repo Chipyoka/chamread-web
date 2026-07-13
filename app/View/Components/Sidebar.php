@@ -31,6 +31,7 @@ class Sidebar extends Component
             [
                 'type'  => 'group',
                 'name'  => 'Readings',
+                'icon'  => 'layout-dashboard',
                 'roles' => ['SUPERVISOR', 'ADMIN'],
                 'children' => [
                     ['name' => 'CSAs',     'route' => 'readings.csas.index',    'pattern' => 'readings.csas.*',    'icon' => 'users',     'roles' => ['SUPERVISOR', 'ADMIN']],
@@ -41,6 +42,7 @@ class Sidebar extends Component
             [
                 'type'  => 'group',
                 'name'  => 'Management',
+                'icon'  => 'layout-dashboard',
                 'roles' => ['ADMIN'],
                 'children' => [
                     ['name' => 'Billing Cycles',                 'route' => 'management.cycles.index',                'pattern' => 'management.cycles.*',                'icon' => 'calendar',       'roles' => ['ADMIN']],
@@ -52,6 +54,7 @@ class Sidebar extends Component
             [
                 'type'  => 'group',
                 'name'  => 'System Admin',
+                'icon'  => 'layout-dashboard',
                 'roles' => ['ADMIN'],
                 'children' => [
                     ['name' => 'Users',   'route' => 'systems.users.index',   'pattern' => 'systems.users.*',   'icon' => 'users', 'roles' => ['ADMIN']],

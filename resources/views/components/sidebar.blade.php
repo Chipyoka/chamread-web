@@ -3,7 +3,7 @@
         @foreach ($groups as $group)
 
             @if ($group['type'] === 'link')
-                {{-- Standalone link (no children) --}}
+                <!-- {{-- Standalone link (no children) --}} -->
                 <a href="{{ $group['href'] }}"
                    class="flex items-center px-3 py-2 rounded-md transition-colors duration-150 uppercase text-xs  tracking-wide
                           {{ $group['active']
@@ -14,7 +14,7 @@
                 </a>
 
             @else
-                {{-- Group: parent expands only, never navigates, no icon --}}
+                <!-- {{-- Group: parent expands only, never navigates, no icon --}} -->
                 <div x-data="{ open: @js($group['hasActiveChild']) }">
                     <button type="button"
                             @click="open = !open"
