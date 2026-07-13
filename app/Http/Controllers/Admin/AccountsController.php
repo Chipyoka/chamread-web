@@ -32,7 +32,7 @@ class AccountsController extends Controller
     public function index()
     {
         $accounts = CustomerAccount::paginate(10);
-        return view('admin.account.index', compact('accounts'));
+        return view('readings.account.index', compact('accounts'));
     }
 
 
@@ -43,7 +43,7 @@ class AccountsController extends Controller
         $zones = Zone::all();
         $dmas = Dma::all();
 
-        return view('admin.account.create', compact('zones','dmas'));
+        return view('readings.account.create', compact('zones','dmas'));
     }
 
     /**
@@ -70,7 +70,7 @@ class AccountsController extends Controller
             'performed_by' => auth()->user()->id
         ]);
 
-        return redirect()->route('admin.accounts.index')->with('success', 'Customer account created successfully.');
+        return redirect()->route('readings.accounts.index')->with('success', 'Customer account created successfully.');
     }
 
     /**
@@ -94,7 +94,7 @@ class AccountsController extends Controller
             ];
         });
 
-        return view('admin.account.show', compact('account', 'readings', 'chartData', 'assignedCsa'));
+        return view('readings.account.show', compact('account', 'readings', 'chartData', 'assignedCsa'));
     }
 
     /**
@@ -116,7 +116,7 @@ class AccountsController extends Controller
             ];
         });
 
-        $pdf = Pdf::loadView('admin.account.pdf', [
+        $pdf = Pdf::loadView('readings.account.pdf', [
             'account' => $account,
             'readings' => $readings,
             'chartData' => $chartData,

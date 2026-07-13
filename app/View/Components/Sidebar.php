@@ -33,9 +33,9 @@ class Sidebar extends Component
                 'name'  => 'Readings',
                 'roles' => ['SUPERVISOR', 'ADMIN'],
                 'children' => [
-                    ['name' => 'CSAs',     'route' => 'admin.csas.index',    'pattern' => 'admin.csas.*',    'icon' => 'users',     'roles' => ['SUPERVISOR', 'ADMIN']],
-                    ['name' => 'Accounts', 'route' => 'admin.accounts.index','pattern' => 'admin.accounts.*','icon' => 'file-text', 'roles' => ['SUPERVISOR', 'ADMIN']],
-                    ['name' => 'Readings', 'route' => 'readings.index',      'pattern' => 'readings.*',      'icon' => 'list-todo', 'roles' => ['SUPERVISOR', 'ADMIN']],
+                    ['name' => 'CSAs',     'route' => 'readings.csas.index',    'pattern' => 'readings.csas.*',    'icon' => 'users',     'roles' => ['SUPERVISOR', 'ADMIN']],
+                    ['name' => 'Accounts', 'route' => 'readings.accounts.index','pattern' => 'readings.accounts.*','icon' => 'file-text', 'roles' => ['SUPERVISOR', 'ADMIN']],
+                    ['name' => 'Meter Readings', 'route' => 'readings.meter-readings.index',      'pattern' => 'readings.meter-readings.*',      'icon' => 'list-todo', 'roles' => ['SUPERVISOR', 'ADMIN']],
                 ],
             ],
             [
@@ -43,20 +43,21 @@ class Sidebar extends Component
                 'name'  => 'Management',
                 'roles' => ['ADMIN'],
                 'children' => [
-                    ['name' => 'Cycles',                 'route' => 'admin.cycles.index',                'pattern' => 'admin.cycles.*',                'icon' => 'repeat',       'roles' => ['ADMIN']],
-                    ['name' => 'ERP',                    'route' => 'admin.erp.index',                   'pattern' => 'admin.erp.*',                   'icon' => 'layers',       'roles' => ['ADMIN']],
-                    ['name' => 'Functional Definition',  'route' => 'admin.functional-definitions.index','pattern' => 'admin.functional-definitions.*','icon' => 'shapes',       'roles' => ['ADMIN']],
-                    ['name' => 'Analytics',              'route' => 'analytics.index',                   'pattern' => 'analytics.*',                   'icon' => 'bar-chart-2',  'roles' => ['ADMIN']],
+                    ['name' => 'Billing Cycles',                 'route' => 'management.cycles.index',                'pattern' => 'management.cycles.*',                'icon' => 'calendar',       'roles' => ['ADMIN']],
+                    ['name' => 'ERP',                    'route' => 'management.erp.index',                   'pattern' => 'management.erp.*',                   'icon' => 'layers',       'roles' => ['ADMIN']],
+                    ['name' => 'MRC Definition',  'route' => 'management.mrc-definition.index','pattern' => 'management.mrc-definition.*','icon' => 'shapes',       'roles' => ['ADMIN']],
+                    ['name' => 'Analytics',              'route' => 'management.analytics.index',                   'pattern' => '.management.analytics.*',       'icon' => 'bar-chart-2',  'roles' => ['ADMIN']],
                 ],
             ],
             [
                 'type'  => 'group',
-                'name'  => 'Systems',
+                'name'  => 'System Admin',
                 'roles' => ['ADMIN'],
                 'children' => [
-                    ['name' => 'Users',   'route' => 'admin.users.index',   'pattern' => 'admin.users.*',   'icon' => 'user-cog', 'roles' => ['ADMIN']],
-                    ['name' => 'MRC',     'route' => 'admin.mrc.index',     'pattern' => 'admin.mrc.*',     'icon' => 'server',    'roles' => ['ADMIN']],
-                    ['name' => 'Utility', 'route' => 'admin.utility.index', 'pattern' => 'admin.utility.*', 'icon' => 'wrench',    'roles' => ['ADMIN']],
+                    ['name' => 'Users',   'route' => 'systems.users.index',   'pattern' => 'systems.users.*',   'icon' => 'users', 'roles' => ['ADMIN']],
+                    ['name' => 'MRC',     'route' => 'systems.mrc.index',     'pattern' => 'systems.mrc.*',     'icon' => 'sliders-horizontal',    'roles' => ['ADMIN']],
+                    ['name' => 'Utility', 'route' => 'systems.utility.index', 'pattern' => 'systems.utility.*', 'icon' => 'settings',    'roles' => ['ADMIN']],
+                    ['name' => 'Support', 'route' => 'systems.support.index', 'pattern' => 'systems.support.*', 'icon' => 'headset',    'roles' => ['ADMIN']],
                 ],
             ],
         ];

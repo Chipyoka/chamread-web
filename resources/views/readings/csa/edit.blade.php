@@ -8,7 +8,7 @@
                 <p class="text-sm text-gray-500">Update Customer Service Agent details</p>
             </div>
 
-            <a href="{{ route('admin.csas.index') }}"
+            <a href="{{ route('readings.csas.index') }}"
                class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 transition">
                 <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
                 Back to List
@@ -16,7 +16,7 @@
         </div>
 
         <!-- Form -->
-        <form action="{{ route('admin.csas.update', $csa) }}" method="POST" class="space-y-6 bg-white p-6 rounded-lg shadow-sm">
+        <form action="{{ route('readings.csas.update', $csa) }}" method="POST" class="space-y-6 bg-white p-6 rounded-lg shadow-sm">
             @csrf
             @method('PUT')
 

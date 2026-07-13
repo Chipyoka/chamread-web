@@ -82,7 +82,7 @@
 
                                     <!-- View -->
                                     <x-micro-button
-                                        href="{{ route('admin.readings.show', $reading) }}"
+                                        href="{{ route('readings.meter-readings.show', $reading) }}"
                                         color="blue"
                                         icon="eye"
                                         size="sm"

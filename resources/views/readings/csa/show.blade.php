@@ -13,7 +13,7 @@
 
                     <x-micro-button
                        variant="edit"
-                       href="{{ route('admin.csas.edit', $csa) }}"
+                       href="{{ route('readings.csas.edit', $csa) }}"
                        icon="edit"
                        size="md"
                    >
@@ -22,14 +22,14 @@
     
                     <x-micro-button
                        color="purple"
-                       href="{{ route('admin.csas.assign', $csa) }}"
+                       href="{{ route('readings.csas.assign', $csa) }}"
                        icon="map-pin"
                        size="md"
                    >
                        Assign
                    </x-micro-button>
     
-                   <form action="{{ route('admin.csas.destroy', $csa) }}" class="delete-form" method="POST" onsubmit="return confirm('Delete this CSA?')">
+                   <form action="{{ route('readings.csas.destroy', $csa) }}" class="delete-form" method="POST" onsubmit="return confirm('Delete this CSA?')">
                        @csrf
                        @method('DELETE')
                         <x-micro-button
@@ -47,7 +47,7 @@
                  <!-- back to list -->
                 <x-micro-button
                     variant="edit"
-                    href="{{ route('admin.csas.index') }}"
+                    href="{{ route('readings.csas.index') }}"
                     icon="arrow-left"
                     size="md"
                 >

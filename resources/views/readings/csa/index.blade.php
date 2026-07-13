@@ -8,7 +8,7 @@
                 <p class="text-sm text-gray-500">Manage Customer Service Agents</p>
             </div>
 
-            <a href="{{ route('admin.csas.create') }}"
+            <a href="{{ route('readings.csas.create') }}"
                class="inline-flex items-center px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary/90 transition">
                 <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
                 Add CSA
@@ -77,7 +77,7 @@
 
                                     <!-- View -->
                                     <x-micro-button
-                                        href="{{ route('admin.csas.show', $csa) }}"
+                                        href="{{ route('readings.csas.show', $csa) }}"
                                         color="blue"
                                         icon="user"
                                         size="sm"
@@ -89,7 +89,7 @@
                                     <!-- readings -->
                                     <x-micro-button
                                         color="purple"
-                                        href="{{ route('admin.csas.readings', $csa) }}"
+                                        href="{{ route('readings.csas.readings', $csa) }}"
                                         icon="list-todo"
                                         size="sm"
                                     >
@@ -99,7 +99,7 @@
                                     <!-- Csa assigned accounts -->
                                     <x-micro-button
                                         color="slate"
-                                        href="{{ route('admin.csas.accounts', $csa) }}"
+                                        href="{{ route('readings.csas.accounts', $csa) }}"
                                         icon="file-text"
                                         size="sm"
                                     >
@@ -125,7 +125,7 @@
                         <i data-lucide="users" class="w-10 h-10 text-gray-300"></i>
                         <p class="text-gray-500 text-sm">No CSAs found.</p>
 
-                        <a href="{{ route('admin.csas.create') }}"
+                        <a href="{{ route('readings.csas.create') }}"
                            class="text-primary text-sm hover:underline">
                             Create your first CSA
                         </a>

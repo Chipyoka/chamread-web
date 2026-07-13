@@ -63,7 +63,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Readings edited by the CSA or admin.
+     * Readings edited by the CSA or readings.
      */
     public function editedReadings()
     {

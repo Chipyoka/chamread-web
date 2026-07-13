@@ -8,6 +8,11 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AuditController;
 use App\Http\Controllers\Admin\ReadingsController;
 use App\Http\Controllers\Admin\CsaController;
+use App\Http\Controllers\Admin\ERPController;
+use App\Http\Controllers\Admin\CyclesController;
+use App\Http\Controllers\Admin\UtilityController;
+use App\Http\Controllers\Admin\UsersController;
+
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -26,17 +31,19 @@ Route::middleware(['auth','role:ADMIN,SUPERVISOR'])->group(function () {
     Route::get('/readings', [ReadingsController::class,'index'])->name('readings.index');
     Route::get('/accounts', [AccountsController::class,'index'])->name('accounts.index');
     Route::get('/analytics', [AnalyticsController::class,'index'])->name('analytics.index');
-    Route::get('/admin/settings', [AdminController::class,'index'])->name('admin.settings');
+    Route::get('/admin/settings', [AdminController::class,'index'])->name('readings.settings');
     Route::get('/audit', [AuditController::class,'index'])->name('audit.index');
 });
 
 
 
-
-Route::prefix('admin')
-    ->name('admin.')
-    ->middleware(['auth', 'role:ADMIN'])
-    ->group(function () {
+    /**
+     * READINGS ROUTES
+     */
+    Route::prefix('readings')
+        ->name('readings.')
+        ->middleware(['auth', 'role:ADMIN'])
+        ->group(function () {
 
         /**
          * =====================================================
@@ -102,7 +109,7 @@ Route::prefix('admin')
          * READINGS MANAGEMENT
          * =====================================================
          */
-        Route::prefix('readings')->name('readings.')->group(function () {
+        Route::prefix('meter-readings')->name('meter-readings.')->group(function () {
 
             /**
              * -------------------------------
@@ -115,6 +122,100 @@ Route::prefix('admin')
             Route::get('/{reading}/export', [ReadingsController::class, 'export'])->name('export');
            
         });
+
+    });
+
+
+
+    /**
+     * MANAGEMENT ROUTES
+     */
+    Route::prefix('management')
+        ->name('management.')
+        ->middleware(['auth', 'role:ADMIN'])
+        ->group(function () {
+
+        /**
+         * =====================================================
+         * ERP MANAGEMENT
+         * =====================================================
+         */
+        Route::prefix('erp')->name('erp.')->group(function () {
+            Route::get('/', [ERPController::class, 'index'])->name('index');
+        });
+
+        /**
+         * =====================================================
+         * BILLING CYCLES MANAGEMENT
+         * =====================================================
+         */
+        Route::prefix('cycles')->name('cycles.')->group(function () {
+            Route::get('/', [CyclesController::class, 'index'])->name('index');
+        });
+
+        /**
+         * =====================================================
+         *  MRC DEFINITION MANAGEMENT
+         * =====================================================
+         */
+        Route::prefix('mrc-definition')->name('mrc-definition.')->group(function () {
+            Route::get('/', [UtilityController::class, 'index'])->name('index');
+        });
+
+        /**
+         * =====================================================
+         *  ANALYTICS MANAGEMENT
+         * =====================================================
+         */
+        Route::prefix('analytics')->name('analytics.')->group(function () {
+            Route::get('/', [AnalyticsController::class, 'index'])->name('index');
+        });
+
+
+ 
+
+    });
+
+
+    /**
+     * IT/SYSTEMS ROUTES
+     */
+    Route::prefix('systems')
+        ->name('systems.')
+        ->middleware(['auth', 'role:ADMIN'])
+        ->group(function () {
+
+        /**
+         * =====================================================
+         * USERS MANAGEMENT
+         * =====================================================
+         */
+        Route::prefix('users')->name('users.')->group(function () {
+            Route::get('/', [ERPController::class, 'index'])->name('index');
+        });
+
+      
+
+        /**
+         * =====================================================
+         *  MRC DEFINITION MANAGEMENT
+         * =====================================================
+         */
+        Route::prefix('mrc')->name('mrc.')->group(function () {
+            Route::get('/', [UtilityController::class, 'index'])->name('index');
+        });
+
+        /**
+         * =====================================================
+         *  ANALYTICS MANAGEMENT
+         * =====================================================
+         */
+        Route::prefix('utility')->name('utility.')->group(function () {
+            Route::get('/', [AnalyticsController::class, 'index'])->name('index');
+        });
+
+
+ 
 
     });
 

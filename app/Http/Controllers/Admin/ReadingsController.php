@@ -39,7 +39,7 @@ class ReadingsController extends Controller
 
 
 
-        return view('admin.reading.index', compact(
+        return view('readings.meter-reading.index', compact(
             'readings',
         ));
     }
@@ -49,7 +49,7 @@ class ReadingsController extends Controller
      */
     public function show(Reading $reading){
     
-        return view('admin.reading.show', compact('reading',));
+        return view('readings.meter-reading.show', compact('reading',));
     }
 
     /**
@@ -59,7 +59,7 @@ class ReadingsController extends Controller
     {
         $consumption = (($reading->current_reading ?? 0) - ($reading->previous_reading ?? 0));
 
-        $pdf = Pdf::loadView('admin.reading.pdf', [
+        $pdf = Pdf::loadView('readings.meter-reading.pdf', [
             'reading' => $reading,
             'consumption' => $consumption,
             'date' => now()->format('Y-m-d H:i:s'),

@@ -15,7 +15,7 @@
                  <!-- export account -->
                 <x-micro-button
                     color="purple"
-                    href="{{ route('admin.accounts.export', $account) }}"
+                    href="{{ route('readings.accounts.export', $account) }}"
                     icon="upload"
                     size="md"
                 >
@@ -26,7 +26,7 @@
                  <!-- back to list -->
                 <x-micro-button
                     variant="edit"
-                    href="{{ route('admin.accounts.index') }}"
+                    href="{{ route('readings.accounts.index') }}"
                     icon="arrow-left"
                     size="md"
                 >
@@ -39,7 +39,7 @@
         <div class="bg-white rounded-md p-6 space-y-4 border border-gray-200">
             <div class="flex items-center justify-end mb-2">
                 <h2 class="text-lg font-medium text-gray-600">Assigned to <span class="text-secondary">
-                    <a href="{{ route('admin.csas.show', $assignedCsa) }}" class="hover:underline">
+                    <a href="{{ route('readings.csas.show', $assignedCsa) }}" class="hover:underline">
                         {{ $assignedCsa ? $assignedCsa->name : 'N/A' }}
                     </a>
                 </span></h2>

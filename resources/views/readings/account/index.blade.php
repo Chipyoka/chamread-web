@@ -4,39 +4,18 @@
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-medium text-gray-600">Assigned accounts: <span class="text-secondary">{{ $csa->name ?? 'CSA'}} </span></h1>
-                <p class="text-sm text-gray-500">{{ $csa->zone?->name ?? "" }} accounts assigned in the current billing cycle</p>
+                <h1 class="text-2xl font-medium text-gray-600">Customer Accounts</h1>
+                <p class="text-sm text-gray-500">Manage Customer Accounts</p>
             </div>
 
-           <div class="flex items-center space-x-2">
-           
-                 <x-micro-button
-                    color="purple"
-                    href="{{ route('admin.csas.readings', $csa) }}"
-                    icon="list-todo"
-                    size="md"
-                >
-                    View Readings
-                </x-micro-button>
-                 <x-micro-button
-                    variant="view"
-                    href="{{ route('admin.csas.show', $csa) }}"
-                    icon="user"
-                    size="md"
-                >
-                    View Profile
-                </x-micro-button>
-
-                 <!-- back to list -->
-                <x-micro-button
-                    variant="edit"
-                    href="{{ route('admin.csas.index') }}"
-                    icon="arrow-left"
-                    size="md"
-                >
-                    Back to list
-                </x-micro-button>
-            </div>
+            <!-- allow only admins -->
+             @if(Auth::user()->role === 'ADMIN')
+            <a href="{{ route('readings.accounts.create') }}"
+               class="inline-flex items-center px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary/90 transition">
+                <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                Add Account
+            </a>
+            @endif
         </div>
 
         <!-- Table -->
@@ -49,10 +28,10 @@
                         <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                             <th class="px-6 py-3">Account #</th>
                             <th class="px-6 py-3">Meter #</th>
-                            <th class="px-6 py-3">Customer</th>
+                            <th class="px-6 py-3">Name</th>
                             <th class="px-6 py-3">Phone</th>
+                            <th class="px-6 py-3">Zone</th>
                             <th class="px-6 py-3">Billing Area</th>
-                            <th class="px-6 py-3">Reading Status</th>
                             <th class="px-6 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -62,7 +41,7 @@
                         @foreach($accounts as $account)
                             <tr class="hover:bg-gray-50 transition">
 
-                                  <!-- Account Number -->
+                                <!-- Account Number -->
                                 <td class="px-6 py-4 text-sm text-gray-600 font-medium">
                                     {{ $account->account_number }}
                                 </td>
@@ -81,23 +60,17 @@
                                 <td class="px-6 py-4 text-sm text-gray-600">
                                     {{ $account->phone ?? '-' }}
                                 </td>
+                                
+
+                                  <!-- Zone -->
+                                <td class="px-6 py-4 text-sm text-gray-600">
+                                    {{ $account->zone->name ?? '-' }}
+                                </td>
+
 
                                     <!-- Billing Area -->
                                 <td class="px-6 py-4 text-sm text-gray-600">
                                     {{ $account->billing_area ?? '-' }}
-                                </td>
-
-                                <td class="px-6 py-4 text-sm text-gray-600">
-                                    <span class="
-                                        px-2 py-1 text-xs rounded uppercase
-                                        @if($account->read_status === 'read')
-                                            bg-green-100 text-green-700
-                                        @else
-                                            bg-red-100 text-red-700
-                                        @endif
-                                    ">
-                                        {{ $account->read_status === 'read' ? 'Read' : 'Not read' }}
-                                    </span>
                                 </td>
 
                                 <!-- Actions -->
@@ -105,16 +78,14 @@
 
                                     <!-- View -->
                                     <x-micro-button
-                                        href="{{ route('admin.accounts.show', $account) }}"
+                                        href="{{ route('readings.accounts.show', $account) }}"
                                         color="blue"
-                                        icon="user"
+                                        icon="eye"
                                         size="sm"
                                     >
-                                        Details
+                                        View Details
                                     </x-micro-button>
 
-
-                                  
                                 </td>
                             </tr>
                         @endforeach
@@ -132,8 +103,10 @@
                 <!-- Empty State -->
                 <div class="p-10 text-center">
                     <div class="flex flex-col items-center space-y-3">
-                        <i data-lucide="users" class="w-10 h-10 text-gray-300"></i>
-                        <p class="text-gray-500 text-sm">No Accounts found.</p>
+                        <i data-lucide="file-text" class="w-10 h-10 text-gray-300"></i>
+                        <p class="text-gray-500 text-sm">No accounts found.</p>
+                        <p class="text-gray-500 text-xs">Contact the IT Department to load customer accounts.</p>
+
                     </div>
                 </div>
 

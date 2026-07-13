@@ -209,7 +209,7 @@ public function index()
                     'id' => $account->id,
                     'title' => $account->name ?? 'Unnamed Account',
                     'subtitle' => "Account: {$account->account_number}",
-                    'url' => route('admin.accounts.show', $account->id),
+                    'url' => route('readings.accounts.show', $account->id),
                 ];
             });
 
@@ -228,7 +228,7 @@ public function index()
                     'title' => $user->name,
                     'subtitle' => $user->email,
                     'role' => $user->role,
-                    'url' => route('admin.csas.show', $user),
+                    'url' => route('readings.csas.show', $user),
                 ];
             });
 

@@ -12,7 +12,7 @@
            
                  <x-micro-button
                     color="slate"
-                    href="{{ route('admin.csas.accounts', $csa) }}"
+                    href="{{ route('readings.csas.accounts', $csa) }}"
                     icon="file-text"
                     size="md"
                 >
@@ -21,7 +21,7 @@
 
                  <x-micro-button
                     variant="view"
-                    href="{{ route('admin.csas.show', $csa) }}"
+                    href="{{ route('readings.csas.show', $csa) }}"
                     icon="user"
                     size="md"
                 >
@@ -31,7 +31,7 @@
                  <!-- back to list -->
                 <x-micro-button
                     variant="edit"
-                    href="{{ route('admin.csas.index') }}"
+                    href="{{ route('readings.csas.index') }}"
                     icon="arrow-left"
                     size="md"
                 >

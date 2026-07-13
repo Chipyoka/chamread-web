@@ -64,3 +64,40 @@ body{
 .notyf-custom{
     font-size: small !important;
 }
+
+
+/* Thin Light Grey Scrollbar - Global Class */
+.thin-scrollbar {
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #d1d1d1 transparent;
+}
+
+/* WebKit browsers (Chrome, Safari, Edge) */
+.thin-scrollbar::-webkit-scrollbar {
+  width: 2px;
+  height: 2px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d1d1;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #b8b8b8;
+}
+
+/* For horizontal scrollbar */
+.thin-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.text-xxs{
+    font-size: .65rem;
+}

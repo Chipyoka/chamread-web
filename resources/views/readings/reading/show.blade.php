@@ -16,7 +16,7 @@
                  <!-- export reading-->
                 <x-micro-button
                     color="purple"
-                    href="{{ route('admin.readings.export', $reading) }}"
+                    href="{{ route('readings.readings.export', $reading) }}"
                     icon="upload"
                     size="md"
                 >
@@ -26,7 +26,7 @@
                  <!-- back to list -->
                 <x-micro-button
                     variant="edit"
-                    href="{{ route('admin.readings.index') }}"
+                    href="{{ route('readings.readings.index') }}"
                     icon="arrow-left"
                     size="md"
                 >
@@ -62,7 +62,7 @@
                             @php
                                 $assignedCsa = $reading->csa;
                             @endphp
-                            <a href="{{ route('admin.csas.show', $assignedCsa) }}" class="hover:underline">
+                            <a href="{{ route('readings.csas.show', $assignedCsa) }}" class="hover:underline">
                                 {{ $reading->csa->name ?? 'Unknown' }}
                             </a>
                         </span>

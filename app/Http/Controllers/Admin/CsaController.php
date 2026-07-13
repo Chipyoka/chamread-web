@@ -34,7 +34,7 @@ class CsaController extends Controller
             ->latest()
             ->paginate(15);
 
-        return view('admin.csa.index', compact('csas'));
+        return view('readings.csa.index', compact('csas'));
     }
 
     /**
@@ -44,7 +44,7 @@ class CsaController extends Controller
     {
         $zones = Zone::all();
 
-        return view('admin.csa.create', compact('zones'));
+        return view('readings.csa.create', compact('zones'));
     }
 
     /**
@@ -78,7 +78,7 @@ class CsaController extends Controller
             ]);
 
             return redirect()
-                ->route('admin.csas.index')
+                ->route('readings.csas.index')
                 ->with('success', 'CSA created successfully.');
         }
 
@@ -97,7 +97,7 @@ class CsaController extends Controller
             ->latest()
             ->paginate(15);
 
-        return view('admin.csa.show', compact('csa', 'assignments'));
+        return view('readings.csa.show', compact('csa', 'assignments'));
     }
 
     /**
@@ -109,7 +109,7 @@ class CsaController extends Controller
 
         $zones = Zone::all();
 
-        return view('admin.csa.edit', compact('csa', 'zones'));
+        return view('readings.csa.edit', compact('csa', 'zones'));
     }
 
     /**
@@ -163,7 +163,7 @@ class CsaController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.csas.index')
+            ->route('readings.csas.index')
             ->with('success', 'CSA updated successfully.');
     }
     /**
@@ -194,7 +194,7 @@ class CsaController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.csas.index')
+            ->route('readings.csas.index')
             ->with('success', 'CSA deleted successfully.');
     }
 
@@ -213,7 +213,7 @@ class CsaController extends Controller
             ->with(['zone', 'dma', 'billingCycle'])
             ->paginate(10);
 
-        return view('admin.csa.assign', compact(
+        return view('readings.csa.assign', compact(
             'csa',
             'zones',
             'dmas',
@@ -286,7 +286,7 @@ class CsaController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.csas.show', $csa->id)
+            ->route('readings.csas.show', $csa->id)
             ->with('success', 'Assignment saved successfully.');
      }
 
@@ -376,7 +376,7 @@ class CsaController extends Controller
                     ],
                 ];
 
-        return view('admin.csa.readings', compact(
+        return view('readings.csa.readings', compact(
             'readings',
             'csa',
             'points',
@@ -418,7 +418,7 @@ class CsaController extends Controller
             return $account;
         });
 
-        return view('admin.csa.accounts', compact('accounts', 'csa'));
+        return view('readings.csa.accounts', compact('accounts', 'csa'));
     }
     /**
      * Ensure user is CSA

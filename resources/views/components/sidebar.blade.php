@@ -1,11 +1,11 @@
-<div class="min-h-[85dvh] max-h-dvh w-60 bg-white flex flex-col px-6 py-3 border-r border-gray-200">
-    <nav class="flex-1 mt-4 space-y-1">
+<div class="min-h-[85dvh] max-h-dvh w-72 bg-white flex flex-col px-3 py-1 border-r border-gray-200">
+    <nav class="flex-1 mt-4 space-y-1 h-[65dvh] max-h-[75dvh] overflow-y-auto thin-scrollbar p-3 bg-gray-50 rounded-sm">
         @foreach ($groups as $group)
 
             @if ($group['type'] === 'link')
                 {{-- Standalone link (no children) --}}
                 <a href="{{ $group['href'] }}"
-                   class="flex items-center px-3 py-2 text-sm rounded-md transition-colors duration-150
+                   class="flex items-center px-3 py-2 rounded-md transition-colors duration-150 uppercase text-xs  tracking-wide
                           {{ $group['active']
                               ? 'bg-gray-100 text-gray-600 font-semibold'
                               : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700' }}">
@@ -18,9 +18,9 @@
                 <div x-data="{ open: @js($group['hasActiveChild']) }">
                     <button type="button"
                             @click="open = !open"
-                            class="w-full flex items-center justify-between px-3 py-2 text-sm  tracking-wide rounded-md transition-colors duration-150
+                            class="w-full flex items-center justify-between uppercase px-3 py-2 text-xs  tracking-wide rounded-md transition-colors duration-150
                                    {{ $group['hasActiveChild']
-                                       ? 'text-gray-700'
+                                       ? 'text-gray-800'
                                        : 'text-gray-500  hover:text-gray-600' }}">
                         <span>{{ $group['name'] }}</span>
                         <i data-lucide="chevron-right"
@@ -53,5 +53,5 @@
         @endforeach
     </nav>
 
-    <p class="text-center text-sm text-gray-400">Version: 2.0.0 | ChWSSCL</p>
+    <p class="text-center text-xxs text-gray-400 my-2 uppercase tracking-wider">current Version: 2.0.0</p>
 </div>
