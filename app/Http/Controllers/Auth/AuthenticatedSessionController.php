@@ -9,6 +9,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
+
+use App\Models\Reading;
+use App\Models\BillingCycle;
+
 class AuthenticatedSessionController extends Controller
 {
     /**
@@ -16,7 +20,20 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        $read = Reading::where('status', 'read')->count();
+
+        $pending = Reading::where('status', '!=', 'read')->count();
+
+        // Latest billing cycle
+        $currentCycle = BillingCycle::latest()->first();
+
+
+        return view('auth.login', compact(
+            'currentCycle',
+            'read',
+            'pending'
+        )
+    );
     }
 
     /**
