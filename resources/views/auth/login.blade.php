@@ -8,10 +8,10 @@
     <!-- Login Form Container -->
     <div class="max-h-[90dvh] w-full">
         <div class="px-6 py-4 bg-white/90 backdrop-blur-md rounded-sm shadow-lg w-7xl ">
-            <div class="flex items-center justify-start mb-6 gap-6">
+            <div class="flex items-center justify-between mb-6 gap-6">
 
-                <img src="{{ asset('images/app_logo.png') }}" alt="logo" class="h-10 pr-6 border-r-2">
                 <img src="{{ asset('images/logo.png') }}" alt="logo" class="h-10">
+                <img src="{{ asset('images/app_logo.png') }}" alt="logo" class="h-8">
 
             </div>
 
