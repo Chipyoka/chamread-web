@@ -13,18 +13,16 @@ class CustomerAccount extends Model
     protected $fillable = [
         'account_number',
         'meter_number',
-        'name',
+        'customer_name',
         'address',
         'phone',
+        'customer_category',
         'zone_id',
-        'dma_id',
-        'billing_area',
-        'previous_reading'
+        'status'
     ];
 
     // casts
     protected $casts = [
-        'previous_reading' => 'decimal:3',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

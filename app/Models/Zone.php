@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Zone extends Model
 {
-    protected $fillable = ['code','name','status'];
+    protected $fillable = ['code','name','status', 'district', 'province'];
 
     public function dmas()
     {

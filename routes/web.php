@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\CyclesController;
 use App\Http\Controllers\Admin\UtilityController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\MeterReadingCodeController;
+use App\Http\Controllers\Admin\MonthlyTemplateController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -142,7 +143,7 @@ Route::middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->group(functio
          * =====================================================
          */
         Route::prefix('erp')->name('erp.')->group(function () {
-            Route::get('/', [ERPController::class, 'index'])->name('index');
+            Route::get('/', [MonthlyTemplateController::class, 'index'])->name('index');
         });
 
         /**
@@ -187,6 +188,31 @@ Route::middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->group(functio
 
 
  
+
+    });
+
+    Route::prefix('management')
+        ->name('management.')
+        ->middleware(['auth', 'role:ADMIN,IT'])
+        ->group(function () {
+
+            Route::prefix('monthly-template')
+            ->name('monthly-template.')
+            ->group(function () {
+
+                Route::get('/', [MonthlyTemplateController::class, 'index'])
+                    ->name('index');
+
+                Route::post('/upload', [MonthlyTemplateController::class, 'upload'])
+                    ->name('upload');
+
+                Route::get('/status/{process}', [MonthlyTemplateController::class, 'status'])
+                    ->name('status');
+
+                Route::get('/download/{billingCycle}', [MonthlyTemplateController::class, 'download'])
+                    ->name('download');
+
+            });
 
     });
 
@@ -236,5 +262,8 @@ Route::middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->group(functio
  
 
     });
+
+
+
 
 require __DIR__.'/auth.php';
