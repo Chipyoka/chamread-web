@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\ERPController;
 use App\Http\Controllers\Admin\CyclesController;
 use App\Http\Controllers\Admin\UtilityController;
 use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\Admin\MeterReadingCodeController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -215,7 +216,11 @@ Route::middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->group(functio
          * =====================================================
          */
         Route::prefix('mrc')->name('mrc.')->group(function () {
-            Route::get('/', [UtilityController::class, 'index'])->name('index');
+            Route::get('/', [MeterReadingCodeController::class, 'index'])->name('index');
+            Route::post('/', [MeterReadingCodeController::class, 'store']);
+            Route::put('/{meterReadingCode}', [MeterReadingCodeController::class, 'update']);
+            Route::delete('/{meterReadingCode}', [MeterReadingCodeController::class, 'destroy']);
+            Route::post('/bulk-update', [MeterReadingCodeController::class, 'bulkUpdate']);
         });
 
         /**
