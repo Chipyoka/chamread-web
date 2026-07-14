@@ -21,7 +21,7 @@ return new class extends Migration
             $table->boolean('can_download')->default(false);
             $table->boolean('can_upload')->default(false);
 
-            $table->enum('status', ['pending','active','locked','closed'])->default('pending');
+            $table->enum('status', ['pending','active','locked','closed'])->default('active');
             $table->timestamps();
 
             $table->index('status');

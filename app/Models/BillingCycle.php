@@ -27,6 +27,10 @@ class BillingCycle extends Model
         return $this->hasMany(ReadingGpsCheck::class);
     }
 
+    public function readings(){
+        return $this->hasMany(Reading::class);
+    }
+
     public function exceptions()
     {
         return $this->hasMany(SystemException::class);

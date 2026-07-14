@@ -19,11 +19,11 @@ Route::get('/', function () {
      return redirect()->route(auth()->check() ? 'dashboard.index' : 'login');
 });
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth','role:ADMIN,SUPERVISOR'])->name('dashboard.index');
-Route::get('/search', [DashboardController::class, 'search'])->middleware(['auth','role:ADMIN,SUPERVISOR'])->name('dashboard.search.results');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->name('dashboard.index');
+Route::get('/search', [DashboardController::class, 'search'])->middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->name('dashboard.search.results');
 
 
-Route::middleware(['auth','role:ADMIN,SUPERVISOR'])->group(function () {
+Route::middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -42,7 +42,7 @@ Route::middleware(['auth','role:ADMIN,SUPERVISOR'])->group(function () {
      */
     Route::prefix('readings')
         ->name('readings.')
-        ->middleware(['auth', 'role:ADMIN'])
+        ->middleware(['auth', 'role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])
         ->group(function () {
 
         /**
@@ -132,7 +132,7 @@ Route::middleware(['auth','role:ADMIN,SUPERVISOR'])->group(function () {
      */
     Route::prefix('management')
         ->name('management.')
-        ->middleware(['auth', 'role:ADMIN'])
+        ->middleware(['auth', 'role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])
         ->group(function () {
 
         /**
@@ -195,7 +195,7 @@ Route::middleware(['auth','role:ADMIN,SUPERVISOR'])->group(function () {
      */
     Route::prefix('systems')
         ->name('systems.')
-        ->middleware(['auth', 'role:ADMIN'])
+        ->middleware(['auth', 'role:ADMIN,IT'])
         ->group(function () {
 
         /**

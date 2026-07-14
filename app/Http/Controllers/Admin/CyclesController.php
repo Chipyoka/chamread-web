@@ -10,6 +10,8 @@ use App\Models\BillingCycle;
 use App\Models\CsaAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 use App\Services\AuditLogService;
 
@@ -43,9 +45,24 @@ class CyclesController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'deadline' => 'nullable|date|after_or_equal:start_date',
-            'can_download' => 'boolean',
-            'can_upload' => 'boolean',
         ]);
+
+        
+        // check if name already exist
+        $existing = BillingCycle::where('name', $request->name)->first();
+
+        if($existing){
+            return redirect()->back()
+            ->with('error', 'Billing name conflict.');
+        };
+
+        // check if previous is still active
+        $activeCycleExists = BillingCycle::where('status', 'active')->exists();
+
+        if ($activeCycleExists) {
+            return redirect()->back()
+            ->with('warning', 'Close current active cycle.');
+        }
 
         $billingCycle = BillingCycle::create($validated);
 
@@ -75,19 +92,19 @@ class CyclesController extends Controller
     public function update(Request $request, BillingCycle $billingCycle)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'deadline' => 'nullable|date|after_or_equal:start_date',
-            'can_download' => 'boolean',
-            'can_upload' => 'boolean',
             'status' => ['required', Rule::in(['pending', 'active', 'locked', 'closed'])],
         ]);
+
+        if(Auth::user()->role !== 'ADMIN' || Auth::user()->role !== 'COMMERCIAL'){
+            return redirect()->back()
+            ->with('error', 'Insufficient permissions.');
+        };
 
         $billingCycle->update($validated);
 
         return redirect()
-            ->route('management.cycles.index')
+            ->back()
             ->with('success', 'Billing cycle updated successfully.');
     }
 
@@ -108,11 +125,16 @@ class CyclesController extends Controller
      */
     public function toggleDownload(BillingCycle $billingCycle)
     {
+         if(Auth::user()->role !== 'ADMIN' || Auth::user()->role !== 'COMMERCIAL'){
+            return redirect()->back()
+            ->with('error', 'Insufficient permissions.');
+        };
+
         $billingCycle->update([
             'can_download' => !$billingCycle->can_download
         ]);
 
-        return back()->with('success', 'Download permission toggled successfully.');
+        return back()->with('success', 'Download permission updated.');
     }
 
     /**
@@ -120,11 +142,16 @@ class CyclesController extends Controller
      */
     public function toggleUpload(BillingCycle $billingCycle)
     {
+         if(Auth::user()->role !== 'ADMIN' || Auth::user()->role !== 'COMMERCIAL'){
+            return redirect()->back()
+            ->with('error', 'Insufficient permissions.');
+        };
+
         $billingCycle->update([
             'can_upload' => !$billingCycle->can_upload
         ]);
 
-        return back()->with('success', 'Upload permission toggled successfully.');
+        return back()->with('success', 'Upload permission updated.');
     }
 
     /**
