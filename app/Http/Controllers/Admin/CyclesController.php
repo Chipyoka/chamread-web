@@ -96,7 +96,7 @@ class CyclesController extends Controller
             'status' => ['required', Rule::in(['pending', 'active', 'locked', 'closed'])],
         ]);
 
-        if(Auth::user()->role !== 'ADMIN' || Auth::user()->role !== 'COMMERCIAL'){
+        if(!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])){
             return redirect()->back()
             ->with('error', 'Insufficient permissions.');
         };
@@ -125,7 +125,7 @@ class CyclesController extends Controller
      */
     public function toggleDownload(BillingCycle $billingCycle)
     {
-         if(Auth::user()->role !== 'ADMIN' || Auth::user()->role !== 'COMMERCIAL'){
+         if(!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])){
             return redirect()->back()
             ->with('error', 'Insufficient permissions.');
         };
@@ -142,7 +142,7 @@ class CyclesController extends Controller
      */
     public function toggleUpload(BillingCycle $billingCycle)
     {
-         if(Auth::user()->role !== 'ADMIN' || Auth::user()->role !== 'COMMERCIAL'){
+         if(!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])){
             return redirect()->back()
             ->with('error', 'Insufficient permissions.');
         };
