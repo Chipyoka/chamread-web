@@ -21,7 +21,7 @@ class MonthlyTemplateController extends Controller
     {
         return view('management.erp.index', [
             'billingCycles' => BillingCycle::orderByDesc('start_date')->get(),
-            'latestImport' => ImportProcess::latest()->first(),
+            'latestImports' => ImportProcess::orderByDesc('updated_at')->limit(5)->get(),
         ]);
     }
 

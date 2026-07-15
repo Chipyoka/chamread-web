@@ -201,14 +201,14 @@ public function index()
          */
         $accounts = CustomerAccount::query()
             ->where('account_number', 'like', "%{$query}%")
-            ->orWhere('name', 'like', "%{$query}%")
+            ->orWhere('customer_name', 'like', "%{$query}%")
             ->orWhere('meter_number', 'like', "%{$query}%")
             ->limit(10)
             ->get()
             ->map(function ($account) {
                 return [
                     'id' => $account->id,
-                    'title' => $account->name ?? 'Unnamed Account',
+                    'title' => $account->customer_name ?? 'Unnamed Account',
                     'subtitle' => "Account: {$account->account_number}",
                     'url' => route('readings.accounts.show', $account->id),
                 ];
