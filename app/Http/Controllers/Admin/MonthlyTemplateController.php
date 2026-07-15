@@ -14,6 +14,8 @@ use Illuminate\View\View;
 use App\Exports\MonthlyTemplateExport;
 use Maatwebsite\Excel\Facades\Excel;
 
+use Illuminate\Support\Facades\Auth;
+
 use App\Services\MonthlyTemplateService;
 
 class MonthlyTemplateController extends Controller
@@ -43,6 +45,11 @@ class MonthlyTemplateController extends Controller
                 'max:10240', // 10 MB
             ],
         ]);
+
+        if(!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])){
+            return redirect()->back()
+            ->with('error', 'Insufficient permissions.');
+        };
 
         /*
         |--------------------------------------------------------------------------
@@ -110,6 +117,11 @@ class MonthlyTemplateController extends Controller
         BillingCycle $billingCycle,
         MonthlyTemplateService $service
     ) {
+        if(!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])){
+            return redirect()->back()
+            ->with('error', 'Insufficient permissions.');
+        };
+
         try {
             $rows = $service->exportRows(
                 $billingCycle
