@@ -11,22 +11,5 @@
             </div>
         </div>
     
-        <button
-        type="button"
-        x-on:click="$dispatch('open-modal', 'confirm-delete')"
-        class="..."
-    >
-        Delete
-    </button>
-        <button
-        type="button"
-        x-on:click="$dispatch('open-modal', 'confirm-happy')"
-        class="..."
-    >
-        Happy
-    </button>
-    
-    
- 
     </div>
 </x-app-layout>
