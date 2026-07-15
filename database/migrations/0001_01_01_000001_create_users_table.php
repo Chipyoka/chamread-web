@@ -22,7 +22,6 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
 
-            $table->foreignId('zone_id')->nullable()->constrained('zones')->nullOnDelete();
             $table->foreignId('device_id')->nullable()->constrained('devices')->nullOnDelete();
             $table->timestamp('last_login_at')->nullable();
 

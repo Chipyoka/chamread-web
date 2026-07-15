@@ -83,7 +83,7 @@
                     <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-primary rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
                         <div class="">
                             <h2 class="text-3xl font-bold text-primary">{{ $totalAssignedAccounts ?? 0}}</h2>
-                            <p class="text-gray-500 text-xs uppercase mt-2">Total Accounts Assigned</p>
+                            <p class="text-gray-500 text-xs uppercase mt-2">Accounts Assigned</p>
                         </div>
                         <div class="flex items-center justify-center p-4 bg-blue-100/70 rounded-full">
                             <i data-lucide="list" class="w-7 h-7 text-primary"></i>
@@ -101,58 +101,14 @@
                         </div>
                     </div>
     
-                    <!-- card total not read-->
-                    <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-red-400 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
-                        <div class="">
-                            <h2 class="text-3xl font-bold text-red-400">{{$accountsNotRead ?? 0}}</h2>
-                            <p class="text-gray-500 text-xs uppercase mt-2">Marked Not Read</p>
-                        </div>
-                        <div class="flex items-center justify-center p-4 bg-red-100/70 rounded-full">
-                            <i data-lucide="circle-x" class="w-7 h-7 text-red-400"></i>
-                        </div>
-                    </div>
-    
                     <!-- card abnormal -->
                     <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-amber-400 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
                         <div class="">
                             <h2 class="text-3xl font-bold text-amber-400">{{ $accountsAbnormal ?? 0 }}</h2>
-                            <p class="text-gray-500 text-xs uppercase mt-2">Abnormal readings</p>
+                            <p class="text-gray-500 text-xs uppercase mt-2">Flagged</p>
                         </div>
                         <div class="flex items-center justify-center p-4 bg-amber-100/70 rounded-full">
                             <i data-lucide="alert-triangle" class="w-7 h-7 text-amber-400"></i>
-                        </div>
-                    </div>
-    
-                    <!-- card zero consumption-->
-                    <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-slate-400 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
-                        <div class="">
-                            <h2 class="text-3xl font-bold text-slate-400">{{ $zeroConsumption ?? 0 }}</h2>
-                            <p class="text-gray-500 text-xs uppercase mt-2">zero consumption Accounts</p>
-                        </div>
-                        <div class="flex items-center justify-center p-4 bg-slate-100/70 rounded-full">
-                            <i data-lucide="circle-minus" class="w-7 h-7 text-slate-400"></i>
-                        </div>
-                    </div>
-    
-                    <!-- card Billing Area Edits-->
-                    <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-primary rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
-                        <div class="">
-                            <h2 class="text-3xl font-bold text-primary">{{ $billingAreaEdits ?? 0 }}</h2>
-                            <p class="text-gray-500 text-xs uppercase mt-2">Billing Area Edits</p>
-                        </div>
-                        <div class="flex items-center justify-center p-4 bg-blue-100/70 rounded-full">
-                            <i data-lucide="file-edit" class="w-7 h-7 text-primary"></i>
-                        </div>
-                    </div>
-    
-                    <!-- card GPS Mismatch Alerts-->
-                    <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-orange-400 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
-                        <div class="">
-                            <h2 class="text-3xl font-bold text-orange-400">{{ $gpsMismatch ?? 0 }}</h2>
-                            <p class="text-gray-500 text-xs uppercase mt-2">GPS Mismatch Alerts</p>
-                        </div>
-                        <div class="flex items-center justify-center p-4 bg-orange-100/70 rounded-full">
-                            <i data-lucide="map-pin-off" class="w-7 h-7 text-orange-400"></i>
                         </div>
                     </div>
     

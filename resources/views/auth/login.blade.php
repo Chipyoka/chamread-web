@@ -41,12 +41,20 @@
 
                     <div class="flex justify-center mt-2 bg-white/40 p-4 rounded-md">
 
+                    @if($read < 1 && $pending < 1)
+                        <div class="flex flex-col gap-4 items-center justify-center w-full border border-gray-100 rounded-sm bg-gray-50/70 min-h-60">
+                            <i data-lucide="chart-no-axes-column" class="w-8 h-8 text-gray-300"></i>
+                            <p class="text-gray-400 text-xs">No data available yet</p>
+                        </div>
+
+                    @else
                         <div class="w-60 ">
                             <x-charts.reading-donut-chart
                                     :read="$read"
                                     :pending="$pending"
                                 />
                         </div>
+                    @endif
                     </div>
                    
                 </div>

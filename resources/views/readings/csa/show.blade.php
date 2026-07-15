@@ -11,14 +11,6 @@
             <div class="flex items-center space-x-2">
                 <div class="flex mr-4 px-2 space-x-2">
 
-                    <x-micro-button
-                       variant="edit"
-                       href="{{ route('readings.csas.edit', $csa) }}"
-                       icon="edit"
-                       size="md"
-                   >
-                       Edit CSA
-                   </x-micro-button>
     
                     <x-micro-button
                        color="purple"
@@ -76,7 +68,7 @@
 
                 <div  class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Zone</h2>
-                    <p class="text-gray-600 font-semibold">{{ $csa->zone?->name ?? '-' }}</p>
+                    <p class="text-gray-600 font-semibold">{{ $csa->activeAssignment->zone->name ?? '-' }}</p>
                 </div>
 
                 <div  class="px-2 py-1.5 bg-gray-50 rounded-sm">
@@ -110,7 +102,6 @@
                     <thead class="bg-gray-50">
                         <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                             <th class="px-6 py-3">Zone</th>
-                            <th class="px-6 py-3">DMA</th>
                             <th class="px-6 py-3">Billing Cycle</th>
                             <th class="px-6 py-3">Target</th>
                             <th class="px-6 py-3">Type</th>
@@ -123,7 +114,6 @@
                         @foreach($assignments as $assignment)
                             <tr class="hover:bg-gray-50 transition">
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->zone->name ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->dma?->name ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->billingCycle->name ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->target ?? '0' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->assignment_type ?? '-' }}</td>

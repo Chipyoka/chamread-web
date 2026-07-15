@@ -4,7 +4,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-semibold text-gray-600">Assign Zones/DMA to CSA</h1>
+                <h1 class="text-2xl font-semibold text-gray-600">Assign Zones to CSA</h1>
                 <p class="text-sm text-gray-500">Manage assignments for {{ $csa->name }} ({{ $csa->username }})</p>
             </div>
 
@@ -39,17 +39,7 @@
                 <x-input-error :messages="$errors->get('zone_id')" class="mt-2" />
             </div>
 
-            <!-- DMA -->
-            <div>
-                <x-input-label for="dma_id" :value="__('DMA')" />
-                <select id="dma_id" name="dma_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-primary focus:ring-opacity-50">
-                    <option value="">-- Select DMA --</option>
-                    @foreach($dmas as $dma)
-                        <option value="{{ $dma->id }}">{{ $dma->name }}</option>
-                    @endforeach
-                </select>
-                <x-input-error :messages="$errors->get('dma_id')" class="mt-2" />
-            </div>
+            
 
             <!-- Billing Cycle -->
             <div>
@@ -90,7 +80,6 @@
                     <thead class="bg-gray-50">
                         <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                             <th class="px-6 py-3">Zone</th>
-                            <th class="px-6 py-3">DMA</th>
                             <th class="px-6 py-3">Billing Cycle</th>
                             <th class="px-6 py-3">Target</th>
                             <th class="px-6 py-3">Type</th>
@@ -104,7 +93,6 @@
                         @foreach($assignments as $assignment)
                             <tr class="hover:bg-gray-50 transition">
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->zone->name ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->dma?->name ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->billingCycle->name ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->target ?? '0' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->assignment_type ?? '-' }}</td>

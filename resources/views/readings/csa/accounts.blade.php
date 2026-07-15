@@ -5,7 +5,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-medium text-gray-600">Assigned accounts: <span class="text-secondary">{{ $csa->name ?? 'CSA'}} </span></h1>
-                <p class="text-sm text-gray-500">{{ $csa->zone?->name ?? "" }} accounts assigned in the current billing cycle</p>
+                <p class="text-sm text-gray-500">{{ $csa->activeAssignment->zone->name ?? "" }} accounts assigned in the current billing cycle</p>
             </div>
 
            <div class="flex items-center space-x-2">

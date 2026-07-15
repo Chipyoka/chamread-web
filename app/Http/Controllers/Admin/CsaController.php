@@ -30,11 +30,13 @@ class CsaController extends Controller
      */
     public function index()
     {
-        $csas = User::where('role', 'CSA')
+        $csas = User::where('role', 'CSA')->with('activeAssignment.zone')
             ->latest()
             ->paginate(15);
 
-        return view('readings.csa.index', compact('csas'));
+        $zones = Zone::all();
+
+        return view('readings.csa.index', compact('csas', 'zones'));
     }
 
     /**
@@ -51,38 +53,38 @@ class CsaController extends Controller
      * Store new CSA
      */
     public function store(Request $request)
-        {
-            $data = $request->validate([
-                'name' => 'required|string|max:100',
-                'username' => 'required|string|max:100|unique:users,username',
-                'email' => 'nullable|email|unique:users,email',
-                'password' => 'required|string|min:6',
-                'zone_id' => 'nullable|exists:zones,id',
-            ]);
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:100',
+            'username' => 'required|string|max:100|unique:users,username',
+            'email' => 'nullable|email|unique:users,email',
+            'password' => 'required|string|min:6',
+        ]);
 
-            $data['password'] = Hash::make($data['password']);
-            $data['role'] = 'CSA';
+        $data['password'] = Hash::make($data['password']);
+        $data['role'] = 'CSA';
 
-            // Persist and capture the model
-            $user = User::create($data);
+        // Persist and capture the model
+        $user = User::create($data);
 
-            // Remove sensitive data before logging
-            $logData = collect($user->toArray())
-                ->except(['password', 'remember_token'])
-                ->toArray();
+        // Remove sensitive data before logging
+        $logData = collect($user->toArray())
+            ->except(['password', 'remember_token'])
+            ->toArray();
 
-            // Audit log
-            $this->auditLog->log('CREATE', 'User created', [
-                'user_id' => $user->id,
-                'payload' => $logData,
-            ]);
+        // Audit log
+        $this->auditLog->log('CREATE', 'User created', [
+            'user_id' => $user->id,
+            'payload' => $logData,
+        ]);
 
-            return redirect()
-                ->route('readings.csas.index')
-                ->with('success', 'CSA created successfully.');
-        }
+        return redirect()
+            ->back()
+            ->with('success', 'CSA created successfully.');
+    }
 
-    /**
+    
+        /**
      * Show single CSA
      */
     public function show(User $csa)
@@ -232,7 +234,6 @@ class CsaController extends Controller
         // Validate input
         $data = $request->validate([
             'zone_id' => 'required|exists:zones,id',
-            'dma_id' => 'nullable|exists:dmas,id',
             'billing_cycle_id' => 'required|exists:billing_cycles,id',
             'target' => 'required|integer',
             'assignment_type' => 'nullable|in:primary,secondary',
@@ -245,7 +246,6 @@ class CsaController extends Controller
         $existing = CsaAssignment::where([
             'csa_id' => $csa->id,
             'zone_id' => $data['zone_id'],
-            'dma_id' => $data['dma_id'],
             'billing_cycle_id' => $data['billing_cycle_id'],
         ])->first();
 
@@ -256,7 +256,6 @@ class CsaController extends Controller
             [
                 'csa_id' => $csa->id,
                 'zone_id' => $data['zone_id'],
-                'dma_id' => $data['dma_id'],
                 'billing_cycle_id' => $data['billing_cycle_id'],
             ],
             [
@@ -393,11 +392,16 @@ class CsaController extends Controller
         $this->ensureCSA($csa);
 
         $currentCycle = BillingCycle::latest()->first();
+        $assignment = CsaAssignment::where('csa_id', $csa->id)->where('status', 'active')->first();
+        $target = $assignment->target;
 
         // Step 1: Fetch accounts
-        $accounts = CustomerAccount::where('zone_id', $csa->zone_id)
-            ->with(['zone', 'dma'])
-            ->latest()
+        $accounts = CustomerAccount::where('zone_id', $assignment->zone_id)
+            ->orderBy('id') // important for deterministic results
+            ->take($target);
+
+        $accounts = CustomerAccount::fromSub($accounts, 'accounts')
+            ->with('zone')
             ->paginate(10);
 
         // Step 2: Fetch all readings for these accounts in ONE query

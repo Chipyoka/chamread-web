@@ -57,12 +57,7 @@
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Customer Name</h2>
-                    <p class="text-gray-600 font-semibold">{{ $account->name ?? '-' }}</p>
-                </div>
-
-                <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
-                    <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Billing Area</h2>
-                    <p class="text-gray-600 font-semibold">{{ $account->billing_area ?? '-' }}</p>
+                    <p class="text-gray-600 font-semibold">{{ $account->customer_name ?? '-' }}</p>
                 </div>
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
@@ -78,11 +73,6 @@
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Zone</h2>
                     <p class="text-gray-600 font-semibold">{{ $account->zone?->name ?? '-' }}</p>
-                </div>
-
-                <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
-                    <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">DMA</h2>
-                    <p class="text-gray-600 font-semibold">{{ $account->dma?->name ?? '-' }}</p>
                 </div>
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">

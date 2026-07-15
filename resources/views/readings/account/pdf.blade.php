@@ -146,7 +146,7 @@
     </div>
     <div class="info-row">
         <div class="info-label">Customer Name:</div>
-        <div class="info-value">{{ $account->name }}</div>
+        <div class="info-value">{{ $account->customer_name }}</div>
     </div>
     <div class="info-row">
         <div class="info-label">Customer Phone:</div>

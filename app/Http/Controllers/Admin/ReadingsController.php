@@ -39,7 +39,7 @@ class ReadingsController extends Controller
 
 
 
-        return view('readings.meter-reading.index', compact(
+        return view('readings.reading.index', compact(
             'readings',
         ));
     }
@@ -49,7 +49,7 @@ class ReadingsController extends Controller
      */
     public function show(Reading $reading){
     
-        return view('readings.meter-reading.show', compact('reading',));
+        return view('readings.reading.show', compact('reading',));
     }
 
     /**

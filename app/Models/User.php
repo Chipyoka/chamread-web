@@ -38,13 +38,7 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Zone the user belongs to.
-     */
-    public function zone()
-    {
-        return $this->belongsTo(Zone::class);
-    }
+
 
     /**
      * CSA assignments.
@@ -53,6 +47,17 @@ class User extends Authenticatable
     {
         return $this->hasMany(CsaAssignment::class, 'csa_id');
     }
+
+    public function activeAssignment()
+{
+    return $this->hasOne(CsaAssignment::class, 'csa_id')
+        ->where('status', 'active');
+}
+
+public function zone()
+{
+    return $this->activeAssignment?->zone;
+}
 
     /**
      * Readings done by the CSA.

@@ -82,7 +82,11 @@ class AccountsController extends Controller
     public function show(CustomerAccount $account){
         $readings = $account->readings()->latest()->take(6)->get();
 
-        $assignedCsa = User::where('zone_id', $account->zone_id)
+        $assignment = CsaAssignment::where('zone_id', $account->zone_id)->first();
+
+        $csaId = $assignment->csa_id;
+
+        $assignedCsa = User::where('id', $csaId)
             ->where('role', 'CSA')
             ->first();
 
@@ -104,7 +108,11 @@ class AccountsController extends Controller
     {
         $readings = $account->readings()->latest()->take(6)->get();
 
-        $assignedCsa = User::where('zone_id', $account->zone_id)
+        $assignment = CsaAssignment::where('zone_id', $account->zone_id)->first();
+
+        $csaId = $assignment->csa_id;
+
+        $assignedCsa = User::where('id', $csaId)
             ->where('role', 'CSA')
             ->first();
 
