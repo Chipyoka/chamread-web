@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\UtilityController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\MeterReadingCodeController;
 use App\Http\Controllers\Admin\MonthlyTemplateController;
+use App\Http\Controllers\Admin\DeviceController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -251,11 +252,25 @@ Route::middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->group(functio
 
         /**
          * =====================================================
-         *  ANALYTICS MANAGEMENT
+         *  UTILITY MANAGEMENT
          * =====================================================
          */
         Route::prefix('utility')->name('utility.')->group(function () {
             Route::get('/', [AnalyticsController::class, 'index'])->name('index');
+        });
+
+
+        /**
+         * =====================================================
+         *  DEVICES MANAGEMENT
+         * =====================================================
+         */
+        Route::prefix('devices')->name('devices.')->group(function () {
+            Route::get('/', [DeviceController::class, 'index'])->name('index');
+            Route::post('/', [DeviceController::class, 'store']);
+            Route::put('/{device}', [DeviceController::class, 'update']);
+            Route::delete('/{device}', [DeviceController::class, 'destroy']);
+            Route::post('/bulk-update', [DeviceController::class, 'bulkUpdate']);
         });
 
 
