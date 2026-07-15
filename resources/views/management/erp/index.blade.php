@@ -73,7 +73,7 @@
                 </div>
         </div>
     
-        <!-- {{-- recenT imports Section --}} -->
+        <!-- {{-- recent imports Section --}} -->
        <section class="bg-white border rounded-md border-gray-200  px-6 py-4 ">
 
 
@@ -108,7 +108,7 @@
 
                            <div class="grid grid-cols-4 gap-4">
 
-                               <p class="font-medium text-gray-600 uppercase text-xs truncate" title="{{ $import->file_name ?? 'No name' }}">
+                               <p class="font-medium text-gray-600 text-xs truncate" title="{{ $import->file_name ?? 'No name' }}">
                                    {{ $import->file_name ?? "No name" }}
                                </p>
 

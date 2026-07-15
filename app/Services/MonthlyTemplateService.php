@@ -9,6 +9,8 @@ use App\Models\Zone;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Models\BillingCycle;
+use Illuminate\Support\Collection;
 
 /**
  * Handles importing monthly ERP customer templates.
@@ -307,4 +309,124 @@ class MonthlyTemplateService
         }
 
     }
+
+
+    /**
+ * Build the monthly ERP export rows.
+ *
+ * This reconstructs the ERP template using the current
+ * customer accounts and zone information stored within
+ * the application.
+ *
+ * Reading fields and historical values are intentionally
+ * left blank for now. They will be populated once the
+ * system begins accumulating billing cycle history.
+ *
+ * @param BillingCycle $billingCycle
+ *
+ * @return Collection
+ */
+public function exportRows(
+    BillingCycle $billingCycle
+): Collection {
+
+    return CustomerAccount::query()
+        ->with('zone')
+        ->orderBy('account_number')
+        ->get()
+        ->map(function (CustomerAccount $account) {
+
+            return [
+
+                /*
+                |--------------------------------------------------------------------------
+                | Customer Information
+                |--------------------------------------------------------------------------
+                */
+
+                'Account' => $account->account_number,
+
+                'Name' => $account->customer_name,
+
+                'Address' => $account->address,
+
+                'Meter number' => $account->meter_number,
+
+                'Customer Category' => $account->customer_category,
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Current Reading
+                |--------------------------------------------------------------------------
+                |
+                | These fields will be populated after billing
+                | cycles begin generating readings.
+                |
+                */
+
+                'Current Reading Date' => '',
+
+                'Current Reading' => '',
+
+                'Meter reading ERP (incl estimates)' => '',
+
+                'Meter Status ERP' => '',
+
+                'Optional Comment' => '',
+
+                'MR: This month Code' => '',
+
+                'MR: Last month Code' => '',
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Contact
+                |--------------------------------------------------------------------------
+                */
+
+                'Phone number' => $account->phone,
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Historical Readings
+                |--------------------------------------------------------------------------
+                */
+
+                'Previous Date' => '',
+
+                'Previous2 Meter Code' => '',
+
+                'Previous2 Reading' => '',
+
+                'Previous2 Date' => '',
+
+                'Previous3 Meter Code' => '',
+
+                'Previous3 Reading' => '',
+
+                'Previous3 Date' => '',
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Location
+                |--------------------------------------------------------------------------
+                */
+
+                'District' => $account->zone?->district,
+
+                'Zone' => $account->zone?->code,
+
+                'Consumption' => '',
+
+                'Province' => $account->zone?->province,
+
+            ];
+
+        });
+
+}
 }

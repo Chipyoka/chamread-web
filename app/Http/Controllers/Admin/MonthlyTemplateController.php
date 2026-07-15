@@ -11,6 +11,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use App\Exports\MonthlyTemplateExport;
+use Maatwebsite\Excel\Facades\Excel;
+
+use App\Services\MonthlyTemplateService;
 
 class MonthlyTemplateController extends Controller
 {
@@ -98,13 +102,34 @@ class MonthlyTemplateController extends Controller
         ]);
     }
 
+    
     /**
      * Download the reconstructed monthly template.
-     *
-     * Implementation added later.
      */
-    public function download(BillingCycle $billingCycle)
-    {
-        //
+    public function download(
+        BillingCycle $billingCycle,
+        MonthlyTemplateService $service
+    ) {
+        try {
+            $rows = $service->exportRows(
+                $billingCycle
+            );
+
+            return Excel::download(
+                new MonthlyTemplateExport($rows),
+                sprintf(
+                    'meter_reading_file_%s.xlsx',
+                    $billingCycle->name
+                )
+            );
+
+        } catch (\Exception $e) {
+            \Log::error('Monthly template download failed: ' . $e->getMessage(), [
+                'billing_cycle_id' => $billingCycle->name,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()->with('error', 'Failed to download template: ' . $e->getMessage());
+        }
     }
 }
