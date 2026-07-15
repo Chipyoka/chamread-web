@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Zone;
 use App\Models\Reading;
+use App\Models\Device;
 use App\Models\Dma;
 use App\Models\CustomerAccount;
 use App\Models\BillingCycle;
@@ -95,11 +96,16 @@ class CsaController extends Controller
         //     ->with(['zone', 'dma', 'billingCycle'])
         //     ->latest()
         //     ->get();
+
+         $devices = Device::all();
+         $zones = Zone::withCount('customerAccounts')->get();
+        $cycles = BillingCycle::latest()->get();
+
         $assignments = CsaAssignment::where('csa_id', $csa->id)
             ->latest()
             ->paginate(15);
 
-        return view('readings.csa.show', compact('csa', 'assignments'));
+        return view('readings.csa.show', compact('csa', 'assignments', 'zones', 'cycles', 'devices'));
     }
 
     /**
@@ -235,12 +241,36 @@ class CsaController extends Controller
         $data = $request->validate([
             'zone_id' => 'required|exists:zones,id',
             'billing_cycle_id' => 'required|exists:billing_cycles,id',
+            'device_id' => 'nullable|exists:devices,id',
             'target' => 'required|integer',
             'assignment_type' => 'nullable|in:primary,secondary',
             'covered_csa_id' => 'nullable|exists:users,id',
             'covering_reason' => 'nullable|string|max:255',
             'end_at' => 'nullable|date|after_or_equal:now',
         ]);
+
+
+        // validate target
+        $customerCount = CustomerAccount::count();
+
+        $target = !empty($data['target'])
+            ? (int) $data['target']
+            : $customerCount;
+
+        if ($target > $customerCount) {
+              return redirect()->back()
+            ->with('Error', 'Target is too high.');
+        }
+
+        // validate assignment 
+        $existingAssignment = CsaAssignment::where('billing_cycle_id', $data['billing_cycle_id'])
+            ->where('zone_id', $data['zone_id'])
+            ->first();
+
+        if ($existingAssignment) {
+            return redirect()->back()
+            ->with('warning', 'Zone already taken.');
+        }
 
         // Attempt to find existing assignment for the CSA + zone + cycle + type
         $existing = CsaAssignment::where([
@@ -268,6 +298,10 @@ class CsaController extends Controller
             ]
         );
 
+        User::where('id', $csa->id)->update([
+            'device_id' => $data['device_id'],
+        ]);
+
         $assignment->refresh();
         $after = $assignment->toArray();
 
@@ -282,6 +316,7 @@ class CsaController extends Controller
             'changes' => $changes,
             'before' => $before,
             'after' => $after,
+            'device' => $data['device_id'],
         ]);
 
         return redirect()

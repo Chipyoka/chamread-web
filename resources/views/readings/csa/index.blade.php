@@ -2,113 +2,310 @@
 
 <div x-data="csaForm()" class="p-6 space-y-6">
 
+
     <!-- Header -->
     <div class="flex items-center justify-between">
+
         <div>
             <h1 class="text-2xl font-medium text-gray-600">
                 CSA Management
             </h1>
+
             <p class="text-sm text-gray-500">
                 Manage Customer Service Agents
             </p>
         </div>
 
+
         @if(Auth::user()->role === 'ADMIN')
+
             <button
                 type="button"
                 x-on:click="$dispatch('open-modal','create-csa')"
-                class="inline-flex items-center px-3 py-2.5 bg-primary text-white text-sm rounded-md"
+                class="inline-flex items-center px-3 py-2.5 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary/90 transition"
             >
+
                 <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+
                 New CSA
+
             </button>
+
         @endif
+
+
     </div>
 
 
-    <div class="bg-white rounded-md p-4 border">
 
-        @if($csas->count())
 
-        <table class="min-w-full">
 
-            <thead>
-                <tr class="text-left text-xs uppercase text-gray-500">
-                    <th class="px-6 py-3">Name</th>
-                    <th class="px-6 py-3">Zone</th>
-                    <th class="px-6 py-3">Status</th>
-                    <th class="px-6 py-3">Last Login</th>
-                    <th class="px-6 py-3 text-right">Actions</th>
+    <!-- Table -->
+
+    <div class="bg-white rounded-md p-4 space-y-4 border border-gray-200 overflow-hidden">
+
+
+        @if($csas->count() > 0)
+
+
+
+        <table class="min-w-full divide-y divide-gray-200">
+
+
+            <thead class="bg-gray-50">
+
+                <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+
+
+                    <th class="px-6 py-3">
+                        Name
+                    </th>
+
+
+                    <th class="px-6 py-3">
+                        Zone
+                    </th>
+
+
+                    <th class="px-6 py-3">
+                        Status
+                    </th>
+
+
+                    <th class="px-6 py-3">
+                        Last Login
+                    </th>
+
+
+                    <th class="px-6 py-3 text-right">
+                        Actions
+                    </th>
+
+
                 </tr>
+
             </thead>
 
 
-            <tbody>
+
+
+
+            <tbody class="bg-white divide-y divide-gray-100">
+
 
             @foreach($csas as $csa)
 
-            <tr class="border-t">
 
-                <td class="px-6 py-4">
-                    {{ $csa->name }}
-                </td>
+                <tr class="hover:bg-gray-50 transition">
 
 
-                <td class="px-6 py-4">
-                    {{ $csa->activeAssignment->zone->name ?? '-' }}
-                </td>
+
+                    <!-- Name -->
+
+                    <td class="px-6 py-4 text-sm text-gray-600 font-medium">
+
+                        {{ $csa->name }}
+
+                    </td>
 
 
-                <td class="px-6 py-4">
-
-                    <span class="px-2 py-1 text-xs rounded
-                    {{ 
-                    $csa->status === 'ACTIVE'
-                    ? 'bg-green-100 text-green-700'
-                    :
-                    ($csa->status === 'SUSPENDED'
-                    ? 'bg-yellow-100 text-yellow-700'
-                    :
-                    'bg-gray-100 text-gray-700')
-                    }}">
-
-                    {{ ucfirst(strtolower($csa->status)) }}
-
-                    </span>
-
-                </td>
 
 
-                <td class="px-6 py-4">
-                    {{ 
-                    $csa->last_login_at
-                    ? $csa->last_login_at->diffForHumans()
-                    : 'Never'
-                    }}
-                </td>
+
+                    <!-- Zone -->
+
+                    <td class="px-6 py-4 text-sm text-gray-600">
+
+                        {{ $csa->activeAssignment->zone->name ?? '-' }}
+
+                    </td>
 
 
-                <td class="px-6 py-4 text-right">
-
-                    <button
-                    type="button"
-                    class="px-3 py-1 bg-gray-100 rounded text-xs"
-                    x-on:click="
-                        selectCsa(@js($csa));
-                        $dispatch('open-modal','edit-csa');
-                    "
-                    >
-                        Edit
-                    </button>
 
 
-                </td>
 
 
-            </tr>
+                    <!-- Status -->
+
+                    <td class="px-6 py-4 uppercase">
+
+
+                        @if($csa->status === 'ACTIVE')
+
+
+                            <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded">
+
+                                Active
+
+                            </span>
+
+
+                        @elseif($csa->status === 'SUSPENDED')
+
+
+                            <span class="px-2 py-1 text-xs font-medium bg-amber-50 text-amber-600 rounded">
+
+                                Suspended
+
+                            </span>
+
+
+                        @else
+
+
+                            <span class="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded">
+
+                                Inactive
+
+                            </span>
+
+
+                        @endif
+
+
+                    </td>
+
+
+
+
+
+
+
+                    <!-- Last Login -->
+
+
+                    <td class="px-6 py-4 text-sm text-gray-500">
+
+
+                        {{ 
+                            $csa->last_login_at
+                            ? $csa->last_login_at->diffForHumans()
+                            : 'Never'
+                        }}
+
+
+                    </td>
+
+
+
+
+
+
+
+                    <!-- Actions -->
+
+                    <td class="px-6 py-4 text-right text-sm space-x-2">
+
+
+
+                        <!-- Edit -->
+
+                       <x-micro-button
+
+                            type="button"
+
+                            color="gray"
+
+                            icon="edit"
+
+                            size="sm"
+
+                            data-csa="{{ $csa->toJson() }}"
+
+                            x-on:click="
+                                selectCsa(JSON.parse($el.dataset.csa));
+                                $dispatch('open-modal','edit-csa');
+                            "
+
+                        >
+                            edit
+                        </x-micro-button>
+
+
+
+
+
+
+                        <!-- Profile -->
+
+                        <x-micro-button
+
+                            href="{{ route('readings.csas.show',$csa) }}"
+
+                            color="blue"
+
+                            icon="user"
+
+                            size="sm"
+
+                        >
+
+                            Profile
+
+                        </x-micro-button>
+
+
+
+
+
+
+
+                        <!-- Readings -->
+
+                        <x-micro-button
+
+                            href="{{ route('readings.csas.readings',$csa) }}"
+
+                            color="purple"
+
+                            icon="list-todo"
+
+                            size="sm"
+
+                        >
+
+                            Readings
+
+                        </x-micro-button>
+
+
+
+
+
+
+
+                        <!-- Accounts -->
+
+                        <x-micro-button
+
+                            href="{{ route('readings.csas.accounts',$csa) }}"
+
+                            color="slate"
+
+                            icon="file-text"
+
+                            size="sm"
+
+                        >
+
+                            Accounts
+
+                        </x-micro-button>
+
+
+
+
+                    </td>
+
+
+
+                </tr>
+
 
 
             @endforeach
+
+
 
             </tbody>
 
@@ -116,231 +313,619 @@
         </table>
 
 
+
+
+
+        <!-- Pagination -->
+
+
         <div class="p-4">
+
             {{ $csas->links() }}
+
         </div>
+
+
 
 
         @else
 
-        <div class="p-10 text-center text-gray-500">
-            No CSAs found.
-        </div>
+
+
+            <div class="p-10 text-center">
+
+                <div class="flex flex-col items-center space-y-3">
+
+
+                    <i data-lucide="users" class="w-10 h-10 text-gray-300"></i>
+
+
+                    <p class="text-gray-500 text-sm">
+                        No CSAs found.
+                    </p>
+
+
+
+                </div>
+
+
+            </div>
+
+
 
         @endif
+
 
 
     </div>
 
 
 
-    <!-- CREATE MODAL -->
 
-    <x-modal name="create-csa" max-width="md" :closable="false">
 
-        <div class="p-6">
 
-            <h2 class="text-lg font-semibold">
-                Add Meter Reader
-            </h2>
 
 
-            <form method="POST"
-            action="{{route('readings.csas.store')}}"
-            class="space-y-4">
 
-            @csrf
 
 
-            <div>
-                <x-input-label value="Name"/>
-                <x-text-input name="name" class="w-full"/>
-            </div>
 
+<!-- ======================================================
+     CREATE CSA MODAL
+====================================================== -->
 
-            <div>
-                <x-input-label value="Username"/>
-                <x-text-input name="username" class="w-full"/>
-            </div>
 
+<x-modal name="create-csa" max-width="md" :closable="false">
 
-            <div>
-                <x-input-label value="Email"/>
-                <x-text-input name="email" class="w-full"/>
-            </div>
 
+<div class="p-6">
 
-            <div class="flex justify-end">
 
-                <button class="bg-primary text-white px-6 py-2 rounded">
-                    Create CSA
-                </button>
+<h2 class="text-lg font-semibold text-gray-900">
 
-            </div>
+    Add Meter Reader (CSA)
 
+</h2>
 
-            </form>
 
 
-        </div>
 
 
-    </x-modal>
+<form
 
+method="POST"
 
+action="{{ route('readings.csas.store') }}"
 
+class="space-y-4"
 
-    <!-- EDIT MODAL -->
 
+>
 
-    <x-modal name="edit-csa" max-width="md" :closable="false">
 
+@csrf
 
-        <div class="p-6">
 
 
-            <h2 class="text-lg font-semibold">
-                Edit CSA
-                <span class="text-gray-500"
-                x-text="selectedCsa?.name">
-                </span>
-            </h2>
 
+<!-- Name -->
 
+<div>
 
-            <form
-            x-ref="editForm"
-            method="POST"
-            x-bind:action="editFormAction"
-            x-on:submit.prevent="submitEditForm()"
-            class="space-y-4">
+<x-input-label for="name" value="Name"/>
 
-            @csrf
-            @method('PUT')
 
+<x-text-input
 
-            <div>
+id="name"
 
-                <x-input-label value="Name"/>
+name="name"
 
-                <x-text-input
-                name="name"
-                class="w-full"
-                x-model="editName"
-                required/>
+type="text"
 
-            </div>
+class="mt-1 block w-full"
 
+value="{{old('name')}}"
 
+required
 
-            <div>
+autofocus
 
-                <x-input-label value="Username"/>
+/>
 
-                <x-text-input
-                name="username"
-                class="w-full"
-                x-model="editUsername"
-                x-on:input="generateEditPassword()"
-                required/>
 
-            </div>
+<x-input-error :messages="$errors->get('name')" class="mt-2"/>
 
 
+</div>
 
-            <div>
 
-                <x-input-label value="Email"/>
 
-                <x-text-input
-                name="email"
-                class="w-full"
-                x-model="editEmail"/>
 
-            </div>
 
 
 
+<!-- Username -->
 
-            <div>
+<div>
 
-                <x-input-label value="Status"/>
+<x-input-label for="username" value="Username"/>
 
 
-                <select
-                name="status"
-                x-model="editStatus"
-                class="w-full rounded border-gray-300">
+<x-text-input
+    id="username"
+    name="username"
+    type="text"
+    class="mt-1 block w-full"
+    value="{{old('username')}}"
+    x-on:input="generateCreatePassword()"
+    x-model="createUsername"
+    required
+/>
 
-                    <option value="ACTIVE">
-                        Active
-                    </option>
 
-                    <option value="SUSPENDED">
-                        Suspended
-                    </option>
+<x-input-error :messages="$errors->get('username')" class="mt-2"/>
 
 
-                    <option value="INACTIVE">
-                        Inactive
-                    </option>
+</div>
 
-                </select>
 
 
-            </div>
 
 
 
+<!-- Email -->
 
-            <div>
 
-                <x-input-label value="Password"/>
+<div>
 
 
-                <input
-                readonly
-                class="w-full bg-gray-100 border rounded"
-                x-model="editPasswordDisplay">
+<x-input-label for="email" value="Email"/>
 
 
-                <input
-                type="hidden"
-                name="password"
-                x-model="editPassword">
+<x-text-input
 
+id="email"
 
-            </div>
+name="email"
 
+type="email"
 
+class="mt-1 block w-full"
 
+value="{{old('email')}}"
 
-            <div class="flex justify-end">
+/>
 
-                <button
-                type="submit"
-                class="bg-primary text-white px-6 py-2 rounded">
 
-                    Save Changes
+<x-input-error :messages="$errors->get('email')" class="mt-2"/>
 
-                </button>
 
+</div>
 
-            </div>
 
 
-            </form>
 
 
+<!-- Password -->
 
-        </div>
+<div>
 
 
-    </x-modal>
+<x-input-label value="Password (auto-generated)"/>
+
+
+
+<div class="flex items-center space-x-2 mt-1">
+
+
+<input
+id="passwordDisplay"
+type="text"
+readonly
+x-model="createPasswordDisplay"
+class="block w-full px-3 py-2 border bg-gray-100 text-gray-700 cursor-not-allowed"
+/>
+
+
+<button
+type="button"
+x-on:click="copyCreatePassword($event)"
+class="px-3 py-2 text-gray-600"
+>
+
+<i data-lucide="copy" class="w-5 h-5"></i>
+
+</button>
 
 
 
 </div>
+
+
+<p class="text-gray-500 text-xs mt-1">
+
+Default password format:
+
+<code>[username]1234</code>
+
+</p>
+
+
+
+</div>
+
+
+
+
+
+<input
+type="hidden"
+name="password"
+x-model="createPassword"
+/>
+
+
+
+
+
+
+
+<div class="flex justify-end">
+
+
+<button
+
+type="submit"
+
+class="bg-primary text-white px-6 py-2 rounded"
+
+>
+
+Create CSA
+
+</button>
+
+
+</div>
+
+
+
+
+</form>
+
+
+</div>
+
+
+</x-modal>
+
+<!-- ======================================================
+     EDIT CSA MODAL
+====================================================== -->
+
+
+<x-modal name="edit-csa" max-width="md" :closable="false">
+
+<div class="p-6">
+
+
+<h2 class="text-lg font-semibold text-gray-900">
+
+    Edit Meter Reader (CSA)
+
+
+</h2>
+
+
+
+
+
+<form
+
+x-ref="editForm"
+
+method="POST"
+
+x-bind:action="editFormAction"
+
+x-on:submit.prevent="submitEditForm()"
+
+class="space-y-4"
+
+>
+
+
+@csrf
+
+@method('PUT')
+
+
+
+
+
+<!-- Name -->
+
+<div>
+
+
+<x-input-label for="edit_name" value="Name"/>
+
+
+<x-text-input
+
+id="edit_name"
+
+name="name"
+
+type="text"
+
+class="mt-1 block w-full"
+
+x-model="editName"
+
+required
+
+/>
+
+
+<x-input-error :messages="$errors->get('name')" class="mt-2"/>
+
+
+</div>
+
+
+
+
+
+
+
+
+<!-- Username -->
+
+<div>
+
+
+<x-input-label for="edit_username" value="Username"/>
+
+
+
+<x-text-input
+
+id="edit_username"
+
+name="username"
+
+type="text"
+
+class="mt-1 block w-full"
+
+x-model="editUsername"
+
+x-on:input="generateEditPassword()"
+
+required
+
+/>
+
+
+
+<x-input-error :messages="$errors->get('username')" class="mt-2"/>
+
+
+</div>
+
+
+
+
+
+
+
+<!-- Email -->
+
+
+<div>
+
+
+<x-input-label for="edit_email" value="Email"/>
+
+
+
+<x-text-input
+
+id="edit_email"
+
+name="email"
+
+type="email"
+
+class="mt-1 block w-full"
+
+x-model="editEmail"
+
+/>
+
+
+<x-input-error :messages="$errors->get('email')" class="mt-2"/>
+
+
+</div>
+
+
+
+
+
+
+
+<!-- Status -->
+
+
+<div>
+
+
+<x-input-label for="edit_status" value="Status"/>
+
+
+<select
+
+id="edit_status"
+
+name="status"
+
+x-model="editStatus"
+
+required
+
+class="mt-1 block w-full border-gray-300 shadow-sm focus:ring-primary focus:border-primary"
+
+
+>
+
+
+<option value="ACTIVE">
+Active
+</option>
+
+
+<option value="SUSPENDED">
+Suspended
+</option>
+
+
+<option value="INACTIVE">
+Inactive
+</option>
+
+
+</select>
+
+
+
+<x-input-error :messages="$errors->get('status')" class="mt-2"/>
+
+
+</div>
+
+
+
+
+
+
+
+
+<!-- Password -->
+
+
+<div>
+
+
+<x-input-label value="Password (auto-generated)"/>
+
+
+
+<div class="flex items-center space-x-2 mt-1">
+
+
+<input
+
+type="text"
+
+readonly
+
+x-model="editPasswordDisplay"
+
+class="block w-full px-3 py-2 border bg-gray-100 text-gray-700 cursor-not-allowed"
+
+/>
+
+
+
+<button
+
+type="button"
+
+x-on:click="copyEditPassword($event)"
+
+class="px-3 py-2 text-gray-600 rounded hover:bg-gray-100"
+
+>
+
+<i data-lucide="copy" class="w-5 h-5"></i>
+
+</button>
+
+
+</div>
+
+
+
+<p class="text-gray-500 text-xs mt-1">
+
+Updates automatically when username changes.
+
+</p>
+
+
+
+</div>
+
+
+
+
+
+
+
+<input
+
+type="hidden"
+
+name="password"
+
+x-model="editPassword"
+
+/>
+
+
+
+
+
+
+
+
+
+<div class="flex justify-end">
+
+
+<button
+
+type="submit"
+
+class="bg-primary text-white px-6 py-2 rounded"
+
+>
+
+
+Save Changes
+
+
+</button>
+
+
+</div>
+
+
+
+
+
+</form>
+
+
+
+</div>
+
+
+</x-modal>
+
 
 
 
@@ -356,99 +941,297 @@ document.addEventListener('alpine:init',()=>{
 Alpine.data('csaForm',()=>({
 
 
-    selectedCsa:null,
+/*
+|--------------------------------------------------------------------------
+| Create CSA State
+|--------------------------------------------------------------------------
+*/
+
+createUsername:'',
+
+createPassword:'',
+
+createPasswordDisplay:'',
+/*
+|--------------------------------------------------------------------------
+| Edit CSA State
+|--------------------------------------------------------------------------
+*/
 
 
-    editName:'',
-    editUsername:'',
-    editEmail:'',
-    editStatus:'ACTIVE',
-
-    editPassword:'',
-    editPasswordDisplay:'',
+selectedCsa:null,
 
 
+editName:'',
 
-    actionTemplate:
-    "{{route('readings.csas.update',['csa'=>'CSA_ID'])}}",
+editUsername:'',
+
+editEmail:'',
+
+editStatus:'ACTIVE',
+
+
+editPassword:'',
+
+editPasswordDisplay:'',
 
 
 
 
-    selectCsa(csa)
+
+
+/*
+|--------------------------------------------------------------------------
+| Laravel route placeholder
+|--------------------------------------------------------------------------
+*/
+
+
+actionTemplate:
+"{{ route('readings.csas.update',['csa'=>'CSA_ID']) }}",
+
+
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+| Populate Edit Modal
+|--------------------------------------------------------------------------
+*/
+
+
+selectCsa(csa)
+{
+
+
+this.selectedCsa = csa;
+
+
+
+this.editName = csa.name ?? '';
+
+this.editUsername = csa.username ?? '';
+
+this.editEmail = csa.email ?? '';
+
+this.editStatus = csa.status ?? 'ACTIVE';
+
+
+
+this.generateEditPassword();
+
+
+
+},
+
+
+
+
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+| Password generator
+|--------------------------------------------------------------------------
+*/
+generateCreatePassword()
+{
+
+    let username = (this.createUsername || '').trim();
+
+
+    this.createPassword =
+        username
+        ? username + '1234'
+        : '';
+
+
+    this.createPasswordDisplay =
+        this.createPassword;
+
+},
+
+copyCreatePassword(event)
+{
+
+    if(!this.createPasswordDisplay)
     {
-
-        this.selectedCsa=csa;
-
-
-        this.editName=csa.name ?? '';
-
-        this.editUsername=csa.username ?? '';
-
-        this.editEmail=csa.email ?? '';
-
-        this.editStatus=csa.status ?? 'ACTIVE';
-
-
-        this.generateEditPassword();
-
-    },
-
-
-
-
-    generateEditPassword()
-    {
-
-        let username=this.editUsername.trim();
-
-
-        this.editPassword =
-            username
-            ? username+'1234'
-            : '';
-
-
-        this.editPasswordDisplay=this.editPassword;
-
-    },
-
-
-
-
-
-    get editFormAction()
-    {
-
-        if(!this.selectedCsa)
-        {
-            return '#';
-        }
-
-
-        return this.actionTemplate.replace(
-            'CSA_ID',
-            this.selectedCsa.id
-        );
-
-    },
-
-
-
-
-
-    submitEditForm()
-    {
-
-        if(!this.selectedCsa)
-        {
-            return;
-        }
-
-
-        this.$refs.editForm.submit();
-
+        return;
     }
+
+
+    navigator.clipboard.writeText(
+        this.createPasswordDisplay
+    );
+
+
+    const button = event.currentTarget;
+
+    const original = button.innerHTML;
+
+
+    button.textContent='Copied!';
+
+
+    setTimeout(()=>{
+
+        button.innerHTML = original;
+
+    },2000);
+
+},
+
+generateEditPassword()
+{
+
+
+let username = (this.editUsername || '').trim();
+
+
+
+this.editPassword =
+username
+? username + '1234'
+: '';
+
+
+
+this.editPasswordDisplay =
+this.editPassword;
+
+
+
+},
+
+
+
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+| Dynamic PUT route
+|--------------------------------------------------------------------------
+*/
+
+
+get editFormAction()
+{
+
+
+if(!this.selectedCsa)
+{
+
+return '#';
+
+}
+
+
+
+return this.actionTemplate.replace(
+
+'CSA_ID',
+
+this.selectedCsa.id
+
+);
+
+
+
+},
+
+
+
+
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+| Submit
+|--------------------------------------------------------------------------
+*/
+
+
+submitEditForm()
+{
+
+
+if(!this.selectedCsa)
+{
+
+return;
+
+}
+
+
+
+this.$refs.editForm.submit();
+
+
+
+},
+
+
+
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+| Copy Password
+|--------------------------------------------------------------------------
+*/
+
+
+copyEditPassword(event)
+{
+
+
+if(!this.editPasswordDisplay)
+{
+
+return;
+
+}
+
+
+
+navigator.clipboard.writeText(
+this.editPasswordDisplay
+);
+
+
+
+const button = event.currentTarget;
+
+
+const original = button.innerHTML;
+
+
+
+button.textContent='Copied!';
+
+
+
+setTimeout(()=>{
+
+
+button.innerHTML=original;
+
+
+},2000);
+
+
+
+}
 
 
 
@@ -461,6 +1244,9 @@ Alpine.data('csaForm',()=>({
 </script>
 
 @endpush
+
+
+</div>
 
 
 </x-app-layout>

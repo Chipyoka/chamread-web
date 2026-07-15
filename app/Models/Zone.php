@@ -12,4 +12,9 @@ class Zone extends Model
     {
         return $this->hasMany(Dma::class);
     }
+
+    public function customerAccounts()
+{
+    return $this->hasMany(CustomerAccount::class);
+}
 }

@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="p-6 space-y-6">
+    <div  x-data="" class="p-6 space-y-6">
 
         <!-- Header -->
         <div class="flex items-center justify-between">
@@ -14,9 +14,11 @@
     
                     <x-micro-button
                        color="purple"
-                       href="{{ route('readings.csas.assign', $csa) }}"
+                       type="button"
                        icon="map-pin"
                        size="md"
+
+                       x-on:click="$dispatch('open-modal', 'create-cycle')"
                    >
                        Assign
                    </x-micro-button>
@@ -71,6 +73,12 @@
                     <p class="text-gray-600 font-semibold">{{ $csa->activeAssignment->zone->name ?? '-' }}</p>
                 </div>
 
+                <div  class="px-2 py-1.5 bg-gray-50 rounded-sm">
+                    <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Device</h2>
+                    <p class="text-gray-600 font-semibold">
+                        {{ $csa->device->name ?? '-' }} - {{ $csa->device->model ?? '-' }}
+                    </p>
+                </div>
                 <div  class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Last Login</h2>
                     <p class="text-gray-600 font-semibold">
@@ -133,4 +141,79 @@
         </div>
 
     </div>
+
+
+       <!-- Create cycle modal -->
+        <x-modal name="create-cycle" max-width="lg" :closable="false">
+            <div class="p-6">
+                <h2 class="text-lg font-semibold text-gray-900">Assign Device and Zone to CSA</h2>
+                 <!-- Assignment Form -->
+                <form action="{{ route('readings.csas.assign.store', $csa) }}" method="POST" class="space-y-4">
+                    @csrf
+
+                    <!-- Target -->
+                    <div>
+                        <x-input-label for="target" :value="__('Target')" />
+                        <x-text-input id="target" name="target" type="number" class="mt-1 block w-full" value="{{ old('name') }}" required autofocus />
+                        <x-input-error :messages="$errors->get('target')" class="mt-2" />
+                    </div>
+
+
+                    <!-- Zone -->
+                    <div>
+                        <x-input-label for="zone_id" :value="__('Zone')" />
+                        <select id="zone_id" name="zone_id" class="mt-1 block w-full border-gray-300 shadow-sm focus:ring focus:ring-primary focus:ring-opacity-50" required>
+                            <option value="">-- Select Zone --</option>
+                            @foreach($zones as $zone)
+                                <option value="{{ $zone->id }}">{{ $zone->name }} - ({{ $zone->customer_accounts_count }} accounts)</option>
+                            @endforeach
+                        </select>
+                        <x-input-error :messages="$errors->get('zone_id')" class="mt-2" />
+                    </div>
+
+                    
+
+                    <!-- Billing Cycle -->
+                    <div>
+                        <x-input-label for="billing_cycle_id" :value="__('Billing Cycle')" />
+                        <select id="billing_cycle_id" name="billing_cycle_id" class="mt-1 block w-full border-gray-300 shadow-sm focus:ring focus:ring-primary focus:ring-opacity-50" required>
+                            <option value="">-- Select Billing Cycle --</option>
+                            @foreach($cycles as $cycle)
+                                <option value="{{ $cycle->id }}">{{ $cycle->name }} </option>
+                            @endforeach
+                        </select>
+                        <x-input-error :messages="$errors->get('billing_cycle_id')" class="mt-2" />
+                    </div>
+
+                    <!-- Devices -->
+                    <div>
+                        <x-input-label for="device_id" :value="__('Device')" />
+                        <select id="device_id" name="device_id" class="mt-1 block w-full border-gray-300 shadow-sm focus:ring focus:ring-primary focus:ring-opacity-50" required>
+                            <option value="">-- Select Device--</option>
+                            @foreach($devices as $device)
+                                <option value="{{ $device->id }}">{{ $device->name }} - {{ $device->model }} </option>
+                            @endforeach
+                        </select>
+                        <x-input-error :messages="$errors->get('device_id')" class="mt-2" />
+                    </div>
+
+                    <!-- Status -->
+                    <div>
+                        <x-input-label for="status" :value="__('Status')" />
+                        <select name="status" id="status" class="mt-1 block w-full border-gray-300 shadow-sm focus:ring focus:ring-primary focus:ring-opacity-50">
+                            <option value="active">Active</option>
+                            <option value="reassigned">Reassigned</option>
+                        </select>
+                        <x-input-error :messages="$errors->get('status')" class="mt-2" />
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="flex justify-end">
+                        <button type="submit" class="px-6 py-2 bg-primary text-white  hover:bg-primary/90 transition">
+                            Assign
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </x-modal>
 </x-app-layout>

@@ -54,10 +54,15 @@ class User extends Authenticatable
         ->where('status', 'active');
 }
 
-public function zone()
-{
-    return $this->activeAssignment?->zone;
-}
+    public function zone()
+    {
+        return $this->activeAssignment?->zone;
+    }
+
+    public function device()
+    {
+        return $this->belongsTo(Device::class);
+    }
 
     /**
      * Readings done by the CSA.
