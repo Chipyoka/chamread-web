@@ -45,7 +45,7 @@
             <h3 class="text-gray-400 text-xs uppercase my-2">Readings</h3>
 
             @if($readings->count() > 0)
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-100">
                     <thead class="bg-gray-50">
                         <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                             <th class="px-6 py-3">Account</th>

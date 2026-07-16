@@ -33,7 +33,7 @@
 
         <!-- Import Modal -->
         <div id="importModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div class="relative top-20 mx-auto p-5 border border-gray-100 rounded-md shadow-lg w-96 bg-white">
+            <div class="relative top-20 mx-auto p-5 border border-gray-100 rounded-lg shadow-lg w-[28rem] bg-white">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-gray-800">Import Zones</h3>
                     <button id="closeImportModal" class="text-gray-500 hover:text-gray-700">
@@ -44,17 +44,17 @@
                     @csrf
                     <div class="mb-4">
                         <label class="block text-xs font-medium text-gray-700 mb-2">
-                            Excel File (.xlsx, .xls, .csv)
+                            Excel File 
                         </label>
                         <input 
                             type="file" 
                             name="file" 
                             id="fileInput"
                             accept=".xlsx,.xls,.csv"
-                            class="w-full px-3 py-2 border border-gray-100 rounded-sm text-xs focus:outline-none focus:ring-1 focus:ring-gray-500"
+                            class="w-full px-3 py-2 border border-gray-200 rounded-sm text-xs focus:outline-none focus:ring-1 focus:ring-gray-500"
                             required
                         >
-                        <p class="mt-1 text-xs text-gray-500">Maximum file size: 5MB</p>
+                        <p class="my-2 text-xxs text-gray-500">.xlsx, .xls, .csv allowed | Maximum file size: 5MB</p>
                     </div>
                     <div class="flex justify-end gap-2">
                         <button 
@@ -84,7 +84,7 @@
         </div>
         <div class="bg-white rounded-md p-4 space-y-4 border border-gray-200 overflow-hidden">
             <div class="overflow-x-auto  rounded-sm">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-100">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Code</th>
@@ -94,7 +94,7 @@
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="zonesTableBody" class="bg-white divide-y divide-gray-200">
+                    <tbody id="zonesTableBody" class="bg-white divide-y divide-gray-100">
                         @foreach($zones as $zone)
                         <tr class="hover:bg-gray-50 transition-colors" data-id="{{ $zone->id }}">
                             <td class="px-4 py-3">
@@ -123,11 +123,13 @@
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2">
+                                    @if($zone->assignments_count == 0)
                                     <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" class="status-toggle sr-only peer" {{ $zone->status === 'active' ? 'checked' : '' }}>
+                                        <input  type="checkbox" class="status-toggle sr-only peer" {{ $zone->status === 'active' ? 'checked' : '' }}>
                                         <div class="w-9 h-5 bg-gray-300 rounded-full peer peer-checked:bg-green-600 transition-colors"></div>
                                         <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-4"></div>
                                     </label>
+                                    @endif
                                     <span class="status-label inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $zone->status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' }}">
                                         {{ ucfirst($zone->status) }}
                                     </span>

@@ -1,117 +1,122 @@
 <x-app-layout>
-    <div class="p-6">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-semibold text-gray-800">Devices</h2>
-           
-        </div>
-
-        <div class="bg-white rounded-md p-4 space-y-4 overflow-x-auto border border-gray-100 thin-scrollbar ">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Name</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Type</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Model</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Serial #</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="devicesTableBody" class="bg-white divide-y divide-gray-200">
-                    @foreach($devices as $device)
-                    <tr class="hover:bg-gray-50 transition-colors" data-id="{{ $device->id }}">
-                        <td class="px-4 py-3">
-                            <input 
-                                type="text" 
-                                class="name-input w-40 px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs"
-                                value="{{ $device->name }}"
-                                readonly
-                            >
-                        </td>
-                        <td class="px-4 py-3 w-24">
-                            <select class="type-select w-full px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs bg-white" disabled>
-                                <option value="phone" {{ $device->type === 'phone' ? 'selected' : '' }}>Phone</option>
-                                <option value="tablet" {{ $device->type === 'tablet' ? 'selected' : '' }}>Tablet</option>
-                                <option value="laptop" {{ $device->type === 'laptop' ? 'selected' : '' }}>Laptop</option>
-                                <option value="desktop" {{ $device->type === 'desktop' ? 'selected' : '' }}>Desktop</option>
-                                <option value="other" {{ $device->type === 'other' ? 'selected' : '' }}>Other</option>
-                            </select>
-                        </td>
-                        <td class="px-4 py-3">
-                            <input 
-                                type="text" 
-                                class="model-input w-32 px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs"
-                                value="{{ $device->model }}"
-                                readonly
-                            >
-                        </td>
-                        <td class="px-4 py-3">
-                            <input 
-                                type="text" 
-                                class="serial-input w-32 px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs"
-                                value="{{ $device->serial_number }}"
-                                readonly
-                            >
-                        </td>
-                        <td class="px-4 py-3">
-                            <div class="flex items-center gap-2">
-                                <select class="status-select px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs bg-white" disabled>
-                                    <option value="active" {{ $device->status === 'active' ? 'selected' : '' }}>Active</option>
-                                    <option value="inactive" {{ $device->status === 'inactive' ? 'selected' : '' }}>Inactive</option>
-                                    <option value="lost" {{ $device->status === 'lost' ? 'selected' : '' }}>Lost</option>
-                                    <option value="damaged" {{ $device->status === 'damaged' ? 'selected' : '' }}>Damaged</option>
-                                    <option value="returned" {{ $device->status === 'returned' ? 'selected' : '' }}>Returned</option>
-                                </select>
-                            </div>
-                        </td>
-                        <td class="px-4 py-3">
-                             <div class="flex items-center gap-3">
-                                    <button class="edit-row inline-flex items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors text-xs font-medium">
-                                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                                        Edit
-                                    </button>
-                                    <button class="save-row hidden inline-flex items-center gap-1 text-green-600 hover:text-green-800 transition-colors text-xs font-medium">
-                                        <i data-lucide="circle-check" class="w-3.5 h-3.5"></i>
-                                        Save
-                                    </button>
-                                    <button class="cancel-row hidden inline-flex items-center gap-1 text-gray-500 hover:text-gray-700 transition-colors text-xs font-medium">
-                                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                                        Cancel
-                                    </button>
-
-                                    <!-- Check if user is admin -->
-                                    @if(Auth::user()->role === 'ADMIN')
-                                        <button class="delete-row inline-flex items-center gap-1 text-red-600 hover:text-red-800 transition-colors text-xs font-medium">
-                                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                                            Delete
-                                        </button>
-                                    @endif
-                                </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        
-
-          <div class="mt-6 gap-4 flex justify-end">
-                <button
-                    id="addNewRow"
-                    class="inline-flex items-center px-3 py-2.5 bg-primary text-white text-xs font-medium rounded-md hover:bg-primary/90 transition"
-                >
-                    <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
-                    New Device
-                </button>
-                <button
-                    id="saveAllChanges"
-                    class="inline-flex items-center px-3 py-2.5 bg-primary text-white text-xs font-medium rounded-md hover:bg-primary/90 transition"
-                >
-                    <i data-lucide="save" class="w-4 h-4 mr-2"></i>
-                    Save All Changes
-                </button>
+    <div class="p-6 space-y-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-medium text-gray-600">Devices</h1>
+                <p class="text-sm text-gray-500">Manage all devices for assignment to meter readers</p>
             </div>
+        </div>
+
+        <div class="bg-white rounded-md p-4 space-y-4 border border-gray-200 overflow-hidden">
+            <div class="bg-white rounded-md p-4 space-y-4 overflow-x-auto  thin-scrollbar ">
+                <table class="min-w-full divide-y divide-gray-100">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Name</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Type</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Model</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Serial #</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="devicesTableBody" class="bg-white divide-y divide-gray-100">
+                        @foreach($devices as $device)
+                        <tr class="hover:bg-gray-50 transition-colors" data-id="{{ $device->id }}">
+                            <td class="px-4 py-3">
+                                <input 
+                                    type="text" 
+                                    class="name-input w-40 px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs"
+                                    value="{{ $device->name }}"
+                                    readonly
+                                >
+                            </td>
+                            <td class="px-4 py-3 w-24">
+                                <select class="type-select w-20 px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs bg-white" disabled>
+                                    <option value="phone" {{ $device->type === 'phone' ? 'selected' : '' }}>Phone</option>
+                                    <option value="tablet" {{ $device->type === 'tablet' ? 'selected' : '' }}>Tablet</option>
+                                    <option value="laptop" {{ $device->type === 'laptop' ? 'selected' : '' }}>Laptop</option>
+                                    <option value="desktop" {{ $device->type === 'desktop' ? 'selected' : '' }}>Desktop</option>
+                                    <option value="other" {{ $device->type === 'other' ? 'selected' : '' }}>Other</option>
+                                </select>
+                            </td>
+                            <td class="px-4 py-3">
+                                <input 
+                                    type="text" 
+                                    class="model-input w-32 px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs"
+                                    value="{{ $device->model }}"
+                                    readonly
+                                >
+                            </td>
+                            <td class="px-4 py-3">
+                                <input 
+                                    type="text" 
+                                    class="serial-input w-32 px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs"
+                                    value="{{ $device->serial_number }}"
+                                    readonly
+                                >
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center gap-2">
+                                    <select class="status-select px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs bg-white" disabled>
+                                        <option value="active" {{ $device->status === 'active' ? 'selected' : '' }}>Active</option>
+                                        <option value="inactive" {{ $device->status === 'inactive' ? 'selected' : '' }}>Inactive</option>
+                                        <option value="lost" {{ $device->status === 'lost' ? 'selected' : '' }}>Lost</option>
+                                        <option value="damaged" {{ $device->status === 'damaged' ? 'selected' : '' }}>Damaged</option>
+                                        <option value="returned" {{ $device->status === 'returned' ? 'selected' : '' }}>Returned</option>
+                                    </select>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3">
+                                 <div class="flex items-center gap-3">
+                                        <button class="edit-row inline-flex items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors text-xs font-medium">
+                                            <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                                            Edit
+                                        </button>
+                                        <button class="save-row hidden inline-flex items-center gap-1 text-green-600 hover:text-green-800 transition-colors text-xs font-medium">
+                                            <i data-lucide="circle-check" class="w-3.5 h-3.5"></i>
+                                            Save
+                                        </button>
+                                        <button class="cancel-row hidden inline-flex items-center gap-1 text-gray-500 hover:text-gray-700 transition-colors text-xs font-medium">
+                                            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                            Cancel
+                                        </button>
+    
+                                        <!-- Check if user is admin -->
+                                        @if(Auth::user()->role === 'ADMIN')
+                                            <button class="delete-row inline-flex items-center gap-1 text-red-600 hover:text-red-800 transition-colors text-xs font-medium">
+                                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                                Delete
+                                            </button>
+                                        @endif
+                                    </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+    
+            
+    
+              <div class="mt-6 gap-4 flex justify-end">
+                    <button
+                        id="addNewRow"
+                        class="inline-flex items-center px-3 py-2.5 bg-primary text-white text-xs font-medium rounded-md hover:bg-primary/90 transition"
+                    >
+                        <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                        New Device
+                    </button>
+                    <button
+                        id="saveAllChanges"
+                        class="inline-flex items-center px-3 py-2.5 bg-primary text-white text-xs font-medium rounded-md hover:bg-primary/90 transition"
+                    >
+                        <i data-lucide="save" class="w-4 h-4 mr-2"></i>
+                        Save All Changes
+                    </button>
+                </div>
+        </div>
+
     </div>
 
     @push('scripts')

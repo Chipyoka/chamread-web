@@ -49,7 +49,7 @@
 
 
 
-        <table class="min-w-full divide-y divide-gray-200">
+        <table class="min-w-full divide-y divide-gray-100">
 
 
             <thead class="bg-gray-50">

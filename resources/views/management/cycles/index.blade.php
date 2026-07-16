@@ -27,7 +27,7 @@
 
             @if($billingCycles->count() > 0)
 
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-100">
                     <thead class="bg-gray-50">
                         <tr class="text-left text-xxs font-semibold text-gray-500 uppercase tracking-wider">
                             <th class="px-6 py-3">Name</th>

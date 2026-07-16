@@ -12,7 +12,7 @@
         <div class="bg-white rounded-md p-4 space-y-4 border border-gray-200 overflow-hidden">
 
             <div class="overflow-x-auto rounded-sm">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-100">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Code</th>
@@ -23,7 +23,7 @@
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="codesTableBody" class="bg-white divide-y divide-gray-200">
+                    <tbody id="codesTableBody" class="bg-white divide-y divide-gray-100">
                         @foreach($codes as $code)
                         <tr class="hover:bg-gray-50 transition-colors" data-id="{{ $code->id }}">
                             <td class="px-4 py-3">
