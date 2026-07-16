@@ -7,15 +7,6 @@
                 <h1 class="text-2xl font-medium text-gray-600">Customer Accounts</h1>
                 <p class="text-sm text-gray-500">Manage Customer Accounts</p>
             </div>
-
-            <!-- allow only admins -->
-             @if(Auth::user()->role === 'ADMIN')
-            <a href="{{ route('readings.accounts.create') }}"
-               class="inline-flex items-center px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary/90 transition">
-                <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
-                Add Account
-            </a>
-            @endif
         </div>
 
         <!-- Table -->
@@ -31,7 +22,6 @@
                             <th class="px-6 py-3">Name</th>
                             <th class="px-6 py-3">Phone</th>
                             <th class="px-6 py-3">Zone</th>
-                            <th class="px-6 py-3">Billing Area</th>
                             <th class="px-6 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
@@ -53,7 +43,7 @@
 
                                 <!-- Name -->
                                 <td class="px-6 py-4 text-sm text-gray-600 font-medium">
-                                    {{ $account->name }}
+                                    {{ $account->customer_name }}
                                 </td>
 
                                 <!-- Phone -->
@@ -67,11 +57,6 @@
                                     {{ $account->zone->name ?? '-' }}
                                 </td>
 
-
-                                    <!-- Billing Area -->
-                                <td class="px-6 py-4 text-sm text-gray-600">
-                                    {{ $account->billing_area ?? '-' }}
-                                </td>
 
                                 <!-- Actions -->
                                 <td class="px-6 py-4 text-right text-sm space-x-2">
