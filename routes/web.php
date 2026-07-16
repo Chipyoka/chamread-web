@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\MeterReadingCodeController;
 use App\Http\Controllers\Admin\MonthlyTemplateController;
 use App\Http\Controllers\Admin\DeviceController;
+use App\Http\Controllers\Admin\ZoneController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -171,11 +172,17 @@ Route::middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->group(functio
 
         /**
          * =====================================================
-         *  MRC DEFINITION MANAGEMENT
+         *  ZONES MANAGEMENT
          * =====================================================
          */
-        Route::prefix('mrc-definition')->name('mrc-definition.')->group(function () {
-            Route::get('/', [UtilityController::class, 'index'])->name('index');
+        Route::prefix('zones')->name('zones.')->group(function () {
+            Route::get('/', [ZoneController::class, 'index'])->name('index');
+            Route::post('/', [ZoneController::class, 'store'])->name('store');
+            Route::put('/{zone}', [ZoneController::class, 'update'])->name('update');
+            Route::delete('/{zone}', [ZoneController::class, 'destroy'])->name('delete');
+            Route::post('/bulk-update', [ZoneController::class, 'bulkUpdate'])->name('bulk-update');
+            Route::post('/import', [ZoneController::class, 'import'])->name('import');
+            Route::get('/download-template', [ZoneController::class, 'downloadTemplate'])->name('download-template');
         });
 
         /**

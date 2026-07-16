@@ -23,13 +23,13 @@
                         <td class="px-4 py-3">
                             <input 
                                 type="text" 
-                                class="name-input w-40 px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                class="name-input w-40 px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs"
                                 value="{{ $device->name }}"
                                 readonly
                             >
                         </td>
                         <td class="px-4 py-3 w-24">
-                            <select class="type-select w-full px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm bg-white" disabled>
+                            <select class="type-select w-full px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs bg-white" disabled>
                                 <option value="phone" {{ $device->type === 'phone' ? 'selected' : '' }}>Phone</option>
                                 <option value="tablet" {{ $device->type === 'tablet' ? 'selected' : '' }}>Tablet</option>
                                 <option value="laptop" {{ $device->type === 'laptop' ? 'selected' : '' }}>Laptop</option>
@@ -40,7 +40,7 @@
                         <td class="px-4 py-3">
                             <input 
                                 type="text" 
-                                class="model-input w-32 px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                class="model-input w-32 px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs"
                                 value="{{ $device->model }}"
                                 readonly
                             >
@@ -48,14 +48,14 @@
                         <td class="px-4 py-3">
                             <input 
                                 type="text" 
-                                class="serial-input w-32 px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm"
+                                class="serial-input w-32 px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs"
                                 value="{{ $device->serial_number }}"
                                 readonly
                             >
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-2">
-                                <select class="status-select px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm bg-white" disabled>
+                                <select class="status-select px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs bg-white" disabled>
                                     <option value="active" {{ $device->status === 'active' ? 'selected' : '' }}>Active</option>
                                     <option value="inactive" {{ $device->status === 'inactive' ? 'selected' : '' }}>Inactive</option>
                                     <option value="lost" {{ $device->status === 'lost' ? 'selected' : '' }}>Lost</option>
@@ -295,10 +295,10 @@
                 newRow.className = 'hover:bg-gray-50 transition-colors bg-gray-50';
                 newRow.innerHTML = `
                     <td class="px-4 py-3">
-                        <input type="text" class="name-input w-40 px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm" placeholder="Name">
+                        <input type="text" class="name-input w-40 px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs" placeholder="Name">
                     </td>
                     <td class="px-4 py-3">
-                        <select class="type-select px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm bg-white">
+                        <select class="type-select px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs bg-white">
                             <option value="phone">Phone</option>
                             <option value="tablet">Tablet</option>
                             <option value="laptop">Laptop</option>
@@ -307,13 +307,13 @@
                         </select>
                     </td>
                     <td class="px-4 py-3">
-                        <input type="text" class="model-input w-32 px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm" placeholder="Model">
+                        <input type="text" class="model-input w-32 px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs" placeholder="Model">
                     </td>
                     <td class="px-4 py-3">
-                        <input type="text" class="serial-input w-32 px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm" placeholder="Serial #">
+                        <input type="text" class="serial-input w-32 px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs" placeholder="Serial #">
                     </td>
                     <td class="px-4 py-3">
-                        <select class="status-select px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-sm bg-white">
+                        <select class="status-select px-2 py-1 border border-gray-100 rounded-sm focus:outline-none focus:ring-1 focus:ring-gray-500 text-xs bg-white">
                             <option value="active">Active</option>
                             <option value="inactive">Inactive</option>
                             <option value="lost">Lost</option>
@@ -323,8 +323,8 @@
                     </td>
                     <td class="px-4 py-3">
                         <div class="flex items-center gap-2">
-                            <button class="save-new-row text-green-600 hover:text-green-800 transition-colors text-sm font-medium">Save</button>
-                            <button class="cancel-new-row text-gray-500 hover:text-gray-700 transition-colors text-sm font-medium">Cancel</button>
+                            <button class="save-new-row text-green-600 hover:text-green-800 transition-colors text-xs font-medium">Save</button>
+                            <button class="cancel-new-row text-gray-500 hover:text-gray-700 transition-colors text-xs font-medium">Cancel</button>
                         </div>
                     </td>
                 `;
@@ -369,9 +369,9 @@
                         selects.forEach(select => select.disabled = true);
 
                         row.querySelector('.save-new-row').outerHTML = `
-                            <button class="edit-row text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium">Edit</button>`;
+                            <button class="edit-row text-gray-600 hover:text-gray-900 transition-colors text-xs font-medium">Edit</button>`;
                         row.querySelector('.cancel-new-row').outerHTML = `
-                            <button class="delete-row text-red-600 hover:text-red-800 transition-colors text-sm font-medium">Delete</button>`;
+                            <button class="delete-row text-red-600 hover:text-red-800 transition-colors text-xs font-medium">Delete</button>`;
 
                         notyf.success('Device created successfully!');
                     })

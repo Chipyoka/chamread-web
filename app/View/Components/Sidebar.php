@@ -45,8 +45,9 @@ class Sidebar extends Component
                 'icon'  => 'layout-dashboard',
                 'roles' => ['ADMIN'],
                 'children' => [
-                    ['name' => 'Billing Cycles',  'route' => 'management.cycles.index',                'pattern' => 'management.cycles.*',                'icon' => 'calendar',       'roles' => ['ADMIN']],
                     ['name' => 'ERP',      'route' => 'management.erp.index',                   'pattern' => 'management.erp.*',                   'icon' => 'layers',       'roles' => ['ADMIN']],
+                    ['name' => 'Billing Cycles',  'route' => 'management.cycles.index',                'pattern' => 'management.cycles.*',                'icon' => 'calendar',       'roles' => ['ADMIN']],
+                    ['name' => 'Zones',      'route' => 'management.zones.index',                   'pattern' => 'management.zones.*',                   'icon' => 'map',       'roles' => ['ADMIN']],
                     ['name' => 'Analytics',              'route' => 'management.analytics.index',                   'pattern' => 'management.analytics.*',       'icon' => 'bar-chart-2',  'roles' => ['ADMIN']],
                 ],
             ],
