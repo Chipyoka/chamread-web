@@ -57,6 +57,13 @@ public function index()
     $zeroConsumption = 0;
     $totalAssignedAccounts = 0;
 
+
+    $read = CustomerAccount::whereExists(function ($query) {
+            $query->selectRaw(1)
+                ->from('readings')
+                ->whereColumn('readings.account_id', 'customer_accounts.id');
+        })->count();
+
     /*
     |--------------------------------------------------------------------------
     | Only execute billing-cycle-dependent logic if cycle exists
@@ -168,6 +175,7 @@ public function index()
         'totalReadings',
         'completionRate',
         'topCsas',
+        'read',
         'accountsRead',
         'accountsNotRead',
         'accountsAbnormal',

@@ -11,7 +11,9 @@ use Illuminate\View\View;
 
 
 use App\Models\Reading;
+use App\Models\CustomerAccount;
 use App\Models\BillingCycle;
+use App\Models\CsaAssignment;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -19,13 +21,32 @@ class AuthenticatedSessionController extends Controller
      * Display the login view.
      */
     public function create(): View
+
     {
-        $read = Reading::where('status', 'read')->count();
-
-        $pending = Reading::where('status', '!=', 'read')->count();
-
         // Latest billing cycle
-        $currentCycle = BillingCycle::latest()->first();
+    $currentCycle = BillingCycle::latest()->first();
+
+        $read = CustomerAccount::whereExists(function ($query) {
+                    $query->selectRaw(1)
+                        ->from('readings')
+                        ->whereColumn('readings.account_id', 'customer_accounts.id');
+                })->count();
+
+
+        $pending = 0;
+
+        if ($currentCycle) {
+            // Completion rate
+            $assignedZoneIds = CsaAssignment::where(
+                'billing_cycle_id',
+                $currentCycle->id
+            )->pluck('zone_id');
+
+            $pending = CustomerAccount::whereIn(
+                'zone_id',
+                $assignedZoneIds
+            )->count();
+        }
 
 
         return view('auth.login', compact(
