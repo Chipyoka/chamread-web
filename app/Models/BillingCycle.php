@@ -35,4 +35,20 @@ class BillingCycle extends Model
     {
         return $this->hasMany(SystemException::class);
     }
+
+    public function readingResolves()
+    {
+        return $this->hasMany(
+            ReadingResolve::class
+        );
+    }
+
+
+
+    public function readingRereads()
+    {
+        return $this->hasMany(
+            ReadingReread::class
+        );
+    }
 }

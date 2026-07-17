@@ -98,4 +98,22 @@ class User extends Authenticatable
     {
         return $this->hasMany(CsaPerformance::class, 'csa_id');
     }
+
+        public function readingResolves()
+    {
+        return $this->hasMany(
+            ReadingResolve::class,
+            'resolved_by'
+        );
+    }
+
+
+
+    public function supervisedRereads()
+    {
+        return $this->hasMany(
+            ReadingReread::class,
+            'supervisor_id'
+        );
+    }
 }

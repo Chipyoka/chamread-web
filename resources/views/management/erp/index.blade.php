@@ -9,7 +9,7 @@
                 <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-medium text-gray-600 flex items-center gap-4">ERP <span><i data-lucide="arrow-right-left" class="w-5 h-5"></i></span> Chamread</h1>
+                <h1 class="text-2xl font-medium text-gray-500 flex items-center gap-4">ERP <span><i data-lucide="arrow-right-left" class="w-5 h-5"></i></span> Chamread</h1>
                 <p class="text-sm text-gray-500">Upload and download meter reading files. <button x-on:click="$dispatch('open-modal', 'see-ref')" class="font-medium hover:underline text-primary">See Reference</button></p>
                 
                 
@@ -41,14 +41,14 @@
                 >
                     <div class="flex justify-between items-center mb-3">
 
-                        <h3 class="font-medium text-gray-600 text-xs">
+                        <h3 class="font-medium text-gray-500 text-xs">
                             Import Progress
                         </h3>
 
                         <span
                             class="
                                 text-sm
-                                text-gray-600
+                                text-gray-500
                             "
                             x-text="progress + '%'"
                         ></span>
@@ -77,7 +77,7 @@
        <section class="bg-white border rounded-md border-gray-200  px-6 py-4 ">
 
 
-           <div class="text-gray-600 mb-6">
+           <div class="text-gray-500 mb-6">
                <p class="text-gray-400 text-xs uppercase my-2"> Recent file imports</p>
            </div>
            <div class="my-4 border-t pt-2 border-gray-100 text-gray-500  flex items-center">
@@ -108,18 +108,18 @@
 
                            <div class="grid grid-cols-4 gap-4">
 
-                               <p class="font-medium text-gray-600 text-xs truncate" title="{{ $import->file_name ?? 'No name' }}">
+                               <p class="font-medium text-gray-500 text-xs truncate" title="{{ $import->file_name ?? 'No name' }}">
                                    {{ $import->file_name ?? "No name" }}
                                </p>
 
-                               <p class="font-medium text-gray-600 text-xs">
+                               <p class="font-medium text-gray-500 text-xs">
                                    {{ $import->created_at->format('D d M Y H:m:s') ?? '-' }}
                                </p>
                                <p class="font-medium text-gray-400 text-xs">
                                   By {{ $import->user->name ?? "unknown" }}
                                </p>
 
-                               <p class="font-medium text-gray-600 text-xs text-right">
+                               <p class="font-medium text-gray-500 text-xs text-right">
                                     <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
                                    {{ $import->status === 'completed' ? 'bg-green-100 text-green-800' : '' }}
                                    {{ $import->status === 'failed' ? 'bg-yellow-100 text-yellow-800' : '' }}">
@@ -152,7 +152,7 @@
         <section class="bg-white border rounded-md border-gray-200  px-6 py-4 ">
 
 
-             <div class="text-gray-600 mb-6">
+             <div class="text-gray-500 mb-6">
                 <p class="text-gray-400 text-xs uppercase my-2"> Available Cycles for export</p>
             </div>
             <div class="my-4 border-t pt-2 border-gray-100 text-gray-500  flex items-center">
@@ -183,18 +183,18 @@
 
                             <div class="grid grid-cols-4 gap-8 w-[50%]">
 
-                                <p class="font-medium text-gray-600 uppercase text-xs">
+                                <p class="font-medium text-gray-500 uppercase text-xs">
                                     {{ $cycle->name ?? 'Cycle '.$cycle->id }}
                                 </p>
 
-                                <p class="font-medium text-gray-600 text-xs">
+                                <p class="font-medium text-gray-500 text-xs">
                                     {{ $cycle->start_date->format('D d M Y') ?? '-' }}
                                 </p>
                                 <p class="font-medium text-gray-400 text-xs text-center">
                                     to
                                 </p>
 
-                                <p class="font-medium text-gray-600 text-xs">
+                                <p class="font-medium text-gray-500 text-xs">
                                     {{ $cycle->end_date->format('D d M Y') ?? '-' }}
                                 </p>
 

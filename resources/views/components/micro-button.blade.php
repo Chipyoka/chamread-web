@@ -25,7 +25,7 @@
     $sizeClass = $sizes[$size] ?? $sizes['sm'];
 
     $colorMap = [
-        'gray' => 'text-gray-600 bg-gray-100 hover:shadow-sm hover:border-gray-200 border border-transparent ',
+        'gray' => 'text-gray-500 bg-gray-100 hover:shadow-sm hover:border-gray-200 border border-transparent ',
         'slate' => 'text-slate-600 bg-slate-100 hover:shadow-sm hover:border-slate-200 border border-transparent ',
         'blue' => 'text-blue-600 bg-blue-100 hover:shadow-sm hover:border-blue-200 border border-transparent ',
         'red' => 'text-red-600 bg-red-100 hover:shadow-sm hover:border-red-200 border border-transparent ',

@@ -55,11 +55,23 @@
                             </div>
 
                         @else
-                            <div class="w-60 mx-auto ">
+                            <div class="flex justify-between items-start gap-2">
+                               
                                 <x-charts.reading-donut-chart
-                                        :read="$read"
-                                        :pending="$totalAssignedAccounts"
-                                    />
+                                    :read="$read"
+                                    :pending="$totalAssignedAccounts"
+                                />
+
+                                <div class="w-1/3">
+                                    <div class="mb-2 bg-white/40 border-gray-200 border rounded-md flex items-center justify-between py-1.5 px-3  text-sm">
+                                        <p class="text-xxs text-gray-500">Readings</p>
+                                        <p class="">{{$read ?? 0}}</p>
+                                    </div>
+                                    <div class=" bg-white/40 border-gray-200 border rounded-md flex items-center justify-between py-1.5 px-3  text-sm">
+                                        <p class=" text-xxs text-gray-500">Pending</p>
+                                        <p class="">{{$pending ?? 0}}</p>
+                                    </div>
+                                </div>
                             </div>
                         @endif
                     </div>
@@ -67,7 +79,7 @@
             </div>
 
             <div class=" bg-white border rounded-md border-gray-200  px-6 py-4">
-                <div class="text-gray-600 mb-6">
+                <div class="text-gray-500 mb-6">
                     <p class="text-gray-400 text-xs uppercase my-2">key performance metrics</p>
                 </div>
 

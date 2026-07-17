@@ -8,12 +8,12 @@
             <table class="min-w-full divide-y divide-gray-100">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Flag</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Column</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Operator</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Value</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
+                        <th class="px-4 py-3 text-left text-xs text-gray-500 uppercase tracking-wider">Flag</th>
+                        <th class="px-4 py-3 text-left text-xs text-gray-500 uppercase tracking-wider">Column</th>
+                        <th class="px-4 py-3 text-left text-xs text-gray-500 uppercase tracking-wider">Operator</th>
+                        <th class="px-4 py-3 text-left text-xs text-gray-500 uppercase tracking-wider">Value</th>
+                        <th class="px-4 py-3 text-left text-xs text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-4 py-3 text-left text-xs text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="rulesTableBody" class="bg-white divide-y divide-gray-100">
@@ -66,7 +66,7 @@
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-6">
-                                    <button class="edit-rule inline-flex items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors text-xs font-medium">
+                                    <button class="edit-rule inline-flex items-center gap-1 text-gray-500 hover:text-gray-900 transition-colors text-xs font-medium">
                                         <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                                         Edit
                                     </button>
@@ -108,7 +108,7 @@
             <!-- Flag -->
             <div class="bg-white rounded-md p-3 border border-gray-200">
                 <div class="flex items-start gap-6">
-                    <span class="font-mono text-sm font-bold text-gray-600 bg-gray-50 px-2 py-0.5 rounded min-w-[70px]">Flag</span>
+                    <span class="font-mono text-sm font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded min-w-[70px]">Flag</span>
                     <div>
                         <p class="text-sm text-gray-700">Choose which <strong>flag</strong> this rule belongs to.</p>
                         <p class="text-xs text-gray-400 mt-0.5">Pick from the list of available flags</p>
@@ -119,7 +119,7 @@
             <!-- Column -->
             <div class="bg-white rounded-md p-3 border border-gray-200">
                 <div class="flex items-start gap-6">
-                    <span class="font-mono text-sm font-bold text-gray-600 bg-gray-50 px-2 py-0.5 rounded min-w-[70px]">Column</span>
+                    <span class="font-mono text-sm font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded min-w-[70px]">Column</span>
                     <div>
                         <p class="text-sm text-gray-700">Which <strong>field</strong> are you checking? (e.g. <span class="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-xs">consumption</span>, <span class="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-xs">status</span>, <span class="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-xs">priority</span>)</p>
                         <p class="text-xs text-gray-400 mt-0.5">This is the data you want to evaluate</p>
@@ -130,7 +130,7 @@
             <!-- Operator -->
             <div class="bg-white rounded-md p-3 border border-gray-200">
                 <div class="flex items-start gap-6">
-                    <span class="font-mono text-sm font-bold text-gray-600 bg-gray-50 px-2 py-0.5 rounded min-w-[70px]">Operator</span>
+                    <span class="font-mono text-sm font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded min-w-[70px]">Operator</span>
                     <div>
                         <p class="text-sm text-gray-700">How do you want to <strong>compare</strong> the value?</p>
                         <p class="text-xs text-gray-500 mt-0.5">Options: 
@@ -151,7 +151,7 @@
             <!-- Value -->
             <div class="bg-white rounded-md p-3 border border-gray-200">
                 <div class="flex items-start gap-6">
-                    <span class="font-mono text-sm font-bold text-gray-600 bg-gray-50 px-2 py-0.5 rounded min-w-[70px]">Value</span>
+                    <span class="font-mono text-sm font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded min-w-[70px]">Value</span>
                     <div>
                         <p class="text-sm text-gray-700">What <strong>number or text</strong> are you comparing against?</p>
                         <p class="text-xs text-gray-400 mt-0.5">Example: <span class="font-mono bg-gray-100 px-1.5 py-0.5 rounded">100</span>, <span class="font-mono bg-gray-100 px-1.5 py-0.5 rounded">"active"</span>, or leave blank for <span class="font-mono bg-gray-100 px-1.5 py-0.5 rounded">is_null</span> / <span class="font-mono bg-gray-100 px-1.5 py-0.5 rounded">is_not_null</span></p>
@@ -471,7 +471,7 @@
                     flagSelect.disabled = true;
 
                     row.querySelector('.save-new-rule').outerHTML = `
-                        <button class="edit-rule inline-flex items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors text-xs font-medium">
+                        <button class="edit-rule inline-flex items-center gap-1 text-gray-500 hover:text-gray-900 transition-colors text-xs font-medium">
                             <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                             Edit
                         </button>`;

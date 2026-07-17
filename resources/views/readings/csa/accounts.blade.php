@@ -4,7 +4,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-medium text-gray-600">Assigned accounts: <span class="text-secondary">{{ $csa->name ?? 'CSA'}} </span></h1>
+                <h1 class="text-2xl font-medium text-gray-500">Assigned accounts: <span class="text-secondary">{{ $csa->name ?? 'CSA'}} </span></h1>
                 <p class="text-sm text-gray-500">{{ $csa->activeAssignment->zone->name ?? "" }} accounts assigned in the current billing cycle</p>
             </div>
 
@@ -62,26 +62,26 @@
                             <tr class="hover:bg-gray-50 transition">
 
                                   <!-- Account Number -->
-                                <td class="px-6 py-4 text-sm text-gray-600 font-medium">
+                                <td class="px-6 py-4 text-sm text-gray-500 font-medium">
                                     {{ $account->account_number }}
                                 </td>
 
                                 <!-- Meter Number -->
-                                <td class="px-6 py-4 text-sm text-gray-600">
+                                <td class="px-6 py-4 text-sm text-gray-500">
                                     {{ $account->meter_number ?? '-' }}
                                 </td>
 
                                 <!-- Name -->
-                                <td class="px-6 py-4 text-sm text-gray-600 font-medium">
+                                <td class="px-6 py-4 text-sm text-gray-500 font-medium">
                                     {{ $account->customer_name }}
                                 </td>
 
                                 <!-- Phone -->
-                                <td class="px-6 py-4 text-sm text-gray-600">
+                                <td class="px-6 py-4 text-sm text-gray-500">
                                     {{ $account->phone ?? '-' }}
                                 </td>
 
-                                <td class="px-6 py-4 text-sm text-gray-600">
+                                <td class="px-6 py-4 text-sm text-gray-500">
                                     <span class="
                                         px-2 py-1 text-xs rounded uppercase
                                         @if($account->read_status === 'read')

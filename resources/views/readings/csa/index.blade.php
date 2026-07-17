@@ -7,7 +7,7 @@
     <div class="flex items-center justify-between">
 
         <div>
-            <h1 class="text-2xl font-medium text-gray-600">
+            <h1 class="text-2xl font-medium text-gray-500">
                 CSA Management
             </h1>
 
@@ -102,7 +102,7 @@
 
                     <!-- Name -->
 
-                    <td class="px-6 py-4 text-sm text-gray-600 font-medium">
+                    <td class="px-6 py-4 text-sm text-gray-500 font-medium">
 
                         {{ $csa->name }}
 
@@ -114,7 +114,7 @@
 
                     <!-- Zone -->
 
-                    <td class="px-6 py-4 text-sm text-gray-600">
+                    <td class="px-6 py-4 text-sm text-gray-500">
 
                         {{ $csa->activeAssignment->zone->name ?? '-' }}
 
@@ -153,7 +153,7 @@
                         @else
 
 
-                            <span class="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded">
+                            <span class="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-500 rounded">
 
                                 Inactive
 
@@ -531,7 +531,7 @@ class="block w-full px-3 py-2 border bg-gray-100 text-gray-700 cursor-not-allowe
 <button
 type="button"
 x-on:click="copyCreatePassword($event)"
-class="px-3 py-2 text-gray-600"
+class="px-3 py-2 text-gray-500"
 >
 
 <i data-lucide="copy" class="w-5 h-5"></i>
@@ -846,7 +846,7 @@ type="button"
 
 x-on:click="copyEditPassword($event)"
 
-class="px-3 py-2 text-gray-600 rounded hover:bg-gray-100"
+class="px-3 py-2 text-gray-500 rounded hover:bg-gray-100"
 
 >
 

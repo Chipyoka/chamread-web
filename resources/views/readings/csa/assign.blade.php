@@ -4,7 +4,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-semibold text-gray-600">Assign Zones to CSA</h1>
+                <h1 class="text-2xl font-semibold text-gray-500">Assign Zones to CSA</h1>
                 <p class="text-sm text-gray-500">Manage assignments for {{ $csa->name }} ({{ $csa->username }})</p>
             </div>
 
@@ -73,7 +73,7 @@
 
         <!-- Current Assignments -->
         <div class="bg-white shadow-sm rounded-lg p-6 space-y-4">
-            <h3 class="text-lg font-semibold text-gray-600">Current Assignments</h3>
+            <h3 class="text-lg font-semibold text-gray-500">Current Assignments</h3>
 
             @if($assignments->count() > 0)
                 <table class="min-w-full divide-y divide-gray-100">
@@ -92,13 +92,13 @@
                     <tbody class="bg-white divide-y divide-gray-100">
                         @foreach($assignments as $assignment)
                             <tr class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->zone->name ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->billingCycle->name ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->target ?? '0' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->assignment_type ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600 capitalize">{{ $assignment->status }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $assignment->assigned_at?->format('Y-m-d') ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ $assignment->zone->name ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ $assignment->billingCycle->name ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ $assignment->target ?? '0' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ $assignment->assignment_type ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-500 capitalize">{{ $assignment->status }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ $assignment->assigned_at?->format('Y-m-d') ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">
                                     
                                 </td>
                             </tr>

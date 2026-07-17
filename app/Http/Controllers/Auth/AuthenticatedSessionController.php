@@ -35,17 +35,25 @@ class AuthenticatedSessionController extends Controller
 
         $pending = 0;
 
-        if ($currentCycle) {
-            // Completion rate
+         if ($currentCycle) {
             $assignedZoneIds = CsaAssignment::where(
                 'billing_cycle_id',
                 $currentCycle->id
             )->pluck('zone_id');
 
-            $pending = CustomerAccount::whereIn(
-                'zone_id',
-                $assignedZoneIds
-            )->count();
+            // Total accounts in assigned zones
+            $total = CustomerAccount::whereIn('zone_id', $assignedZoneIds)->count();
+            
+            // Accounts WITH readings (completed)
+            $read = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
+                ->whereExists(function ($query) {
+                    $query->selectRaw(1)
+                        ->from('readings')
+                        ->whereColumn('readings.account_id', 'customer_accounts.id');
+                })->count();
+            
+            // Accounts WITHOUT readings (pending)
+            $pending = $total - $read;
         }
 
 

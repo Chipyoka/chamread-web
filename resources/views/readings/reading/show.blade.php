@@ -5,7 +5,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-semibold text-gray-600">Reading Details</h1>
+                <h1 class="text-2xl font-semibold text-gray-500">Reading Details</h1>
                 <p class="text-sm text-gray-500">View reading information </p>
                
             </div>
@@ -16,7 +16,7 @@
                  <!-- export reading-->
                 <x-micro-button
                     color="purple"
-                    href="{{ route('readings.readings.export', $reading) }}"
+                    href="{{ route('readings.meter-readings.export', $reading) }}"
                     icon="upload"
                     size="md"
                 >
@@ -26,7 +26,7 @@
                  <!-- back to list -->
                 <x-micro-button
                     variant="edit"
-                    href="{{ route('readings.readings.index') }}"
+                    href="{{ route('readings.meter-readings.index') }}"
                     icon="arrow-left"
                     size="md"
                 >
@@ -57,7 +57,7 @@
 
               <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Recorded by</h2>
-                    <h2 class="text-lg font-medium text-gray-600">
+                    <h2 class="text-lg font-medium text-gray-500">
                         <span class="text-secondary">
                             @php
                                 $assignedCsa = $reading->csa;
@@ -90,17 +90,17 @@
             <div class="grid grid-cols-1 md:grid-cols-1 w-full gap-4">
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Previous Reading</h2>
-                    <p class="text-gray-600 font-semibold">{{ number_format((float) ($reading->previous_reading ?: 0), 3) }}</p>
+                    <p class="text-gray-500 font-semibold">{{ number_format((float) ($reading->previous_reading ?: 0), 3) }}</p>
                 </div>
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Current Reading</h2>
-                    <p class="text-gray-600 font-semibold">{{ number_format((float) ($reading->current_reading ?: 0), 3) }}</p>
+                    <p class="text-gray-500 font-semibold">{{ number_format((float) ($reading->current_reading ?: 0), 3) }}</p>
                 </div>
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Consumption</h2>
-                    <p class="text-gray-600 font-semibold">
+                    <p class="text-gray-500 font-semibold">
                          @php
                             $consumption = (($reading->current_reading ?? 0) - ($reading->previous_reading ?? 0));
                         @endphp
@@ -111,7 +111,7 @@
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">{{$reading->status === 'read' ? "Comment" : "Reason"}}</h2>
-                    <p class="text-gray-600 font-semibold">
+                    <p class="text-gray-500 font-semibold">
                         @php
                             $value = $reading->status === 'read' ? $reading->comment : $reading->reason->name;
                         @endphp
@@ -120,7 +120,7 @@
                 </div>
                   <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Reading Time</h2>
-                    <p class="text-gray-600 font-semibold"> {{ $reading->reading_time->format('Y-m-d H:i:s') ?? '-' }}</p>
+                    <p class="text-gray-500 font-semibold"> {{ $reading->reading_time->format('Y-m-d H:i:s') ?? '-' }}</p>
                 </div>
 
            
@@ -134,50 +134,37 @@
         <div class="bg-white rounded-md p-6 space-y-4 border border-gray-200">
             
          <h3 class="text-gray-400 text-xs uppercase my-2">Customer Account Information</h3>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Account #</h2>
-                    <p class="text-gray-600 font-semibold">{{ $reading->account->account_number ?? 'N/A' }}</p>
+                    <p class="text-gray-500 font-semibold">{{ $reading->account->account_number ?? 'N/A' }}</p>
                 </div>
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Meter</h2>
-                    <p class="text-gray-600 font-semibold">{{ $reading->account->meter_number ?? 'N/A' }}</p>
+                    <p class="text-gray-500 font-semibold">{{ $reading->account->meter_number ?? 'N/A' }}</p>
                 </div>
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Customer Name</h2>
-                    <p class="text-gray-600 font-semibold">{{ $reading->account->name ?? '-' }}</p>
+                    <p class="text-gray-500 font-semibold">{{ $reading->account->customer_name ?? '-' }}</p>
                 </div>
 
-                <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
-                    <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Billing Area</h2>
-                    <p class="text-gray-600 font-semibold">{{ $reading->account->billing_area ?? '-' }}</p>
-                </div>
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Phone</h2>
-                    <p class="text-gray-600 font-semibold">{{ $reading->account->phone ?? '-' }}</p>
+                    <p class="text-gray-500 font-semibold">{{ $reading->account->phone ?? '-' }}</p>
                 </div>
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Address</h2>
-                    <p class="text-gray-600 font-semibold">{{ $reading->account->address ?? '-' }}</p>
+                    <p class="text-gray-500 font-semibold">{{ $reading->account->address ?? '-' }}</p>
                 </div>
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Zone</h2>
-                    <p class="text-gray-600 font-semibold">{{ $reading->zone?->name ?? '-' }}</p>
+                    <p class="text-gray-500 font-semibold">{{ $reading->account->zone?->name ?? '-' }}</p>
                 </div>
-
-                <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
-                    <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">DMA</h2>
-                    <p class="text-gray-600 font-semibold">{{ $reading->dma?->name ?? '-' }}</p>
-                </div>
-
-           
-
-             
             </div>
         </div>
 

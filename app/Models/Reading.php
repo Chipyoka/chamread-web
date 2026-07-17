@@ -71,4 +71,30 @@ class Reading extends Model
     {
         return $this->hasMany(SystemException::class);
     }
+    public function resolves()
+    {
+        return $this->hasMany(
+            ReadingResolve::class
+        );
+    }
+    public function latestResolve()
+    {
+        return $this->hasOne(
+            ReadingResolve::class
+        )
+        ->latestOfMany();
+    }
+    public function rereads()
+    {
+        return $this->hasMany(
+            ReadingReread::class
+        );
+    }
+    public function latestReread()
+    {
+        return $this->hasOne(
+            ReadingReread::class
+        )
+        ->latestOfMany();
+    }
 }

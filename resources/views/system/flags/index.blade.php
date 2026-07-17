@@ -5,7 +5,7 @@
     <!-- header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-medium text-gray-600">Flags</h1>
+                <h1 class="text-2xl font-medium text-gray-500">Flags</h1>
                 <p class="text-sm text-gray-500">Define flags on which system alerts and charts will be based.</p>
             </div>
 

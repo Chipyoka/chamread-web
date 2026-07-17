@@ -4,7 +4,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-medium text-gray-600">Customer Accounts</h1>
+                <h1 class="text-2xl font-medium text-gray-500">Customer Accounts</h1>
                 <p class="text-sm text-gray-500">Manage Customer Accounts</p>
             </div>
         </div>
@@ -32,28 +32,28 @@
                             <tr class="hover:bg-gray-50 transition">
 
                                 <!-- Account Number -->
-                                <td class="px-6 py-4 text-sm text-gray-600 font-medium">
+                                <td class="px-6 py-4 text-sm text-gray-500 font-medium">
                                     {{ $account->account_number }}
                                 </td>
 
                                 <!-- Meter Number -->
-                                <td class="px-6 py-4 text-sm text-gray-600">
+                                <td class="px-6 py-4 text-sm text-gray-500">
                                     {{ $account->meter_number ?? '-' }}
                                 </td>
 
                                 <!-- Name -->
-                                <td class="px-6 py-4 text-sm text-gray-600 font-medium">
+                                <td class="px-6 py-4 text-sm text-gray-500 font-medium">
                                     {{ $account->customer_name }}
                                 </td>
 
                                 <!-- Phone -->
-                                <td class="px-6 py-4 text-sm text-gray-600">
+                                <td class="px-6 py-4 text-sm text-gray-500">
                                     {{ $account->phone ?? '-' }}
                                 </td>
                                 
 
                                   <!-- Zone -->
-                                <td class="px-6 py-4 text-sm text-gray-600">
+                                <td class="px-6 py-4 text-sm text-gray-500">
                                     {{ $account->zone->name ?? '-' }}
                                 </td>
 

@@ -1,4 +1,4 @@
-<div class="card">
+<div class="w-[260px]">
     <div class="card-body">
 
         <canvas id="readingDonutChart"></canvas>
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         options: {
             responsive: true,
-            cutout: '50%',
+            cutout: '70%',
             plugins: {
                 legend: {
                     position: 'bottom'

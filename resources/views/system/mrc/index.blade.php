@@ -4,7 +4,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-medium text-gray-600">Meter Reading Codes</h1>
+                <h1 class="text-2xl font-medium text-gray-500">Meter Reading Codes</h1>
                 <p class="text-sm text-gray-500">Configure and functionally define ERP codes</p>
             </div>
         </div>
@@ -15,12 +15,12 @@
                 <table class="min-w-full divide-y divide-gray-100">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Code</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Name</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Description</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Type</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
+                            <th class="px-4 py-3 text-left text-xs  text-gray-500 uppercase tracking-wider">Code</th>
+                            <th class="px-4 py-3 text-left text-xs  text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-4 py-3 text-left text-xs  text-gray-500 uppercase tracking-wider">Description</th>
+                            <th class="px-4 py-3 text-left text-xs  text-gray-500 uppercase tracking-wider">Type</th>
+                            <th class="px-4 py-3 text-left text-xs  text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-3 text-left text-xs  text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="codesTableBody" class="bg-white divide-y divide-gray-100">
@@ -72,7 +72,7 @@
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
-                                    <button class="edit-row inline-flex items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors text-xs font-medium">
+                                    <button class="edit-row inline-flex items-center gap-1 text-gray-500 hover:text-gray-900 transition-colors text-xs font-medium">
                                         <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                                         Edit
                                     </button>
@@ -394,7 +394,7 @@
                             select.disabled = true;
 
                             row.querySelector('.save-new-row').outerHTML = `
-                                <button class="edit-row inline-flex items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors text-xs font-medium">
+                                <button class="edit-row inline-flex items-center gap-1 text-gray-500 hover:text-gray-900 transition-colors text-xs font-medium">
                                     <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                                     Edit
                                 </button>`;

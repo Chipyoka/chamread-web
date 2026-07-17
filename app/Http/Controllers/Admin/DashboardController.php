@@ -56,6 +56,7 @@ public function index()
     $accountsAbnormal = 0;
     $zeroConsumption = 0;
     $totalAssignedAccounts = 0;
+    $readings = [];
 
 
     $read = CustomerAccount::whereExists(function ($query) {
@@ -69,6 +70,31 @@ public function index()
     | Only execute billing-cycle-dependent logic if cycle exists
     |--------------------------------------------------------------------------
     */
+
+       $pending = 0;
+
+        if ($currentCycle) {
+            $assignedZoneIds = CsaAssignment::where(
+                'billing_cycle_id',
+                $currentCycle->id
+            )->pluck('zone_id');
+
+            // Total accounts in assigned zones
+            $total = CustomerAccount::whereIn('zone_id', $assignedZoneIds)->count();
+            
+            // Accounts WITH readings (completed)
+            $read = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
+                ->whereExists(function ($query) {
+                    $query->selectRaw(1)
+                        ->from('readings')
+                        ->whereColumn('readings.account_id', 'customer_accounts.id');
+                })->count();
+            
+            // Accounts WITHOUT readings (pending)
+            $pending = $total - $read;
+        }
+
+
     if ($currentCycle) {
 
         // Total assigned CSA records
@@ -97,6 +123,8 @@ public function index()
         $completionRate = $totalAssignedAccounts > 0
             ? round(($totalReadings / $totalAssignedAccounts) * 100, 2)
             : 0;
+
+            
 
         /*
         |--------------------------------------------------------------------------
@@ -153,6 +181,13 @@ public function index()
             ->count();
     }
 
+     
+
+    if($currentCycle) {
+        $readings = Reading::where('billing_cycle_id', $currentCycle->id)->paginate(10);
+    }
+
+
     /*
     |--------------------------------------------------------------------------
     | Global Metrics
@@ -184,6 +219,9 @@ public function index()
             'billingAreaEdits' => $billingAreaEdits,
             'gpsMismatch' => $gpsMismatch,
             'totalAssignedAccounts' => $totalAssignedAccounts,
+            'pending' => $pending,
+            'readings' => $readings,
+
         ]
     ]);
 }

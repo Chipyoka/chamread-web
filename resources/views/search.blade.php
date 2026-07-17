@@ -6,7 +6,7 @@
             <!-- Header -->
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-2xl font-medium text-gray-600">Search Results</h1>
+                    <h1 class="text-2xl font-medium text-gray-500">Search Results</h1>
                     @if(!empty($query))
                         <p class="text-sm text-gray-500">
                             Results for: <span class="font-medium text-gray-700">{{ $query }}</span>

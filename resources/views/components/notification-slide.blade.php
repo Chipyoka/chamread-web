@@ -81,7 +81,7 @@
                         {{-- Content --}}
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center justify-between gap-2">
-                                <p class="text-sm font-medium {{ !$notification->read ? 'text-gray-900' : 'text-gray-600' }}">
+                                <p class="text-sm font-medium {{ !$notification->read ? 'text-gray-900' : 'text-gray-500' }}">
                                     {{ $notification->title }}
                                 </p>
                                 <span class="text-xs text-gray-400 whitespace-nowrap">{{ $notification->time }}</span>

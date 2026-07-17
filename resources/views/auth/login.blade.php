@@ -89,7 +89,7 @@
                         <div class="block mt-4">
                             <label for="remember_me" class="inline-flex items-center">
                                 <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-(--color-primary) shadow-sm focus:ring-(--color-primary)" name="remember">
-                                <span class="ml-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+                                <span class="ml-2 text-sm text-gray-500">{{ __('Remember me') }}</span>
                             </label>
                         </div>
         

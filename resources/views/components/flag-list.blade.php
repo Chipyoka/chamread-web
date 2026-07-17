@@ -6,11 +6,11 @@
             <table class="min-w-full divide-y divide-gray-100">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Name</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Applies To</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">System</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
+                        <th class="px-4 py-3 text-left text-xs  text-gray-500 uppercase tracking-wider">Name</th>
+                        <th class="px-4 py-3 text-left text-xs  text-gray-500 uppercase tracking-wider">Applies To</th>
+                        <th class="px-4 py-3 text-left text-xs  text-gray-500 uppercase tracking-wider">System</th>
+                        <th class="px-4 py-3 text-left text-xs  text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-4 py-3 text-left text-xs  text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="flagsTableBody" class="bg-white divide-y divide-gray-100">
@@ -49,7 +49,7 @@
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-3">
-                                <button class="edit-flag inline-flex items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors text-xs font-medium {{ $flag->is_system ? 'opacity-50 cursor-not-allowed' : '' }}" {{ $flag->is_system ? 'disabled' : '' }}>
+                                <button class="edit-flag inline-flex items-center gap-1 text-gray-500 hover:text-gray-900 transition-colors text-xs font-medium {{ $flag->is_system ? 'opacity-50 cursor-not-allowed' : '' }}" {{ $flag->is_system ? 'disabled' : '' }}>
                                     <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                                     Edit
                                 </button>
@@ -345,7 +345,7 @@
                         selects.forEach(select => select.disabled = true);
 
                         row.querySelector('.save-new-flag').outerHTML = `
-                            <button class="edit-flag inline-flex items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors text-xs font-medium">
+                            <button class="edit-flag inline-flex items-center gap-1 text-gray-500 hover:text-gray-900 transition-colors text-xs font-medium">
                                 <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                                 Edit
                             </button>`;

@@ -4,7 +4,7 @@
           <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-medium text-gray-600">Zones</h1>
+                <h1 class="text-2xl font-medium text-gray-500">Zones</h1>
                 <p class="text-sm text-gray-500">Manage all zones</p>
             </div>
 
@@ -21,7 +21,7 @@
                 <!-- Download Template Button -->
                 <a 
                     href="{{ route('management.zones.download-template') }}"
-                    class="inline-flex items-center px-3 py-2.5 bg-gray-200 text-gray-600 text-xs font-medium rounded-md hover:bg-primary/90 transition"
+                    class="inline-flex items-center px-3 py-2.5 bg-gray-200 text-gray-500 text-xs font-medium rounded-md hover:bg-primary/90 transition"
                 >
                     <i data-lucide="file-down" class="w-4 h-4 mr-2"></i>
                     Download Template
@@ -74,7 +74,7 @@
                     </div>
                 </form>
                 <div id="importProgress" class="hidden mt-4">
-                    <div class="text-xs text-gray-600">Importing...</div>
+                    <div class="text-xs text-gray-500">Importing...</div>
                     <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
                         <div id="progressBar" class="bg-gray-700 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
                     </div>
@@ -87,11 +87,11 @@
                 <table class="min-w-full divide-y divide-gray-100">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Code</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">District</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Province</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Actions</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">District</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Province</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="zonesTableBody" class="bg-white divide-y divide-gray-100">
@@ -138,7 +138,7 @@
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-3">
                                     @if ($zone->assignments_count == 0)
-                                        <button class="edit-row inline-flex items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors text-xs font-medium">
+                                        <button class="edit-row inline-flex items-center gap-1 text-gray-500 hover:text-gray-900 transition-colors text-xs font-medium">
                                             <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                                             Edit
                                         </button>
@@ -450,7 +450,7 @@
                             inputs.forEach(input => input.setAttribute('readonly', 'readonly'));
 
                             row.querySelector('.save-new-row').outerHTML = `
-                                <button class="edit-row text-gray-600 hover:text-gray-900 transition-colors text-xs font-medium">Edit</button>`;
+                                <button class="edit-row text-gray-500 hover:text-gray-900 transition-colors text-xs font-medium">Edit</button>`;
                             row.querySelector('.cancel-new-row').outerHTML = `
                                 <button class="delete-row text-red-600 hover:text-red-800 transition-colors text-xs font-medium">Delete</button>`;
 
@@ -596,7 +596,7 @@
                         if (result.error_count > 0) {
                             html += `<div class="text-red-600 mt-2">❌ ${result.error_count} errors</div>`;
                             if (result.errors) {
-                                html += `<div class="text-gray-600 mt-1 text-xs">`;
+                                html += `<div class="text-gray-500 mt-1 text-xs">`;
                                 result.errors.forEach(error => {
                                     html += `<div>• ${error}</div>`;
                                 });

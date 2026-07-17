@@ -4,7 +4,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-medium text-gray-600">Billing Cycles</h1>
+                <h1 class="text-2xl font-medium text-gray-500">Billing Cycles</h1>
                 <p class="text-sm text-gray-500">Create a billing cycle to initialize it</p>
             </div>
 
@@ -45,22 +45,22 @@
                             <tr class="hover:bg-gray-50 transition">
 
                                 <!-- billingCycle Name -->
-                                <td class="px-6 py-4 text-xs text-gray-600 font-medium uppercase">
+                                <td class="px-6 py-4 text-xs text-gray-500 font-medium uppercase">
                                     {{ $billingCycle->name }}
                                 </td>
 
                                 <!-- Start Date -->
-                                <td class="px-6 py-4 text-xs text-gray-600">
+                                <td class="px-6 py-4 text-xs text-gray-500">
                                     {{ $billingCycle->start_date->format('D d M Y') ?? '-' }}
                                 </td>
 
                                 <!-- End Date -->
-                                <td class="px-6 py-4 text-xs text-gray-600 font-medium">
+                                <td class="px-6 py-4 text-xs text-gray-500 font-medium">
                                     {{ $billingCycle->end_date->format('D d M Y') ?? '-' }}
                                 </td>
 
                                 <!-- Status -->
-                                <td class="px-6 py-4 text-xs text-gray-600">
+                                <td class="px-6 py-4 text-xs text-gray-500">
                                     <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
                                         {{ $billingCycle->status === 'active' ? 'bg-green-100 text-green-800' : '' }}
                                         {{ $billingCycle->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
@@ -72,7 +72,7 @@
                                 
 
                                 <!-- Records -->
-                                <td class="px-6 py-4 text-xs text-gray-600">
+                                <td class="px-6 py-4 text-xs text-gray-500">
                                     {{ $billingCycle->readings->count() ?? '0' }}
                                 </td>
 

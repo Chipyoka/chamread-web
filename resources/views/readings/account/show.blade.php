@@ -5,7 +5,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-semibold text-gray-600">Customer Account Details</h1>
+                <h1 class="text-2xl font-semibold text-gray-500">Customer Account Details</h1>
                 <p class="text-sm text-gray-500">View customer account information </p>
             </div>
 
@@ -38,7 +38,7 @@
         <!-- account Info Card -->
         <div class="bg-white rounded-md p-6 space-y-4 border border-gray-200">
             <div class="flex items-center justify-end mb-2">
-                <h2 class="text-lg font-medium text-gray-600">Assigned to <span class="text-secondary">
+                <h2 class="text-lg font-medium text-gray-500">Assigned to <span class="text-secondary">
                     <a href="{{ route('readings.csas.show', $assignedCsa) }}" class="hover:underline">
                         {{ $assignedCsa ? $assignedCsa->name : 'N/A' }}
                     </a>
@@ -47,37 +47,37 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Account #</h2>
-                    <p class="text-gray-600 font-semibold">{{ $account->account_number ?? 'N/A' }}</p>
+                    <p class="text-gray-500 font-semibold">{{ $account->account_number ?? 'N/A' }}</p>
                 </div>
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Meter</h2>
-                    <p class="text-gray-600 font-semibold">{{ $account->meter_number ?? 'N/A' }}</p>
+                    <p class="text-gray-500 font-semibold">{{ $account->meter_number ?? 'N/A' }}</p>
                 </div>
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Customer Name</h2>
-                    <p class="text-gray-600 font-semibold">{{ $account->customer_name ?? '-' }}</p>
+                    <p class="text-gray-500 font-semibold">{{ $account->customer_name ?? '-' }}</p>
                 </div>
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Phone</h2>
-                    <p class="text-gray-600 font-semibold">{{ $account->phone ?? '-' }}</p>
+                    <p class="text-gray-500 font-semibold">{{ $account->phone ?? '-' }}</p>
                 </div>
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Address</h2>
-                    <p class="text-gray-600 font-semibold">{{ $account->address ?? '-' }}</p>
+                    <p class="text-gray-500 font-semibold">{{ $account->address ?? '-' }}</p>
                 </div>
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Zone</h2>
-                    <p class="text-gray-600 font-semibold">{{ $account->zone?->name ?? '-' }}</p>
+                    <p class="text-gray-500 font-semibold">{{ $account->zone?->name ?? '-' }}</p>
                 </div>
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Created On</h2>
-                    <p class="text-gray-600 font-semibold">
+                    <p class="text-gray-500 font-semibold">
                         {{ $account->created_at ? $account->created_at->format('d M, Y') : 'N/A' }}
                     </p>
                 </div>
@@ -120,11 +120,11 @@
                     <tbody class="bg-white divide-y divide-gray-100">
                         @foreach($readings as $reading)
                             <tr class="hover:bg-gray-50 transition">
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->zone->name ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->billingCycle->name ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ number_format((float) ($reading->previous_reading ?: 0), 3) }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ number_format((float) ($reading->current_reading ?: 0), 3) }}</td>
-                                   <td class="px-6 py-4 text-sm text-gray-600">
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ $reading->zone->name ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ $reading->billingCycle->name ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ number_format((float) ($reading->previous_reading ?: 0), 3) }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ number_format((float) ($reading->current_reading ?: 0), 3) }}</td>
+                                   <td class="px-6 py-4 text-sm text-gray-500">
                                     <span class="
                                         px-2 py-1 text-xs rounded uppercase
                                         @if($reading->status === 'read')
@@ -136,7 +136,7 @@
                                         {{ $reading->status === 'read' ? 'Read' : 'Not read' }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $reading->reading_time->format('Y-m-d H:i:s') ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ $reading->reading_time->format('Y-m-d H:i:s') ?? '-' }}</td>
                             </tr>
                         @endforeach
                     </tbody>

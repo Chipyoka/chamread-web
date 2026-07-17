@@ -4,8 +4,8 @@
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-medium text-gray-600">Meter Readings</h1>
-                <p class="text-sm text-gray-500">View Meter Readings from the current billing cycle</p>
+                <h1 class="text-2xl font-medium text-gray-500">Meter Readings</h1>
+                <p class="text-xs text-gray-500">View Meter Readings from the current billing cycle</p>
             </div>
         </div>
 
@@ -16,7 +16,7 @@
 
                 <table class="min-w-full divide-y divide-gray-100">
                     <thead class="bg-gray-50">
-                        <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <tr class="text-left text-xs text-gray-500 uppercase tracking-wider">
                             <th class="px-6 py-3">Account #</th>
                             <th class="px-6 py-3">Prev (m3)</th>
                             <th class="px-6 py-3">Current (m3)</th>
@@ -33,22 +33,22 @@
                             <tr class="hover:bg-gray-50 transition">
 
                                 <!-- Account Number -->
-                                <td class="px-6 py-4 text-sm text-gray-600 font-medium">
+                                <td class="px-6 py-4 text-xs text-gray-500 font-medium">
                                     {{ $reading->account->account_number }}
                                 </td>
 
                                 <!-- Previous reading -->
-                                <td class="px-6 py-4 text-sm text-gray-600">
+                                <td class="px-6 py-4 text-xs text-gray-500">
                                    {{ number_format((float) ($reading->previous_reading ?: 0), 3) }}
                                 </td>
 
                                 <!-- current reading -->
-                                <td class="px-6 py-4 text-sm text-gray-600 font-medium">
+                                <td class="px-6 py-4 text-xs text-gray-500 font-medium">
                                     {{ number_format((float) ($reading->current_reading ?: 0), 3) }}
                                 </td>
 
                                 <!-- Consumption (hot loading) -->
-                                <td class="px-6 py-4 text-sm text-gray-600">
+                                <td class="px-6 py-4 text-xs text-gray-500">
                                    @php
                                         $consumption = (($reading->current_reading ?? 0) - ($reading->previous_reading ?? 0));
                                     @endphp
@@ -58,7 +58,7 @@
                                 
 
                                   <!-- Reading status -->
-                                     <td class="px-6 py-4 text-sm text-gray-600">
+                                     <td class="px-6 py-4 text-xs text-gray-500">
                                     <span class="
                                         px-2 py-1 text-xs rounded uppercase
                                         @if($reading->status === 'read')
@@ -73,12 +73,12 @@
 
 
                                     <!-- Reading time -->
-                                <td class="px-6 py-4 text-sm text-gray-600">
+                                <td class="px-6 py-4 text-xs text-gray-500">
                                     {{ $reading->reading_time->format('Y-m-d H:i:s') ?? '-' }}
                                 </td>
 
                                 <!-- Actions -->
-                                <td class="px-6 py-4 text-right text-sm space-x-2">
+                                <td class="px-6 py-4 text-right text-xs space-x-2">
 
                                     <!-- View -->
                                     <x-micro-button
@@ -108,7 +108,7 @@
                 <div class="p-10 text-center">
                     <div class="flex flex-col items-center space-y-3">
                         <i data-lucide="list-todo" class="w-10 h-10 text-gray-300"></i>
-                        <p class="text-gray-500 text-sm">No readings found.</p>
+                        <p class="text-gray-500 text-xs">No readings found.</p>
 
                     </div>
                 </div>

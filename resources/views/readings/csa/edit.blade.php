@@ -4,7 +4,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-semibold text-gray-600">Edit CSA</h1>
+                <h1 class="text-2xl font-semibold text-gray-500">Edit CSA</h1>
                 <p class="text-sm text-gray-500">Update Customer Service Agent details</p>
             </div>
 

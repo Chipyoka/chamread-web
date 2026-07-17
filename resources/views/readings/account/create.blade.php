@@ -4,7 +4,7 @@
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-semibold text-gray-600">Add New Customer Account</h1>
+                <h1 class="text-2xl font-semibold text-gray-500">Add New Customer Account</h1>
                 <p class="text-sm text-gray-500">Create a Customer account</p>
             </div>
 

@@ -5,13 +5,20 @@
             <nav class="-mb-px flex gap-8" aria-label="Tabs">
                 <button 
                     class="tab-btn active inline-flex items-center px-1 py-2 border-b-2 border-primary text-sm font-medium text-primary"
-                    data-tab="flags"
+                    data-tab="overview"
                 >
                     Overview
                 </button>
                 <button 
                     class="tab-btn inline-flex items-center px-1 py-2 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:opacity-90 "
-                    data-tab="rules"
+                    data-tab="supervisor"
+                >
+                    Supervisor
+                </button>
+
+                <button 
+                    class="tab-btn inline-flex items-center px-1 py-2 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:opacity-90 "
+                    data-tab="technical"
                 >
                     Technical
                 </button>
@@ -20,12 +27,15 @@
 
         <!-- Tab Content -->
         <div class="max-h-[70dvh] overflow-y-auto thin-scrollbar pb-6">
-            <div id="flagsTab" class="tab-content">
+            <div id="overviewTab" class="tab-content">
                 @include('components.overview', $overviewData)
             </div>
     
-            <div id="rulesTab" class="tab-content hidden">
-                jdjd
+            <div id="supervisorTab" class="tab-content hidden">
+                 @include('components.supervisor', $overviewData)
+            </div>
+            <div id="technicalTab" class="tab-content hidden">
+                kkkk
             </div>
         </div>
 
