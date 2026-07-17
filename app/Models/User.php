@@ -49,10 +49,10 @@ class User extends Authenticatable
     }
 
     public function activeAssignment()
-{
-    return $this->hasOne(CsaAssignment::class, 'csa_id')
-        ->where('status', 'active');
-}
+    {
+        return $this->hasOne(CsaAssignment::class, 'csa_id')
+            ->where('status', 'active');
+    }
 
     public function zone()
     {

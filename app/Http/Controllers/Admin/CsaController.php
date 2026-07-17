@@ -428,7 +428,7 @@ class CsaController extends Controller
 
         $currentCycle = BillingCycle::latest()->first();
         $assignment = CsaAssignment::where('csa_id', $csa->id)->where('status', 'active')->first();
-        $target = $assignment->target;
+        $target = $assignment->target ?? 0;
 
         // Step 1: Fetch accounts
         $accounts = CustomerAccount::where('zone_id', $assignment->zone_id)

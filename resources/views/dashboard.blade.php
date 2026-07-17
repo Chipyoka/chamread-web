@@ -14,7 +14,7 @@
                     <!-- Edit -->
                     <x-micro-button
                         variant="edit"
-                        href="{{ route('readings.csas.index') }}"
+                        href="{{ route('management.cycles.index') }}"
                         icon="edit"
                         size="sm"
                     >

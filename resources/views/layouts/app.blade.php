@@ -21,15 +21,38 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <style>
+            #page-loader-track {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 4px;
+                z-index: 9999;
+                pointer-events: none;
+                background: transparent;
+                opacity: 0;
+            }
+
+            #page-loader-track.is-active {
+                opacity: 1;
+            }
+
+            #page-loader-bar {
+                height: 100%;
+                width: 0%;
+                background-color: #f2f2f2; /* brown */
+                /* box-shadow: 0 0 8px rgba(139, 90, 43, 0.6); */
+                transition: width 0.25s ease-out;
+            }
+        </style>
     </head>
 
     <body class="font-sans antialiased mx-auto">
-        <!-- Global Loader Overlay -->
-        <div
-            id="page-loader"
-            class="fixed inset-0 z-[9999] flex items-center justify-center bg-white/60 backdrop-blur-sm transition-opacity duration-300"
-        >
-            <div class="loader"></div>
+        <!-- Top Progress Bar (replaces old full-screen loader overlay) -->
+        <div id="page-loader-track">
+            <div id="page-loader-bar"></div>
         </div>
 
         <div class="hidden lg:block min-h-[80dvh] bg-slate-50">
@@ -71,34 +94,89 @@
         <x-idle-logout-modal />
 
         <script>
-            const loader = document.getElementById('page-loader');
+            const loaderTrack = document.getElementById('page-loader-track');
+            const loaderBar = document.getElementById('page-loader-bar');
+
             let loaderTimeout = null;
+            let loaderCreepInterval = null;
+            let loaderFadeTimeout = null;
+            let activeLoaders = 0; // handles overlapping fetch/navigation calls safely
 
             function showLoader() {
-                // Clear any existing timeout
-                if (loaderTimeout) {
-                    clearTimeout(loaderTimeout);
+                activeLoaders++;
+
+                // Cancel any pending fade-out/reset from a previous cycle
+                if (loaderFadeTimeout) {
+                    clearTimeout(loaderFadeTimeout);
+                    loaderFadeTimeout = null;
                 }
-                
-                // Show loader
-                loader.classList.remove('opacity-0', 'pointer-events-none');
-                
-                // Set timeout to hide loader after 6 seconds
-                loaderTimeout = setTimeout(() => {
-                    console.warn('Loader timeout: Force hiding loader after 6 seconds');
-                    hideLoader();
-                }, 5000);
+
+                if (activeLoaders > 1) {
+                    // Already running, just extend the safety timeout
+                    if (loaderTimeout) clearTimeout(loaderTimeout);
+                    loaderTimeout = setTimeout(forceHideLoader, 5000);
+                    return;
+                }
+
+                // Start fresh
+                loaderTrack.classList.add('is-active');
+                loaderBar.style.transition = 'none';
+                loaderBar.style.width = '0%';
+
+                // Force reflow so the transition re-applies cleanly
+                void loaderBar.offsetWidth;
+                loaderBar.style.transition = 'width 0.25s ease-out';
+                loaderBar.style.width = '20%';
+
+                // Creep forward gradually while the request/navigation is in flight
+                let progress = 20;
+                loaderCreepInterval = setInterval(() => {
+                    // Slow down as it approaches 90%, never completes on its own
+                    const remaining = 90 - progress;
+                    progress += remaining * 0.1;
+                    loaderBar.style.width = Math.min(progress, 90) + '%';
+                }, 300);
+
+                // Safety net in case something never resolves
+                loaderTimeout = setTimeout(forceHideLoader, 5000);
             }
 
             function hideLoader() {
-                // Clear timeout if exists
+                activeLoaders = Math.max(activeLoaders - 1, 0);
+                if (activeLoaders > 0) return; // wait for all in-flight loaders to finish
+
+                completeLoader();
+            }
+
+            function forceHideLoader() {
+                console.warn('Loader timeout: Force hiding loader after 5 seconds');
+                activeLoaders = 0;
+                completeLoader();
+            }
+
+            function completeLoader() {
+                if (loaderCreepInterval) {
+                    clearInterval(loaderCreepInterval);
+                    loaderCreepInterval = null;
+                }
                 if (loaderTimeout) {
                     clearTimeout(loaderTimeout);
                     loaderTimeout = null;
                 }
-                
-                // Hide loader
-                loader.classList.add('opacity-0', 'pointer-events-none');
+
+                // Finish the bar, then fade the track out and reset
+                loaderBar.style.transition = 'width 0.2s ease-out';
+                loaderBar.style.width = '100%';
+
+                loaderFadeTimeout = setTimeout(() => {
+                    loaderTrack.classList.remove('is-active');
+
+                    // Reset width after the fade completes so next run starts clean
+                    loaderFadeTimeout = setTimeout(() => {
+                        loaderBar.style.transition = 'none';
+                        loaderBar.style.width = '0%';
+                    }, 250);
+                }, 200);
             }
 
             // Hide loader on full page load
@@ -171,7 +249,7 @@
             // Handle browser back/forward cache restore
             window.addEventListener('pageshow', function (event) {
                 if (event.persisted) {
-                    hideLoader();
+                    forceHideLoader();
                 }
             });
             
@@ -191,10 +269,13 @@
                 }
             });
             
-            // Handle beforeunload to ensure loader doesn't hang
-            window.addEventListener('beforeunload', function() {
-                hideLoader();
-            });
+            // NOTE: intentionally NOT hiding/completing the loader on beforeunload.
+            // beforeunload fires the instant the browser commits to navigating away,
+            // long before the new page has actually finished loading/rendering.
+            // Forcing the bar to 100% here made it look "done" while the user was
+            // still waiting. Since this whole document (and its JS state) gets
+            // discarded on navigation anyway, we just let the bar keep visually
+            // running until the swap actually happens — nothing to clean up.
             
             // Optional: Handle AJAX/Fetch requests
             const originalFetch = window.fetch;
@@ -202,13 +283,7 @@
                 showLoader();
                 return originalFetch.apply(this, args)
                     .finally(() => {
-                        // Don't hide immediately for AJAX that might update UI without navigation
-                        // You can adjust this timeout as needed
-                        setTimeout(() => {
-                            if (!document.querySelector('.loading-active')) {
-                                hideLoader();
-                            }
-                        }, 300);
+                        hideLoader();
                     });
             };
         </script>

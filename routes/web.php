@@ -262,9 +262,9 @@ Route::middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->group(functio
          *  UTILITY MANAGEMENT
          * =====================================================
          */
-        Route::prefix('utility')->name('utility.')->group(function () {
-            Route::get('/', [AnalyticsController::class, 'index'])->name('index');
-        });
+        // Route::prefix('utility')->name('utility.')->group(function () {
+        //     Route::get('/', [AnalyticsController::class, 'index'])->name('index');
+        // });
 
 
         /**

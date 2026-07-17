@@ -51,7 +51,6 @@
                             <th class="px-6 py-3">Meter #</th>
                             <th class="px-6 py-3">Customer</th>
                             <th class="px-6 py-3">Phone</th>
-                            <th class="px-6 py-3">Billing Area</th>
                             <th class="px-6 py-3">Reading Status</th>
                             <th class="px-6 py-3 text-right">Actions</th>
                         </tr>
@@ -74,17 +73,12 @@
 
                                 <!-- Name -->
                                 <td class="px-6 py-4 text-sm text-gray-600 font-medium">
-                                    {{ $account->name }}
+                                    {{ $account->customer_name }}
                                 </td>
 
                                 <!-- Phone -->
                                 <td class="px-6 py-4 text-sm text-gray-600">
                                     {{ $account->phone ?? '-' }}
-                                </td>
-
-                                    <!-- Billing Area -->
-                                <td class="px-6 py-4 text-sm text-gray-600">
-                                    {{ $account->billing_area ?? '-' }}
                                 </td>
 
                                 <td class="px-6 py-4 text-sm text-gray-600">

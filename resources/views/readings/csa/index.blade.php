@@ -272,7 +272,7 @@
 
 
 
-
+                        @if($csa->activeAssignment )
 
                         <!-- Accounts -->
 
@@ -292,7 +292,7 @@
 
                         </x-micro-button>
 
-
+                        @endif
 
 
                     </td>

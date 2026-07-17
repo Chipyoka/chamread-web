@@ -89,7 +89,8 @@
                                             @csrf
                                             @method('PATCH')
                                             <button type="submit" 
-                                                    class="inline-flex items-center px-2.5 py-1.5 rounded-sm text-xs font-medium transition
+                                                    @disabled($billingCycle->status === 'closed')
+                                                    class="disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center px-2.5 py-1.5 rounded-sm text-xs font-medium transition
                                                     {{ !$billingCycle->can_download 
                                                         ? 'bg-green-100 text-green-700 hover:bg-green-200' 
                                                         : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
@@ -104,7 +105,8 @@
                                             @csrf
                                             @method('PATCH')
                                             <button type="submit" 
-                                                    class="inline-flex items-center px-2.5 py-1.5 rounded-sm text-xs font-medium transition
+                                                    @disabled($billingCycle->status === 'closed')
+                                                    class="disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center px-2.5 py-1.5 rounded-sm text-xs font-medium transition
                                                     {{ !$billingCycle->can_upload 
                                                         ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' 
                                                         : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
