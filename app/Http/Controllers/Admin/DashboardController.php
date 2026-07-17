@@ -165,28 +165,27 @@ public function index()
 
     $gpsMismatch = ExceptionGpsMismatch::count();
 
-    return view('dashboard', compact(
-        'totalCsas',
-        'totalZones',
-        'totalDmas',
-        'totalBillingCycles',
-        'currentCycle',
-        'assignedCsas',
-        'totalReadings',
-        'completionRate',
-        'topCsas',
-        'read',
-        'accountsRead',
-        'accountsNotRead',
-        'accountsAbnormal',
-        'zeroConsumption',
-        'billingAreaEdits',
-        'gpsMismatch',
-        'totalAssignedAccounts',
-    ))->with(
-        'success',
-        'Dashboard loaded successfully!'
-    );
+   return view('dashboard', [
+        'overviewData' => [
+            'totalCsas' => $totalCsas,
+            'totalZones' => $totalZones,
+            'totalDmas' => $totalDmas,
+            'totalBillingCycles' => $totalBillingCycles,
+            'currentCycle' => $currentCycle,
+            'assignedCsas' => $assignedCsas,
+            'totalReadings' => $totalReadings,
+            'completionRate' => $completionRate,
+            'topCsas' => $topCsas,
+            'read' => $read,
+            'accountsRead' => $accountsRead,
+            'accountsNotRead' => $accountsNotRead,
+            'accountsAbnormal' => $accountsAbnormal,
+            'zeroConsumption' => $zeroConsumption,
+            'billingAreaEdits' => $billingAreaEdits,
+            'gpsMismatch' => $gpsMismatch,
+            'totalAssignedAccounts' => $totalAssignedAccounts,
+        ]
+    ]);
 }
 
 
