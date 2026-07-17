@@ -5,9 +5,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class FlagRule extends Model
 {
+    use HasFactory;
+    
     protected $fillable = [
         'flag_id',
         'field',

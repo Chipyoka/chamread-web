@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\MeterReadingCodeController;
 use App\Http\Controllers\Admin\MonthlyTemplateController;
 use App\Http\Controllers\Admin\DeviceController;
 use App\Http\Controllers\Admin\ZoneController;
+use App\Http\Controllers\Admin\FlagController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -278,6 +279,25 @@ Route::middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->group(functio
             Route::put('/{device}', [DeviceController::class, 'update']);
             Route::delete('/{device}', [DeviceController::class, 'destroy']);
             Route::post('/bulk-update', [DeviceController::class, 'bulkUpdate']);
+        });
+
+        /**
+         * =====================================================
+         *  FLAGS MANAGEMENT
+         * =====================================================
+         */
+        Route::prefix('flags')->name('flags.')->group(function () {
+           // Flag routes
+            Route::get('/', [FlagController::class, 'index'])->name('index');
+            Route::post('/', [FlagController::class, 'store'])->name('store');
+            Route::put('/{flag}', [FlagController::class, 'update'])->name('update');
+            Route::delete('/{flag}', [FlagController::class, 'destroy'])->name('destroy');
+            Route::post('/bulk-update', [FlagController::class, 'bulkUpdate'])->name('bulk-update');
+
+            // Flag Rule routes
+            Route::post('/rules', [FlagController::class, 'storeRule'])->name('rule.store');
+            Route::put('/rules/{flagRule}', [FlagController::class, 'updateRule'])->name('rule.update');
+            Route::delete('/rules/{flagRule}', [FlagController::class, 'destroyRule'])->name('rule.destroy');
         });
 
 

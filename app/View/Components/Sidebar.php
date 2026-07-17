@@ -60,6 +60,7 @@ class Sidebar extends Component
                     ['name' => 'Users',   'route' => 'systems.users.index',   'pattern' => 'systems.users.*',   'icon' => 'users', 'roles' => ['ADMIN']],
                     ['name' => 'MRC',     'route' => 'systems.mrc.index',     'pattern' => 'systems.mrc.*',     'icon' => 'sliders-horizontal',    'roles' => ['ADMIN']],
                     ['name' => 'Devices',     'route' => 'systems.devices.index',     'pattern' => 'systems.devices.*',     'icon' => 'smartphone',    'roles' => ['ADMIN']],
+                    ['name' => 'Flags',     'route' => 'systems.flags.index',     'pattern' => 'systems.flags.*',     'icon' => 'flag',    'roles' => ['ADMIN']],
                     ['name' => 'Utility', 'route' => 'systems.utility.index', 'pattern' => 'systems.utility.*', 'icon' => 'settings',    'roles' => ['ADMIN']],
                     ['name' => 'Support', 'route' => 'systems.support.index', 'pattern' => 'systems.support.*', 'icon' => 'headset',    'roles' => ['ADMIN']],
                 ],
