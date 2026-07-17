@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasFlags;
 use Illuminate\Database\Eloquent\Model;
 
 class CustomerAccount extends Model
 {
     //
+    use HasFlags; 
+    
     protected $table = 'customer_accounts';
 
     // fillables

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasFlags;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -22,9 +23,11 @@ use Laravel\Sanctum\HasApiTokens;
     'password'
 ])]
 #[Hidden(['password', 'remember_token'])]
+
+
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasFactory, Notifiable, HasApiTokens, HasFlags;
 
     /**
      * Attribute casting.

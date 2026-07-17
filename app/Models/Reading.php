@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasFlags;
 use Illuminate\Database\Eloquent\Model;
 
 class Reading extends Model
 {
+    use HasFlags;
+
     protected $fillable = [
          'account_id','account_number','csa_id','billing_cycle_id',
         'zone_id','dma_id',
