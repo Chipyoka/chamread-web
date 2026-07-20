@@ -37,57 +37,52 @@
                     <div class="w-[30rem]">
                         <form action="{{ route('dashboard.search.results') }}" method="GET" class="w-full">
 
-                            <div class="relative w-full">
-
-                                <!-- Icon -->
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i data-lucide="search" class="h-5 w-5 text-gray-400"></i>
-                                </div>
-
-                                <!-- Input -->
-                                <input
-                                    type="search"
-                                    name="search"
-                                    id="search"
-                                    placeholder="Search accounts, or people..."
-                                    class="
-                                        w-full
-                                        pl-10 pr-4 py-2.5
-                                        bg-white
-                                        border border-gray-200
-                                        rounded
-
-                                        text-sm text-gray-700
-                                        placeholder-gray-400
-
-                                        focus:outline-none
-                                        focus:border-gray-400
-
-                                        transition duration-200 ease-in-out
-                                    "
-                                    autocomplete="off"
-                                />
+                        <div class="
+                            w-full
+                            flex items-center justify-start gap-1
+                            pl-3 
+                            bg-white
+                            border border-gray-200
+                            rounded
+                            text-sm text-gray-700
+                            placeholder-gray-400
+                            transition duration-200 ease-in-out
+                            focus-within:border-primary
+                            focus-within:ring-2
+                            focus-within:ring-primary
+                            hover:border-gray-300
+                        ">
+                            <!-- Icon -->
+                            <div class="flex items-center pointer-events-none transition-colors duration-200">
+                                <i data-lucide="search" class="h-5 w-5 text-gray-400 group-focus-within:text-gray-600"></i>
                             </div>
+
+                            <!-- Input -->
+                            <input
+                                type="search"
+                                name="search"
+                                id="search"
+                                placeholder="Search accounts, or people..."
+                                class="
+                                    w-full
+                                    pr-4 py-2.5
+                                    bg-transparent
+                                    border-none
+                                    outline-none
+                                    focus:ring-0
+                                    text-sm
+                                    text-gray-700
+                                    placeholder-gray-400
+                                "
+                                autocomplete="off"
+                            />
+                        </div>
                         </form>
                     </div>
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <div class="border-r border-gray-200 pr-3">
-                    <button 
-                        @click="$dispatch('notification-toggle')"
-                        class="p-2 bg-gray-50/50 rounded-full hover:bg-gray-100/70 transition-all duration-300 ease-in-out relative group"
-                    >
-                        <i data-lucide="bell" class="h-6 w-6 text-gray-500 transition-colors duration-300"></i>
-                        {{-- Notification Badge --}}
-                    
-
-                        @if($hasUnreadNotifications)
-                         <span class="absolute top-1 right-0 h-2 w-2 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center"></span>
-                        @endif
-                    </button>
-                </div>
-                <x-notification-slide />
+         
                 
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">

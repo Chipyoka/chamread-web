@@ -9,6 +9,7 @@ use App\Models\SystemNotification;
 use App\Models\CustomerAccount;
 use App\Models\AuditLog;
 use App\Models\Reading;
+use App\Models\Flaggable;
 use App\Models\ReadingReread;
 use App\Models\ReadingResolve;
 use App\Models\Dma;
@@ -18,6 +19,7 @@ use App\Models\CsaAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use App\Services\FlagService;
 
 
 use App\Services\AuditLogService;
@@ -184,6 +186,11 @@ class DashboardController extends Controller
                 ->whereRaw('ABS(current_reading - previous_reading) < 0.001')
                 ->where('billing_cycle_id', $currentCycle->id)
                 ->count();
+
+
+
+              // total flagged
+            $totalFlagged = Flaggable::active()->distinct('flaggable_id')->count();
         }
 
         
@@ -195,17 +202,7 @@ class DashboardController extends Controller
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Global Metrics
-        |--------------------------------------------------------------------------
-        */
-        $billingAreaEdits = AuditLog::where(
-            'action',
-            'BILLING_EDIT'
-        )->count();
-
-        $gpsMismatch = ExceptionGpsMismatch::count();
+       
 
         return view('dashboard.index', [
             'overviewData' => [
@@ -222,12 +219,10 @@ class DashboardController extends Controller
                 'accountsRead' => $accountsRead,
                 'accountsNotRead' => $accountsNotRead,
                 'accountsAbnormal' => $accountsAbnormal,
-                'zeroConsumption' => $zeroConsumption,
-                'billingAreaEdits' => $billingAreaEdits,
-                'gpsMismatch' => $gpsMismatch,
                 'totalAssignedAccounts' => $totalAssignedAccounts,
                 'pending' => $pending,
                 'readings' => $readings,
+                'totalFlagged' => $totalFlagged,
 
             ]
         ]);

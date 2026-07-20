@@ -118,4 +118,30 @@ class FlagService
             return false;
         }
     }
+
+
+
+        /**
+         * Get total count of currently flagged entities.
+         * 
+         * @param string $type  'account', 'reading', or 'meter_reader'
+         * @param string|null $flagCode  Optional: filter by specific flag code
+         */
+        public function totalFlagged(string $type, ?string $flagCode = null): int
+        {
+            $modelClass = match ($type) {
+                'account'      => 'App\Models\CustomerAccount',
+                'reading'      => 'App\Models\Reading',
+                'meter_reader' => 'App\Models\User',
+            };
+
+            $query = \App\Models\Flaggable::active()
+                ->where('flaggable_type', $modelClass);
+
+            if ($flagCode) {
+                $query->whereHas('flag', fn($q) => $q->where('code', $flagCode));
+            }
+
+            return $query->distinct('flaggable_id')->count('flaggable_id');
+        }
 }
