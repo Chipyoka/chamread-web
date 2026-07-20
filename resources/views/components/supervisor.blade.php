@@ -118,7 +118,7 @@
 
     <!-- Table -->
     <div class="bg-white rounded-md p-4 space-y-4 border border-gray-200 overflow-hidden">
-    <p class="text-gray-400 text-xs uppercase mt-2">Readings</p>
+        <p class="text-gray-400 text-xs uppercase mt-2">Readings</p>
         @if(count($readings) > 0)
 
             <table class="min-w-full divide-y divide-gray-100">
@@ -190,15 +190,17 @@
                                         'account_number' => $reading->account->account_number ?? null,
                                     ];
                                 @endphp
-                                <x-micro-button
-                                    type="button"
-                                    color="amber"
-                                    icon="notebook-pen"
-                                    size="sm"
-                                    x-on:click="selectReading({{ \Illuminate\Support\Js::from($readingPayload) }}); $dispatch('open-modal', 're-read')"
-                                >
-                                    Re-read
-                                </x-micro-button>
+                                @if(!$reading->pendingReread)
+                                    <x-micro-button
+                                        type="button"
+                                        color="amber"
+                                        icon="notebook-pen"
+                                        size="sm"
+                                        x-on:click="selectReading({{ \Illuminate\Support\Js::from($readingPayload) }}); $dispatch('open-modal', 're-read')"
+                                    >
+                                        Re-read
+                                    </x-micro-button>
+                                @endif
                                 
                                 @if($reading->pendingReread)
                                     <x-micro-button
@@ -206,7 +208,7 @@
                                         color="green"
                                         icon="circle-check-big"
                                         size="sm"
-                                    />
+                                    >Mark Complete</x-micro-button>
                                 @endif
 
                             </td>
