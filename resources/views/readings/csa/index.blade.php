@@ -11,7 +11,7 @@
                 CSA Management
             </h1>
 
-            <p class="text-sm text-gray-500">
+            <p class="text-xs text-gray-500">
                 Manage Customer Service Agents
             </p>
         </div>
@@ -22,7 +22,7 @@
             <button
                 type="button"
                 x-on:click="$dispatch('open-modal','create-csa')"
-                class="inline-flex items-center px-3 py-2.5 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary/90 transition"
+                class="inline-flex items-center px-3 py-2.5 bg-primary text-white text-xs font-medium rounded-md hover:bg-primary/90 transition"
             >
 
                 <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
@@ -102,7 +102,7 @@
 
                     <!-- Name -->
 
-                    <td class="px-6 py-4 text-sm text-gray-500 font-medium">
+                    <td class="px-6 py-3 text-xs text-gray-500 font-medium">
 
                         {{ $csa->name }}
 
@@ -114,7 +114,7 @@
 
                     <!-- Zone -->
 
-                    <td class="px-6 py-4 text-sm text-gray-500">
+                    <td class="px-6 py-3 text-xs text-gray-500">
 
                         {{ $csa->activeAssignment->zone->name ?? '-' }}
 
@@ -127,7 +127,7 @@
 
                     <!-- Status -->
 
-                    <td class="px-6 py-4 uppercase">
+                    <td class="px-6 py-3 uppercase">
 
 
                         @if($csa->status === 'ACTIVE')
@@ -174,7 +174,7 @@
                     <!-- Last Login -->
 
 
-                    <td class="px-6 py-4 text-sm text-gray-500">
+                    <td class="px-6 py-3 text-xs text-gray-500">
 
 
                         {{ 
@@ -194,7 +194,7 @@
 
                     <!-- Actions -->
 
-                    <td class="px-6 py-4 text-right text-sm space-x-2">
+                    <td class="px-6 py-3 text-right text-xs space-x-2">
 
 
 
@@ -340,7 +340,7 @@
                     <i data-lucide="users" class="w-10 h-10 text-gray-300"></i>
 
 
-                    <p class="text-gray-500 text-sm">
+                    <p class="text-gray-500 text-xs">
                         No CSAs found.
                     </p>
 

@@ -3,7 +3,7 @@
     <!-- Top card row  -->
     <div class=" bg-white border rounded-md border-gray-200  px-6 py-4">
         <div class="text-gray-500 mb-6">
-            <p class="text-gray-400 text-xs uppercase my-2">key performance metrics (Scoped to zone)</p>
+            <p class="text-gray-400 text-xs uppercase my-2">key performance metrics</p>
         </div>
 
           

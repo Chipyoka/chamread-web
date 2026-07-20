@@ -7,7 +7,7 @@
 
     <!-- Login Form Container -->
     <div class="max-h-[90dvh] w-full">
-        <div class="px-6 py-4 bg-white/90 backdrop-blur-md rounded-sm shadow-lg w-7xl ">
+        <div class="px-6 py-4 bg-white/90 backdrop-blur-md rounded-sm shadow-lg w-6xl ">
             <div class="flex items-center justify-between mb-6 gap-6">
 
                 <img src="{{ asset('images/logo.png') }}" alt="logo" class="h-10">
@@ -17,7 +17,7 @@
 
             <div class="flex gap-6 justify-between">
 
-            <!-- Summary -->
+                <!-- Summary -->
                 <div class="border px-6 w-1/2 py-6 mb-4 rounded-md">
                     <div class="flex justify-between gap-4 items-start ">
                         
@@ -48,7 +48,7 @@
                         </div>
 
                     @else
-                        <div class="w-60 ">
+                        <div class=" ">
                             <x-charts.reading-donut-chart
                                     :read="$read"
                                     :pending="$pending"
@@ -103,9 +103,9 @@
                     </form>
                 </div>
             </div>
-        </div>
-        <div class="text-gray-200 text-xs pt-2 px-4 border-t border-blue-300 mt-6 text-center">
-           Chamread Management Dashboard © 2026 ChWSSCL.
+            <div class="text-gray-500 text-xxs  text-center">
+               Chamread Management Dashboard © 2026 ChWSSCL.
+            </div>
         </div>
     </div>
 </x-guest-layout>

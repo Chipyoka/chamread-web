@@ -5,7 +5,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-medium text-gray-500">Customer Accounts</h1>
-                <p class="text-sm text-gray-500">Manage Customer Accounts</p>
+                <p class="text-xs text-gray-500">Manage Customer Accounts</p>
             </div>
         </div>
 
@@ -32,34 +32,34 @@
                             <tr class="hover:bg-gray-50 transition">
 
                                 <!-- Account Number -->
-                                <td class="px-6 py-4 text-sm text-gray-500 font-medium">
+                                <td class="px-6 py-3 text-xs text-gray-500 font-medium">
                                     {{ $account->account_number }}
                                 </td>
 
                                 <!-- Meter Number -->
-                                <td class="px-6 py-4 text-sm text-gray-500">
+                                <td class="px-6 py-3 text-xs text-gray-500">
                                     {{ $account->meter_number ?? '-' }}
                                 </td>
 
                                 <!-- Name -->
-                                <td class="px-6 py-4 text-sm text-gray-500 font-medium">
+                                <td class="px-6 py-3 text-xs text-gray-500 font-medium">
                                     {{ $account->customer_name }}
                                 </td>
 
                                 <!-- Phone -->
-                                <td class="px-6 py-4 text-sm text-gray-500">
+                                <td class="px-6 py-3 text-xs text-gray-500">
                                     {{ $account->phone ?? '-' }}
                                 </td>
                                 
 
                                   <!-- Zone -->
-                                <td class="px-6 py-4 text-sm text-gray-500">
+                                <td class="px-6 py-3 text-xs text-gray-500">
                                     {{ $account->zone->name ?? '-' }}
                                 </td>
 
 
                                 <!-- Actions -->
-                                <td class="px-6 py-4 text-right text-sm space-x-2">
+                                <td class="px-6 py-3 text-right text-xs space-x-2">
 
                                     <!-- View -->
                                     <x-micro-button
@@ -89,7 +89,7 @@
                 <div class="p-10 text-center">
                     <div class="flex flex-col items-center space-y-3">
                         <i data-lucide="file-text" class="w-10 h-10 text-gray-300"></i>
-                        <p class="text-gray-500 text-sm">No accounts found.</p>
+                        <p class="text-gray-500 text-xs">No accounts found.</p>
                         <p class="text-gray-500 text-xs">Contact the IT Department to load customer accounts.</p>
 
                     </div>
