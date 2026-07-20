@@ -278,12 +278,10 @@ class AccountsController extends Controller
             ->get([
                 'id',
                 'account_number',
-                'name',
+                'customer_name',
                 'phone',
                 'zone_id',
-                'dma_id',
                 'address',
-                'billing_area',
                 'meter_number'
             ]);
 

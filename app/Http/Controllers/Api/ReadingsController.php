@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Reading;
+use App\Models\MeterReadingCode;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,8 +20,8 @@ class ReadingsController extends Controller
      */
     public function reasons()
     {
-        $reasons = MeterReadingCode::where('is_active', true)
-            ->orderBy('sort_order')
+        $reasons = MeterReadingCode::where('status', 'active')
+            ->orderBy('id')
             ->get();
 
         return response()->json([
