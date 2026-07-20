@@ -1,8 +1,6 @@
 <div class="w-[260px]">
     <div class="card-body">
-
         <canvas id="readingDonutChart2"></canvas>
-
     </div>
 </div>
 
@@ -15,8 +13,8 @@ document.addEventListener('DOMContentLoaded', function () {
         type: 'doughnut',
         data: {
             labels: [
-                'Completed',
-                'Pending'
+                '{{ $l1 }}',
+                '{{ $l2 }}'
             ],
             datasets: [{
                 data: [
@@ -24,8 +22,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     {{ $pending }}
                 ],
                 backgroundColor: [
-                    '#198bce',
-                    '#bfddef'
+                    '{{ $c1 }}',
+                    '{{ $c2 }}'
                 ],
                 borderWidth: 0
             }]

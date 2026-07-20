@@ -10,6 +10,7 @@ use App\Models\CustomerAccount;
 use App\Models\AuditLog;
 use App\Models\Reading;
 use App\Models\ReadingReread;
+use App\Models\ReadingResolve;
 use App\Models\Dma;
 use App\Models\BillingCycle;
 use App\Models\ExceptionGpsMismatch;
@@ -378,197 +379,226 @@ class DashboardController extends Controller
      */
     public function technical()
     {
-        $totalCsas = User::where('role', 'CSA')->count();
-        $totalZones = Zone::count();
-        $totalDmas = Dma::count();
-        $totalBillingCycles = BillingCycle::count();
-
-        // Latest billing cycle
         $currentCycle = BillingCycle::latest()->first();
 
         /*
         |--------------------------------------------------------------------------
-        | Default Safe Values
+        | Default Values
         |--------------------------------------------------------------------------
         */
-        $assignedCsas = 0;
-        $totalReadings = 0;
-        $completionRate = 0;
-        $topCsas = collect();
-        $accountsRead = 0;
-        $accountsNotRead = 0;
-        $accountsAbnormal = 0;
-        $zeroConsumption = 0;
-        $totalAssignedAccounts = 0;
-        $readings = [];
 
+        $totalTechnicalCases = 0;
+        $pendingResolves = 0;
+        $resolvedCases = 0;
+        $resolvedToday = 0;
+        $resolutionRate = 0;
 
-        $read = CustomerAccount::whereExists(function ($query) {
-                $query->selectRaw(1)
-                    ->from('readings')
-                    ->whereColumn('readings.account_id', 'customer_accounts.id');
-            })->count();
+        $technicalDistribution = collect();
+        $technicalReadings = collect();
+
 
         /*
         |--------------------------------------------------------------------------
-        | Only execute billing-cycle-dependent logic if cycle exists
+        | Technical Reading Codes
         |--------------------------------------------------------------------------
         */
 
-        $pending = 0;
-
-            if ($currentCycle) {
-                $assignedZoneIds = CsaAssignment::where(
-                    'billing_cycle_id',
-                    $currentCycle->id
-                )->pluck('zone_id');
-
-                // Total accounts in assigned zones
-                $total = CustomerAccount::whereIn('zone_id', $assignedZoneIds)->count();
-                
-                // Accounts WITH readings (completed)
-                $read = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
-                    ->whereExists(function ($query) {
-                        $query->selectRaw(1)
-                            ->from('readings')
-                            ->whereColumn('readings.account_id', 'customer_accounts.id');
-                    })->count();
-                
-                // Accounts WITHOUT readings (pending)
-                $pending = $total - $read;
-            }
+        $technicalCodes = [
+            '01',
+            '02',
+            '05',
+            '08',
+            '09',
+            '12',
+        ];
 
 
         if ($currentCycle) {
 
-            // Total assigned CSA records
-            $assignedCsas = CsaAssignment::where(
-                'billing_cycle_id',
-                $currentCycle->id
-            )->count();
-
-            // Total readings in cycle
-            $totalReadings = Reading::where(
-                'billing_cycle_id',
-                $currentCycle->id
-            )->count();
-
-            // Completion rate
-            $assignedZoneIds = CsaAssignment::where(
-                'billing_cycle_id',
-                $currentCycle->id
-            )->pluck('zone_id');
-
-            $totalAssignedAccounts = CustomerAccount::whereIn(
-                'zone_id',
-                $assignedZoneIds
-            )->count();
-
-            $completionRate = $totalAssignedAccounts > 0
-                ? round(($totalReadings / $totalAssignedAccounts) * 100, 2)
-                : 0;
-
-                
 
             /*
             |--------------------------------------------------------------------------
-            | Top CSAs
+            | Technical Reading Queue
             |--------------------------------------------------------------------------
             */
-        $topCsas = Reading::where('billing_cycle_id', $currentCycle->id)
-                ->select('csa_id', DB::raw('COUNT(*) as total_readings'))
-                ->groupBy('csa_id')
-                ->orderByDesc('total_readings')
-                ->take(5)
+
+            $technicalReadings = Reading::with([
+                    'account',
+                    'zone',
+                    'latestResolve',
+                ])
+                ->where('billing_cycle_id', $currentCycle->id)
+                ->whereIn('this_month_code', $technicalCodes)
+                ->latest()
+                ->paginate(10);
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Total Technical Cases
+            |--------------------------------------------------------------------------
+            */
+
+            $totalTechnicalCases = Reading::where(
+                    'billing_cycle_id',
+                    $currentCycle->id
+                )
+                ->whereIn('this_month_code', $technicalCodes)
+                ->count();
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Resolution Metrics
+            |--------------------------------------------------------------------------
+            */
+
+            $resolvedCases = ReadingResolve::where(
+                    'billing_cycle_id',
+                    $currentCycle->id
+                )
+                ->whereHas('reading', function ($query) use ($technicalCodes) {
+
+                    $query->whereIn(
+                        'this_month_code',
+                        $technicalCodes
+                    );
+
+                })
+                ->count();
+
+
+
+            $pendingResolves = max(
+                0,
+                $totalTechnicalCases - $resolvedCases
+            );
+
+
+
+            $resolvedToday = ReadingResolve::where(
+                    'billing_cycle_id',
+                    $currentCycle->id
+                )
+                ->where('created_at', '>=', now()->subDay())
+                ->count();
+
+
+
+            $resolutionRate = $totalTechnicalCases > 0
+                ? round(
+                    ($resolvedCases / $totalTechnicalCases) * 100,
+                    2
+                )
+                : 0;
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Technical Issue Distribution
+            |--------------------------------------------------------------------------
+            */
+
+            $technicalDistribution = Reading::where(
+                    'billing_cycle_id',
+                    $currentCycle->id
+                )
+                ->whereIn(
+                    'this_month_code',
+                    $technicalCodes
+                )
+                ->select(
+                    'this_month_code',
+                    DB::raw('COUNT(*) as total_cases')
+                )
+                ->groupBy('this_month_code')
+                ->orderByDesc('total_cases')
                 ->get()
                 ->map(function ($item) {
 
-                    $user = User::find($item->csa_id);
 
-                    $item->csa_name = $user?->username ?? 'Unknown';
+                    /*
+                    |--------------------------------------------------------------
+                    | Temporary Labels
+                    | Replace with code table later
+                    |--------------------------------------------------------------
+                    */
 
-                    return $item; // KEEP AS OBJECT
+                    $labels = [
+
+                        '01' => 'Meter Fault',
+                        '02' => 'Leak Detected',
+                        '05' => 'Damaged Meter',
+                        '08' => 'Blocked Meter',
+                        '09' => 'No Access',
+                        '12' => 'Other Issue',
+
+                    ];
+
+
+                    $item->issue_name =
+                        $labels[$item->this_month_code]
+                        ?? 'Unknown';
+
+
+                    return $item;
+
                 });
 
-            /*
-            |--------------------------------------------------------------------------
-            | Reading Status Counts
-            |--------------------------------------------------------------------------
-            */
-            $accountsRead = Reading::where('billing_cycle_id', $currentCycle->id)
-                ->where('status', 'READ')
-                ->count();
-
-            $accountsNotRead = Reading::where('billing_cycle_id', $currentCycle->id)
-                ->where('status', 'NOT_READ')
-                ->count();
-
-            /*
-            |--------------------------------------------------------------------------
-            | Abnormal Readings
-            |--------------------------------------------------------------------------
-            */
-            $accountsAbnormal = max(
-                0,
-                $totalReadings - ($accountsRead + $accountsNotRead)
-            );
-
-            /*
-            |--------------------------------------------------------------------------
-            | Zero Consumption
-            |--------------------------------------------------------------------------
-            */
-            $zeroConsumption = Reading::whereNotNull('previous_reading')
-                ->whereNotNull('current_reading')
-                ->whereRaw('ABS(current_reading - previous_reading) < 0.001')
-                ->where('billing_cycle_id', $currentCycle->id)
-                ->count();
-        }
-
-        
-
-        if($currentCycle) {
-            $readings = Reading::with([
-            'pendingReread',
-            ])->where('billing_cycle_id', $currentCycle->id)->paginate(10);
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Global Metrics
-        |--------------------------------------------------------------------------
-        */
-        $billingAreaEdits = AuditLog::where(
-            'action',
-            'BILLING_EDIT'
-        )->count();
-
-        $gpsMismatch = ExceptionGpsMismatch::count();
 
         return view('dashboard.technical', [
-            'overviewData' => [
-                'totalCsas' => $totalCsas,
-                'totalZones' => $totalZones,
-                'totalDmas' => $totalDmas,
-                'totalBillingCycles' => $totalBillingCycles,
-                'currentCycle' => $currentCycle,
-                'assignedCsas' => $assignedCsas,
-                'totalReadings' => $totalReadings,
-                'completionRate' => $completionRate,
-                'topCsas' => $topCsas,
-                'read' => $read,
-                'accountsRead' => $accountsRead,
-                'accountsNotRead' => $accountsNotRead,
-                'accountsAbnormal' => $accountsAbnormal,
-                'zeroConsumption' => $zeroConsumption,
-                'billingAreaEdits' => $billingAreaEdits,
-                'gpsMismatch' => $gpsMismatch,
-                'totalAssignedAccounts' => $totalAssignedAccounts,
-                'pending' => $pending,
-                'readings' => $readings,
 
-            ]
+            'technicalData' => [
+
+                'currentCycle' => $currentCycle,
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Cards
+                |--------------------------------------------------------------------------
+                */
+
+                'totalTechnicalCases' => $totalTechnicalCases,
+
+                'pendingResolves' => $pendingResolves,
+
+                'resolvedCases' => $resolvedCases,
+
+                'resolvedToday' => $resolvedToday,
+
+                'resolutionRate' => $resolutionRate,
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Charts
+                |--------------------------------------------------------------------------
+                */
+
+                'piePending' => $pendingResolves,
+
+                'pieResolved' => $resolvedCases,
+
+                'barChartData' => $technicalDistribution,
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Table
+                |--------------------------------------------------------------------------
+                */
+
+                'readings' => $technicalReadings,
+
+            ],
+
         ]);
     }
 

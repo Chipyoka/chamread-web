@@ -90,10 +90,15 @@
                 @else
                     <div class="flex justify-between items-start gap-2">
                         
-                        <x-charts.reading-donut-chart2
-                            :completed="$totalReReadCompleted"
-                            :pending="$totalReReadPending"
-                        />
+                       
+                        @include('components.charts.reading-donut-chart2', [
+                            'l1' => "Re-reads",
+                            'l2' => "Pending",
+                            'c1' => "#956142",
+                            'c2' => "#fbbf24",
+                            'completed' => $totalReReadCompleted,
+                            'pending' => $totalReReadPending
+                        ])
 
                         <div class="w-1/3">
                             <div class="mb-2 bg-white/40 border-gray-200 border rounded-md flex items-center justify-between py-1.5 px-3  text-sm">
