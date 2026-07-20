@@ -204,28 +204,25 @@ class DashboardController extends Controller
 
        
 
-        return view('dashboard.index', [
-            'overviewData' => [
-                'totalCsas' => $totalCsas,
-                'totalZones' => $totalZones,
-                'totalDmas' => $totalDmas,
-                'totalBillingCycles' => $totalBillingCycles,
-                'currentCycle' => $currentCycle,
-                'assignedCsas' => $assignedCsas,
-                'totalReadings' => $totalReadings,
-                'completionRate' => $completionRate,
-                'topCsas' => $topCsas,
-                'read' => $read,
-                'accountsRead' => $accountsRead,
-                'accountsNotRead' => $accountsNotRead,
-                'accountsAbnormal' => $accountsAbnormal,
-                'totalAssignedAccounts' => $totalAssignedAccounts,
-                'pending' => $pending,
-                'readings' => $readings,
-                'totalFlagged' => $totalFlagged,
-
-            ]
-        ]);
+        return view('dashboard.index', compact(
+            'totalCsas',
+            'totalZones',
+            'totalDmas',
+            'totalBillingCycles',
+            'currentCycle',
+            'assignedCsas',
+            'totalReadings',
+            'completionRate',
+            'topCsas',
+            'read',
+            'accountsRead',
+            'accountsNotRead',
+            'accountsAbnormal',
+            'totalAssignedAccounts',
+            'pending',
+            'readings',
+            'totalFlagged'
+        ));
     }
 
     /**

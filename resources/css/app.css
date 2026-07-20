@@ -102,14 +102,32 @@ body{
     font-size: .65rem;
 }
 
-* {
-    animation: fadeIn 0.5s ease forwards;
+/* Add to your CSS file or <style> tag */
+
+/* Base fade-in animation */
+body {
+    animation: fadeIn 0.5s ease-in-out forwards;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+        transform: translateY(2px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
+
+/* Optional: Stagger children animations */
+.parent-stagger > body {
+    animation-delay: calc(0.1s * var(--index, 0));
+}
+
+/* Optional: Different timing variations */
+.fade-fast { animation-duration: 0.3s; }
+.fade-slow { animation-duration: 0.8s; }
 
 .z-x{
   z-index: 9999 !important;
