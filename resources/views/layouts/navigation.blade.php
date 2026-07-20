@@ -5,7 +5,7 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard.index') }}">
+                    <a href="{{ route('dashboard.dashboard.index') }}">
                        <img src="{{ asset('images/app_logo.png') }}" alt="logo" class="h-10">
                     </a>
                     
@@ -139,7 +139,7 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard.index')" :active="request()->routeIs('dashboard.index')">
+            <x-responsive-nav-link :href="route('dashboard.dashboard.index')" :active="request()->routeIs('dashboard.dashboard.index')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
         </div>

@@ -79,7 +79,7 @@ class AuthenticatedSessionController extends Controller
             'last_login_at' => now()
         ]);
 
-        return redirect()->intended(route('dashboard.index', absolute: false));
+        return redirect()->intended(route('dashboard.dashboard.index', absolute: false));
     }
 
     /**

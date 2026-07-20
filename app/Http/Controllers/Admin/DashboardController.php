@@ -32,204 +32,605 @@ class DashboardController extends Controller
 
 
 
-public function index()
-{
-    $totalCsas = User::where('role', 'CSA')->count();
-    $totalZones = Zone::count();
-    $totalDmas = Dma::count();
-    $totalBillingCycles = BillingCycle::count();
+    /**
+     * Overview
+     */
+    public function index()
+    {
+        $totalCsas = User::where('role', 'CSA')->count();
+        $totalZones = Zone::count();
+        $totalDmas = Dma::count();
+        $totalBillingCycles = BillingCycle::count();
 
-    // Latest billing cycle
-    $currentCycle = BillingCycle::latest()->first();
+        // Latest billing cycle
+        $currentCycle = BillingCycle::latest()->first();
 
-    /*
-    |--------------------------------------------------------------------------
-    | Default Safe Values
-    |--------------------------------------------------------------------------
-    */
-    $assignedCsas = 0;
-    $totalReadings = 0;
-    $completionRate = 0;
-    $topCsas = collect();
-    $accountsRead = 0;
-    $accountsNotRead = 0;
-    $accountsAbnormal = 0;
-    $zeroConsumption = 0;
-    $totalAssignedAccounts = 0;
-    $readings = [];
+        /*
+        |--------------------------------------------------------------------------
+        | Default Safe Values
+        |--------------------------------------------------------------------------
+        */
+        $assignedCsas = 0;
+        $totalReadings = 0;
+        $completionRate = 0;
+        $topCsas = collect();
+        $accountsRead = 0;
+        $accountsNotRead = 0;
+        $accountsAbnormal = 0;
+        $zeroConsumption = 0;
+        $totalAssignedAccounts = 0;
+        $readings = [];
 
 
-    $read = CustomerAccount::whereExists(function ($query) {
-            $query->selectRaw(1)
-                ->from('readings')
-                ->whereColumn('readings.account_id', 'customer_accounts.id');
-        })->count();
+        $read = CustomerAccount::whereExists(function ($query) {
+                $query->selectRaw(1)
+                    ->from('readings')
+                    ->whereColumn('readings.account_id', 'customer_accounts.id');
+            })->count();
 
-    /*
-    |--------------------------------------------------------------------------
-    | Only execute billing-cycle-dependent logic if cycle exists
-    |--------------------------------------------------------------------------
-    */
+        /*
+        |--------------------------------------------------------------------------
+        | Only execute billing-cycle-dependent logic if cycle exists
+        |--------------------------------------------------------------------------
+        */
 
-       $pending = 0;
+        $pending = 0;
+
+            if ($currentCycle) {
+                $assignedZoneIds = CsaAssignment::where(
+                    'billing_cycle_id',
+                    $currentCycle->id
+                )->pluck('zone_id');
+
+                // Total accounts in assigned zones
+                $total = CustomerAccount::whereIn('zone_id', $assignedZoneIds)->count();
+                
+                // Accounts WITH readings (completed)
+                $read = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
+                    ->whereExists(function ($query) {
+                        $query->selectRaw(1)
+                            ->from('readings')
+                            ->whereColumn('readings.account_id', 'customer_accounts.id');
+                    })->count();
+                
+                // Accounts WITHOUT readings (pending)
+                $pending = $total - $read;
+            }
+
 
         if ($currentCycle) {
+
+            // Total assigned CSA records
+            $assignedCsas = CsaAssignment::where(
+                'billing_cycle_id',
+                $currentCycle->id
+            )->count();
+
+            // Total readings in cycle
+            $totalReadings = Reading::where(
+                'billing_cycle_id',
+                $currentCycle->id
+            )->count();
+
+            // Completion rate
             $assignedZoneIds = CsaAssignment::where(
                 'billing_cycle_id',
                 $currentCycle->id
             )->pluck('zone_id');
 
-            // Total accounts in assigned zones
-            $total = CustomerAccount::whereIn('zone_id', $assignedZoneIds)->count();
-            
-            // Accounts WITH readings (completed)
-            $read = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
-                ->whereExists(function ($query) {
-                    $query->selectRaw(1)
-                        ->from('readings')
-                        ->whereColumn('readings.account_id', 'customer_accounts.id');
-                })->count();
-            
-            // Accounts WITHOUT readings (pending)
-            $pending = $total - $read;
+            $totalAssignedAccounts = CustomerAccount::whereIn(
+                'zone_id',
+                $assignedZoneIds
+            )->count();
+
+            $completionRate = $totalAssignedAccounts > 0
+                ? round(($totalReadings / $totalAssignedAccounts) * 100, 2)
+                : 0;
+
+                
+
+            /*
+            |--------------------------------------------------------------------------
+            | Top CSAs
+            |--------------------------------------------------------------------------
+            */
+        $topCsas = Reading::where('billing_cycle_id', $currentCycle->id)
+                ->select('csa_id', DB::raw('COUNT(*) as total_readings'))
+                ->groupBy('csa_id')
+                ->orderByDesc('total_readings')
+                ->take(5)
+                ->get()
+                ->map(function ($item) {
+
+                    $user = User::find($item->csa_id);
+
+                    $item->csa_name = $user?->username ?? 'Unknown';
+
+                    return $item; // KEEP AS OBJECT
+                });
+
+            /*
+            |--------------------------------------------------------------------------
+            | Reading Status Counts
+            |--------------------------------------------------------------------------
+            */
+            $accountsRead = Reading::where('billing_cycle_id', $currentCycle->id)
+                ->where('status', 'READ')
+                ->count();
+
+            $accountsNotRead = Reading::where('billing_cycle_id', $currentCycle->id)
+                ->where('status', 'NOT_READ')
+                ->count();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Abnormal Readings
+            |--------------------------------------------------------------------------
+            */
+            $accountsAbnormal = max(
+                0,
+                $totalReadings - ($accountsRead + $accountsNotRead)
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Zero Consumption
+            |--------------------------------------------------------------------------
+            */
+            $zeroConsumption = Reading::whereNotNull('previous_reading')
+                ->whereNotNull('current_reading')
+                ->whereRaw('ABS(current_reading - previous_reading) < 0.001')
+                ->where('billing_cycle_id', $currentCycle->id)
+                ->count();
+        }
+
+        
+
+        if($currentCycle) {
+            $readings = Reading::with([
+            'pendingReread',
+            ])->where('billing_cycle_id', $currentCycle->id)->paginate(10);
         }
 
 
-    if ($currentCycle) {
-
-        // Total assigned CSA records
-        $assignedCsas = CsaAssignment::where(
-            'billing_cycle_id',
-            $currentCycle->id
+        /*
+        |--------------------------------------------------------------------------
+        | Global Metrics
+        |--------------------------------------------------------------------------
+        */
+        $billingAreaEdits = AuditLog::where(
+            'action',
+            'BILLING_EDIT'
         )->count();
 
-        // Total readings in cycle
-        $totalReadings = Reading::where(
-            'billing_cycle_id',
-            $currentCycle->id
-        )->count();
+        $gpsMismatch = ExceptionGpsMismatch::count();
 
-        // Completion rate
-        $assignedZoneIds = CsaAssignment::where(
-            'billing_cycle_id',
-            $currentCycle->id
-        )->pluck('zone_id');
+        return view('dashboard.index', [
+            'overviewData' => [
+                'totalCsas' => $totalCsas,
+                'totalZones' => $totalZones,
+                'totalDmas' => $totalDmas,
+                'totalBillingCycles' => $totalBillingCycles,
+                'currentCycle' => $currentCycle,
+                'assignedCsas' => $assignedCsas,
+                'totalReadings' => $totalReadings,
+                'completionRate' => $completionRate,
+                'topCsas' => $topCsas,
+                'read' => $read,
+                'accountsRead' => $accountsRead,
+                'accountsNotRead' => $accountsNotRead,
+                'accountsAbnormal' => $accountsAbnormal,
+                'zeroConsumption' => $zeroConsumption,
+                'billingAreaEdits' => $billingAreaEdits,
+                'gpsMismatch' => $gpsMismatch,
+                'totalAssignedAccounts' => $totalAssignedAccounts,
+                'pending' => $pending,
+                'readings' => $readings,
 
-        $totalAssignedAccounts = CustomerAccount::whereIn(
-            'zone_id',
-            $assignedZoneIds
-        )->count();
-
-        $completionRate = $totalAssignedAccounts > 0
-            ? round(($totalReadings / $totalAssignedAccounts) * 100, 2)
-            : 0;
-
-            
-
-        /*
-        |--------------------------------------------------------------------------
-        | Top CSAs
-        |--------------------------------------------------------------------------
-        */
-       $topCsas = Reading::where('billing_cycle_id', $currentCycle->id)
-            ->select('csa_id', DB::raw('COUNT(*) as total_readings'))
-            ->groupBy('csa_id')
-            ->orderByDesc('total_readings')
-            ->take(5)
-            ->get()
-            ->map(function ($item) {
-
-                $user = User::find($item->csa_id);
-
-                $item->csa_name = $user?->username ?? 'Unknown';
-
-                return $item; // KEEP AS OBJECT
-            });
-
-        /*
-        |--------------------------------------------------------------------------
-        | Reading Status Counts
-        |--------------------------------------------------------------------------
-        */
-        $accountsRead = Reading::where('billing_cycle_id', $currentCycle->id)
-            ->where('status', 'READ')
-            ->count();
-
-        $accountsNotRead = Reading::where('billing_cycle_id', $currentCycle->id)
-            ->where('status', 'NOT_READ')
-            ->count();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Abnormal Readings
-        |--------------------------------------------------------------------------
-        */
-        $accountsAbnormal = max(
-            0,
-            $totalReadings - ($accountsRead + $accountsNotRead)
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Zero Consumption
-        |--------------------------------------------------------------------------
-        */
-        $zeroConsumption = Reading::whereNotNull('previous_reading')
-            ->whereNotNull('current_reading')
-            ->whereRaw('ABS(current_reading - previous_reading) < 0.001')
-            ->where('billing_cycle_id', $currentCycle->id)
-            ->count();
+            ]
+        ]);
     }
 
-     
+    /**
+     * Supervisor View
+     */
+    public function supervisor()
+    {
+        $totalCsas = User::where('role', 'CSA')->count();
+        $totalZones = Zone::count();
+        $totalDmas = Dma::count();
+        $totalBillingCycles = BillingCycle::count();
 
-    if($currentCycle) {
-        $readings = Reading::with([
-        'pendingReread',
-        ])->where('billing_cycle_id', $currentCycle->id)->paginate(10);
+        // Latest billing cycle
+        $currentCycle = BillingCycle::latest()->first();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Default Safe Values
+        |--------------------------------------------------------------------------
+        */
+        $assignedCsas = 0;
+        $totalReadings = 0;
+        $completionRate = 0;
+        $topCsas = collect();
+        $accountsRead = 0;
+        $accountsNotRead = 0;
+        $accountsAbnormal = 0;
+        $zeroConsumption = 0;
+        $totalAssignedAccounts = 0;
+        $readings = [];
+
+
+        $read = CustomerAccount::whereExists(function ($query) {
+                $query->selectRaw(1)
+                    ->from('readings')
+                    ->whereColumn('readings.account_id', 'customer_accounts.id');
+            })->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Only execute billing-cycle-dependent logic if cycle exists
+        |--------------------------------------------------------------------------
+        */
+
+        $pending = 0;
+
+            if ($currentCycle) {
+                $assignedZoneIds = CsaAssignment::where(
+                    'billing_cycle_id',
+                    $currentCycle->id
+                )->pluck('zone_id');
+
+                // Total accounts in assigned zones
+                $total = CustomerAccount::whereIn('zone_id', $assignedZoneIds)->count();
+                
+                // Accounts WITH readings (completed)
+                $read = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
+                    ->whereExists(function ($query) {
+                        $query->selectRaw(1)
+                            ->from('readings')
+                            ->whereColumn('readings.account_id', 'customer_accounts.id');
+                    })->count();
+                
+                // Accounts WITHOUT readings (pending)
+                $pending = $total - $read;
+            }
+
+
+        if ($currentCycle) {
+
+            // Total assigned CSA records
+            $assignedCsas = CsaAssignment::where(
+                'billing_cycle_id',
+                $currentCycle->id
+            )->count();
+
+            // Total readings in cycle
+            $totalReadings = Reading::where(
+                'billing_cycle_id',
+                $currentCycle->id
+            )->count();
+
+            // Completion rate
+            $assignedZoneIds = CsaAssignment::where(
+                'billing_cycle_id',
+                $currentCycle->id
+            )->pluck('zone_id');
+
+            $totalAssignedAccounts = CustomerAccount::whereIn(
+                'zone_id',
+                $assignedZoneIds
+            )->count();
+
+            $completionRate = $totalAssignedAccounts > 0
+                ? round(($totalReadings / $totalAssignedAccounts) * 100, 2)
+                : 0;
+
+                
+
+            /*
+            |--------------------------------------------------------------------------
+            | Top CSAs
+            |--------------------------------------------------------------------------
+            */
+        $topCsas = Reading::where('billing_cycle_id', $currentCycle->id)
+                ->select('csa_id', DB::raw('COUNT(*) as total_readings'))
+                ->groupBy('csa_id')
+                ->orderByDesc('total_readings')
+                ->take(5)
+                ->get()
+                ->map(function ($item) {
+
+                    $user = User::find($item->csa_id);
+
+                    $item->csa_name = $user?->username ?? 'Unknown';
+
+                    return $item; // KEEP AS OBJECT
+                });
+
+            /*
+            |--------------------------------------------------------------------------
+            | Reading Status Counts
+            |--------------------------------------------------------------------------
+            */
+            $accountsRead = Reading::where('billing_cycle_id', $currentCycle->id)
+                ->where('status', 'READ')
+                ->count();
+
+            $accountsNotRead = Reading::where('billing_cycle_id', $currentCycle->id)
+                ->where('status', 'NOT_READ')
+                ->count();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Abnormal Readings
+            |--------------------------------------------------------------------------
+            */
+            $accountsAbnormal = max(
+                0,
+                $totalReadings - ($accountsRead + $accountsNotRead)
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Zero Consumption
+            |--------------------------------------------------------------------------
+            */
+            $zeroConsumption = Reading::whereNotNull('previous_reading')
+                ->whereNotNull('current_reading')
+                ->whereRaw('ABS(current_reading - previous_reading) < 0.001')
+                ->where('billing_cycle_id', $currentCycle->id)
+                ->count();
+        }
+
+        
+
+        if($currentCycle) {
+            $readings = Reading::with([
+            'pendingReread',
+            ])->where('billing_cycle_id', $currentCycle->id)->paginate(10);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Global Metrics
+        |--------------------------------------------------------------------------
+        */
+        $billingAreaEdits = AuditLog::where(
+            'action',
+            'BILLING_EDIT'
+        )->count();
+
+        $gpsMismatch = ExceptionGpsMismatch::count();
+
+        return view('dashboard.supervisor', [
+            'overviewData' => [
+                'totalCsas' => $totalCsas,
+                'totalZones' => $totalZones,
+                'totalDmas' => $totalDmas,
+                'totalBillingCycles' => $totalBillingCycles,
+                'currentCycle' => $currentCycle,
+                'assignedCsas' => $assignedCsas,
+                'totalReadings' => $totalReadings,
+                'completionRate' => $completionRate,
+                'topCsas' => $topCsas,
+                'read' => $read,
+                'accountsRead' => $accountsRead,
+                'accountsNotRead' => $accountsNotRead,
+                'accountsAbnormal' => $accountsAbnormal,
+                'zeroConsumption' => $zeroConsumption,
+                'billingAreaEdits' => $billingAreaEdits,
+                'gpsMismatch' => $gpsMismatch,
+                'totalAssignedAccounts' => $totalAssignedAccounts,
+                'pending' => $pending,
+                'readings' => $readings,
+
+            ]
+        ]);
+    }
+
+    /**
+     * Technical View
+     */
+    public function technical()
+    {
+        $totalCsas = User::where('role', 'CSA')->count();
+        $totalZones = Zone::count();
+        $totalDmas = Dma::count();
+        $totalBillingCycles = BillingCycle::count();
+
+        // Latest billing cycle
+        $currentCycle = BillingCycle::latest()->first();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Default Safe Values
+        |--------------------------------------------------------------------------
+        */
+        $assignedCsas = 0;
+        $totalReadings = 0;
+        $completionRate = 0;
+        $topCsas = collect();
+        $accountsRead = 0;
+        $accountsNotRead = 0;
+        $accountsAbnormal = 0;
+        $zeroConsumption = 0;
+        $totalAssignedAccounts = 0;
+        $readings = [];
+
+
+        $read = CustomerAccount::whereExists(function ($query) {
+                $query->selectRaw(1)
+                    ->from('readings')
+                    ->whereColumn('readings.account_id', 'customer_accounts.id');
+            })->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Only execute billing-cycle-dependent logic if cycle exists
+        |--------------------------------------------------------------------------
+        */
+
+        $pending = 0;
+
+            if ($currentCycle) {
+                $assignedZoneIds = CsaAssignment::where(
+                    'billing_cycle_id',
+                    $currentCycle->id
+                )->pluck('zone_id');
+
+                // Total accounts in assigned zones
+                $total = CustomerAccount::whereIn('zone_id', $assignedZoneIds)->count();
+                
+                // Accounts WITH readings (completed)
+                $read = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
+                    ->whereExists(function ($query) {
+                        $query->selectRaw(1)
+                            ->from('readings')
+                            ->whereColumn('readings.account_id', 'customer_accounts.id');
+                    })->count();
+                
+                // Accounts WITHOUT readings (pending)
+                $pending = $total - $read;
+            }
+
+
+        if ($currentCycle) {
+
+            // Total assigned CSA records
+            $assignedCsas = CsaAssignment::where(
+                'billing_cycle_id',
+                $currentCycle->id
+            )->count();
+
+            // Total readings in cycle
+            $totalReadings = Reading::where(
+                'billing_cycle_id',
+                $currentCycle->id
+            )->count();
+
+            // Completion rate
+            $assignedZoneIds = CsaAssignment::where(
+                'billing_cycle_id',
+                $currentCycle->id
+            )->pluck('zone_id');
+
+            $totalAssignedAccounts = CustomerAccount::whereIn(
+                'zone_id',
+                $assignedZoneIds
+            )->count();
+
+            $completionRate = $totalAssignedAccounts > 0
+                ? round(($totalReadings / $totalAssignedAccounts) * 100, 2)
+                : 0;
+
+                
+
+            /*
+            |--------------------------------------------------------------------------
+            | Top CSAs
+            |--------------------------------------------------------------------------
+            */
+        $topCsas = Reading::where('billing_cycle_id', $currentCycle->id)
+                ->select('csa_id', DB::raw('COUNT(*) as total_readings'))
+                ->groupBy('csa_id')
+                ->orderByDesc('total_readings')
+                ->take(5)
+                ->get()
+                ->map(function ($item) {
+
+                    $user = User::find($item->csa_id);
+
+                    $item->csa_name = $user?->username ?? 'Unknown';
+
+                    return $item; // KEEP AS OBJECT
+                });
+
+            /*
+            |--------------------------------------------------------------------------
+            | Reading Status Counts
+            |--------------------------------------------------------------------------
+            */
+            $accountsRead = Reading::where('billing_cycle_id', $currentCycle->id)
+                ->where('status', 'READ')
+                ->count();
+
+            $accountsNotRead = Reading::where('billing_cycle_id', $currentCycle->id)
+                ->where('status', 'NOT_READ')
+                ->count();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Abnormal Readings
+            |--------------------------------------------------------------------------
+            */
+            $accountsAbnormal = max(
+                0,
+                $totalReadings - ($accountsRead + $accountsNotRead)
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Zero Consumption
+            |--------------------------------------------------------------------------
+            */
+            $zeroConsumption = Reading::whereNotNull('previous_reading')
+                ->whereNotNull('current_reading')
+                ->whereRaw('ABS(current_reading - previous_reading) < 0.001')
+                ->where('billing_cycle_id', $currentCycle->id)
+                ->count();
+        }
+
+        
+
+        if($currentCycle) {
+            $readings = Reading::with([
+            'pendingReread',
+            ])->where('billing_cycle_id', $currentCycle->id)->paginate(10);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Global Metrics
+        |--------------------------------------------------------------------------
+        */
+        $billingAreaEdits = AuditLog::where(
+            'action',
+            'BILLING_EDIT'
+        )->count();
+
+        $gpsMismatch = ExceptionGpsMismatch::count();
+
+        return view('dashboard.technical', [
+            'overviewData' => [
+                'totalCsas' => $totalCsas,
+                'totalZones' => $totalZones,
+                'totalDmas' => $totalDmas,
+                'totalBillingCycles' => $totalBillingCycles,
+                'currentCycle' => $currentCycle,
+                'assignedCsas' => $assignedCsas,
+                'totalReadings' => $totalReadings,
+                'completionRate' => $completionRate,
+                'topCsas' => $topCsas,
+                'read' => $read,
+                'accountsRead' => $accountsRead,
+                'accountsNotRead' => $accountsNotRead,
+                'accountsAbnormal' => $accountsAbnormal,
+                'zeroConsumption' => $zeroConsumption,
+                'billingAreaEdits' => $billingAreaEdits,
+                'gpsMismatch' => $gpsMismatch,
+                'totalAssignedAccounts' => $totalAssignedAccounts,
+                'pending' => $pending,
+                'readings' => $readings,
+
+            ]
+        ]);
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Global Metrics
-    |--------------------------------------------------------------------------
-    */
-    $billingAreaEdits = AuditLog::where(
-        'action',
-        'BILLING_EDIT'
-    )->count();
-
-    $gpsMismatch = ExceptionGpsMismatch::count();
-
-   return view('dashboard', [
-        'overviewData' => [
-            'totalCsas' => $totalCsas,
-            'totalZones' => $totalZones,
-            'totalDmas' => $totalDmas,
-            'totalBillingCycles' => $totalBillingCycles,
-            'currentCycle' => $currentCycle,
-            'assignedCsas' => $assignedCsas,
-            'totalReadings' => $totalReadings,
-            'completionRate' => $completionRate,
-            'topCsas' => $topCsas,
-            'read' => $read,
-            'accountsRead' => $accountsRead,
-            'accountsNotRead' => $accountsNotRead,
-            'accountsAbnormal' => $accountsAbnormal,
-            'zeroConsumption' => $zeroConsumption,
-            'billingAreaEdits' => $billingAreaEdits,
-            'gpsMismatch' => $gpsMismatch,
-            'totalAssignedAccounts' => $totalAssignedAccounts,
-            'pending' => $pending,
-            'readings' => $readings,
-
-        ]
-    ]);
-}
-
-
-      public function search(Request $request)
+    public function search(Request $request)
     {
         $query = trim($request->input('search'));
 

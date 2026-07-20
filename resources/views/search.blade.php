@@ -15,7 +15,7 @@
                 </div>
                 <x-micro-button
                         variant="edit"
-                        href="{{ route('dashboard.index') }}"
+                        href="{{ route('dashboard.dashboard.index') }}"
                         icon="arrow-left"
                         size="md"
                     >

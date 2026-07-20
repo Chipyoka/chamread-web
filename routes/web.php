@@ -21,10 +21,10 @@ use App\Http\Controllers\Admin\FlagController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-     return redirect()->route(auth()->check() ? 'dashboard.index' : 'login');
+     return redirect()->route(auth()->check() ? 'dashboard.dashboard.index' : 'login');
 });
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->name('dashboard.index');
+
 Route::get('/search', [DashboardController::class, 'search'])->middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->name('dashboard.search.results');
 
 
@@ -41,6 +41,21 @@ Route::middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->group(functio
 });
 
 
+
+    /**
+     * DASHBOARD ROUTES
+     */
+    Route::prefix('dashboard')
+        ->name('dashboard.')
+        ->middleware(['auth', 'role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])
+        ->group(function () {
+
+        Route::get('/overview', [DashboardController::class, 'index'])->name('dashboard.index');
+        Route::get('/supervisor', [DashboardController::class, 'supervisor'])->name('supervisor.index');
+        Route::get('/technical', [DashboardController::class, 'technical'])->name('technical.index');
+
+
+    });
 
     /**
      * READINGS ROUTES

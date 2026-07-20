@@ -21,12 +21,15 @@ class Sidebar extends Component
     {
         return [
             [
-                'type'  => 'link',
-                'name'  => 'Dashboard',
-                'route' => 'dashboard.index',
-                'pattern' => 'dashboard.*',
+                'type'  => 'group',
+                'name'  => 'dashboard',
                 'icon'  => 'layout-dashboard',
-                'roles' => ['CSA', 'SUPERVISOR', 'ADMIN'],
+                'roles' => ['SUPERVISOR', 'ADMIN'],
+                'children' => [
+                    ['name' => 'Overview',     'route' => 'dashboard.dashboard.index',    'pattern' => 'dashboard.dashboard.*',    'icon' => 'layout-dashboard',     'roles' => ['SUPERVISOR', 'ADMIN']],
+                    ['name' => 'Supervisor',     'route' => 'dashboard.supervisor.index',    'pattern' => 'dashboard.supervisor.*',    'icon' => 'hard-hat',     'roles' => ['SUPERVISOR', 'ADMIN']],
+                    ['name' => 'Technical',     'route' => 'dashboard.technical.index',    'pattern' => 'dashboard.technical.*',    'icon' => 'wrench',     'roles' => ['SUPERVISOR', 'ADMIN']],
+                ],
             ],
             [
                 'type'  => 'group',
