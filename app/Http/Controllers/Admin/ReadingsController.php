@@ -13,6 +13,8 @@ use App\Models\ReadingReread;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
+use App\Models\ReadingResolve;
 
 use App\Services\AuditLogService;
 
@@ -146,4 +148,86 @@ class ReadingsController extends Controller
         );
     }
  
+
+
+
+    public function resolveReading(Request $request, Reading $reading)
+    {
+        $user = auth()->user();
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent duplicate resolution
+        |--------------------------------------------------------------------------
+        */
+
+        if ($reading->resolves()->exists()) {
+
+            return back()->with(
+                'error',
+                'This reading has already been resolved.'
+            );
+
+        }
+        /*
+        |--------------------------------------------------------------------------
+        | Validate billing cycle
+        |--------------------------------------------------------------------------
+        */
+
+        if (! $reading->billing_cycle_id) {
+
+            return back()->with(
+                'error',
+                'This reading has no billing cycle assigned.'
+            );
+
+        }
+        /*
+        |--------------------------------------------------------------------------
+        | Validate technical issue
+        |--------------------------------------------------------------------------
+        */
+
+        $technicalCodes = [
+            '01',
+            '02',
+            '05',
+            '08',
+            '09',
+            '12',
+        ];
+        if (! in_array($reading->this_month_code, $technicalCodes)) {
+
+            return back()->with(
+                'error',
+                'This reading does not require technical resolution.'
+            );
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create resolve record
+        |--------------------------------------------------------------------------
+        */
+
+        DB::transaction(function () use ($reading, $user) {
+
+            ReadingResolve::create([
+
+                'reading_id' => $reading->id,
+
+                'resolved_by' => $user->id,
+
+                'billing_cycle_id' => $reading->billing_cycle_id,
+
+            ]);
+
+        });
+
+        return back()->with(
+            'success',
+            'Reading resolved successfully.'
+        );
+    }
 }

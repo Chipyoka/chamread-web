@@ -429,6 +429,7 @@ class DashboardController extends Controller
                 ])
                 ->where('billing_cycle_id', $currentCycle->id)
                 ->whereIn('this_month_code', $technicalCodes)
+                ->whereDoesntHave('resolves')
                 ->latest()
                 ->paginate(10);
 

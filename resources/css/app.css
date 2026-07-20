@@ -101,3 +101,16 @@ body{
 .text-xxs{
     font-size: .65rem;
 }
+
+* {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.z-x{
+  z-index: 9999 !important;
+}
