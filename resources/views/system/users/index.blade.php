@@ -596,7 +596,6 @@
                                     x-on:click="$dispatch('close-modal', 'view-user'); $dispatch('open-modal', 'delete-user'); selectUserForDelete(viewUser)"
                                     class="inline-flex items-center px-3 py-2 rounded-sm text-sm font-medium transition
                                     bg-red-50 text-red-600 hover:bg-red-100">
-                                    <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>
                                     Delete User
                                 </button>
                             @endif
@@ -767,13 +766,13 @@
         <!-- Delete User Modal -->
         <x-modal name="delete-user" max-width="md" :closable="false">
             <div class="p-6">
-                <div class="flex items-start space-x-4">
-                    <div class="flex-shrink-0">
+                <div class="space-y-4">
+                    <div>
                         <div class="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
                             <i data-lucide="alert-triangle" class="h-5 w-5 text-red-600"></i>
                         </div>
                     </div>
-                    <div class="flex-1">
+                    <div >
                         <h2 class="text-lg font-semibold text-gray-900">Delete User</h2>
                         <p class="text-sm text-gray-500 mt-1">
                             Are you sure you want to delete <span class="font-medium text-gray-700" x-text="deleteUserName"></span>?

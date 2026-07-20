@@ -632,9 +632,12 @@ class DashboardController extends Controller
          * PEOPLE (USERS)
          */
         $people = User::query()
-            ->where('name', 'like', "%{$query}%")
-            ->orWhere('email', 'like', "%{$query}%")
-            ->orWhere('username', 'like', "%{$query}%")
+            ->where('role', 'CSA')
+            ->where(function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                ->orWhere('email', 'like', "%{$query}%")
+                ->orWhere('username', 'like', "%{$query}%");
+            })
             ->limit(10)
             ->get()
             ->map(function ($user) {
