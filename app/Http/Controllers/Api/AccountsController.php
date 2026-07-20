@@ -234,7 +234,7 @@ class AccountsController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $currentCycle = BillingCycle::latest()->first();
+        $currentCycle = BillingCycle::where('status', 'active')->latest()->first();
 
         if (!$currentCycle) {
             return response()->json([

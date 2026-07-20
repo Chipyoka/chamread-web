@@ -19,9 +19,7 @@ class ReadingsController extends Controller
      */
     public function reasons()
     {
-        $reasons = DB::table('non_read_reasons')
-            ->select('id', 'code', 'name')
-            ->where('is_active', true)
+        $reasons = MeterReadingCode::where('is_active', true)
             ->orderBy('sort_order')
             ->get();
 
@@ -61,13 +59,10 @@ class ReadingsController extends Controller
 
             'billing_cycle_id'  => 'required|exists:billing_cycles,id',
 
-            'zone_id'           => 'required|exists:zones,id',
-            'dma_id'            => 'required|exists:dmas,id',
-
             'current_reading'   => 'nullable|numeric',
 
             'status'            => 'required|in:read,not_read',
-            'reason_code'       => 'nullable|exists:non_read_reasons,id',
+            'meter_reading_code' => 'nullable|exists:meter_reading_codes,id',
             'comment'           => 'nullable|string|max:255',
 
             'photo'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
@@ -176,28 +171,30 @@ class ReadingsController extends Controller
 
             $reading = Reading::create([
                 'account_id'    => $validated['account_id'],
-
-                'csa_id'            => auth()->id(),
+                'csa_id'        => auth()->id(),
                 'billing_cycle_id' => $validated['billing_cycle_id'],
 
-                'zone_id'           => $validated['zone_id'],
-                'dma_id'            => $validated['dma_id'],
+                'reading_date' => now()->toDateString(),
+                'previous_reading' => $previousReading,
+                'current_reading' => $validated['current_reading'],
+                'meter_status' => null,
 
-                'previous_reading'  => $previousReading,
-                'current_reading'   => $validated['current_reading'],
+                'this_month_code' => null,
 
-                'status'            => $validated['status'],
-                'reason_code'       => $validated['reason_code'] ?? null,
-                'comment'           => $validated['comment'] ?? null,
+                'status' => $validated['status'],
+                'meter_reading_code' => $validated['meter_reading_code'] ?? null,
+                'comment' => $validated['comment'] ?? null,
+                'consumption' => $validated['current_reading'] && $previousReading
+                    ? $validated['current_reading'] - $previousReading
+                    : null,
 
-                'photo_path'        => $photoPath,
+                'photo_path' => $photoPath,
 
-                'latitude'          => $validated['latitude'] ?? null,
-                'longitude'         => $validated['longitude'] ?? null,
+                'latitude' => $validated['latitude'] ?? null,
+                'longitude' => $validated['longitude'] ?? null,
 
-                'reading_time'      => $readingTime,
-
-                'synced_at'         => now(),
+                'reading_time' => $readingTime,
+                'synced_at' => now(),
             ]);
 
             DB::commit();
@@ -249,7 +246,6 @@ class ReadingsController extends Controller
             ], 500);
         }
     }
-
     /**
      * Batch reading processing
      * This endpoint is for storing multiple readings in one request
@@ -295,13 +291,10 @@ class ReadingsController extends Controller
 
                     'billing_cycle_id'  => 'required|exists:billing_cycles,id',
 
-                    'zone_id'           => 'required|exists:zones,id',
-                    'dma_id'            => 'required|exists:dmas,id',
-
                     'current_reading'   => 'nullable|numeric',
 
                     'status'            => 'required|in:read,not_read',
-                    'reason_code'       => 'nullable|exists:non_read_reasons,id',
+                    'meter_reading_code' => 'nullable|exists:meter_reading_codes,id',
                     'comment'           => 'nullable|string|max:255',
 
                     'latitude'          => 'nullable|numeric',
@@ -435,29 +428,31 @@ class ReadingsController extends Controller
                 */
 
                 $reading = Reading::create([
-                    'account_id'    => $validated['account_id'],
-
-                    'csa_id'            => auth()->id(),
+                    'account_id' => $validated['account_id'],
+                    'csa_id' => auth()->id(),
                     'billing_cycle_id' => $validated['billing_cycle_id'],
 
-                    'zone_id'           => $validated['zone_id'],
-                    'dma_id'            => $validated['dma_id'],
+                    'reading_date' => now()->toDateString(),
+                    'previous_reading' => $previousReading,
+                    'current_reading' => $validated['current_reading'],
+                    'meter_status' => null,
 
-                    'previous_reading'  => $previousReading,
-                    'current_reading'   => $validated['current_reading'],
+                    'this_month_code' => null,
 
-                    'status'            => $validated['status'],
-                    'reason_code'       => $validated['reason_code'] ?? null,
-                    'comment'           => $validated['comment'] ?? null,
+                    'status' => $validated['status'],
+                    'meter_reading_code' => $validated['meter_reading_code'] ?? null,
+                    'comment' => $validated['comment'] ?? null,
+                    'consumption' => $validated['current_reading'] && $previousReading
+                        ? $validated['current_reading'] - $previousReading
+                        : null,
 
-                    'photo_path'        => $photoPath,
+                    'photo_path' => $photoPath,
 
-                    'latitude'          => $validated['latitude'] ?? null,
-                    'longitude'         => $validated['longitude'] ?? null,
+                    'latitude' => $validated['latitude'] ?? null,
+                    'longitude' => $validated['longitude'] ?? null,
 
-                    'reading_time'      => $readingTime,
-
-                    'synced_at'         => now(),
+                    'reading_time' => $readingTime,
+                    'synced_at' => now(),
                 ]);
 
                 DB::commit();
