@@ -9,6 +9,7 @@ use App\Models\SystemNotification;
 use App\Models\CustomerAccount;
 use App\Models\AuditLog;
 use App\Models\Reading;
+use App\Models\ReadingReread;
 use App\Models\Dma;
 use App\Models\BillingCycle;
 use App\Models\ExceptionGpsMismatch;
@@ -259,6 +260,7 @@ class DashboardController extends Controller
         $zeroConsumption = 0;
         $totalAssignedAccounts = 0;
         $readings = [];
+        $totalReRead = 0;
 
 
         $read = CustomerAccount::whereExists(function ($query) {
@@ -275,36 +277,26 @@ class DashboardController extends Controller
 
         $pending = 0;
 
-            if ($currentCycle) {
-                $assignedZoneIds = CsaAssignment::where(
-                    'billing_cycle_id',
-                    $currentCycle->id
-                )->pluck('zone_id');
-
-                // Total accounts in assigned zones
-                $total = CustomerAccount::whereIn('zone_id', $assignedZoneIds)->count();
-                
-                // Accounts WITH readings (completed)
-                $read = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
-                    ->whereExists(function ($query) {
-                        $query->selectRaw(1)
-                            ->from('readings')
-                            ->whereColumn('readings.account_id', 'customer_accounts.id');
-                    })->count();
-                
-                // Accounts WITHOUT readings (pending)
-                $pending = $total - $read;
-            }
-
-
         if ($currentCycle) {
-
-            // Total assigned CSA records
-            $assignedCsas = CsaAssignment::where(
+            $assignedZoneIds = CsaAssignment::where(
                 'billing_cycle_id',
                 $currentCycle->id
-            )->count();
+            )->pluck('zone_id');
 
+            // Total accounts in assigned zones
+            $total = CustomerAccount::whereIn('zone_id', $assignedZoneIds)->count();
+            
+            // Accounts WITH readings (completed)
+            $read = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
+                ->whereExists(function ($query) {
+                    $query->selectRaw(1)
+                        ->from('readings')
+                        ->whereColumn('readings.account_id', 'customer_accounts.id');
+                })->count();
+            
+            // Accounts WITHOUT readings (pending)
+            $pending = $total - $read;
+      
             // Total readings in cycle
             $totalReadings = Reading::where(
                 'billing_cycle_id',
@@ -326,64 +318,26 @@ class DashboardController extends Controller
                 ? round(($totalReadings / $totalAssignedAccounts) * 100, 2)
                 : 0;
 
-                
-
-            /*
-            |--------------------------------------------------------------------------
-            | Top CSAs
-            |--------------------------------------------------------------------------
-            */
-        $topCsas = Reading::where('billing_cycle_id', $currentCycle->id)
-                ->select('csa_id', DB::raw('COUNT(*) as total_readings'))
-                ->groupBy('csa_id')
-                ->orderByDesc('total_readings')
-                ->take(5)
-                ->get()
-                ->map(function ($item) {
-
-                    $user = User::find($item->csa_id);
-
-                    $item->csa_name = $user?->username ?? 'Unknown';
-
-                    return $item; // KEEP AS OBJECT
-                });
-
-            /*
-            |--------------------------------------------------------------------------
-            | Reading Status Counts
-            |--------------------------------------------------------------------------
-            */
             $accountsRead = Reading::where('billing_cycle_id', $currentCycle->id)
                 ->where('status', 'READ')
                 ->count();
 
-            $accountsNotRead = Reading::where('billing_cycle_id', $currentCycle->id)
-                ->where('status', 'NOT_READ')
+
+            // Re readings
+            $totalReRead = ReadingReread::where('billing_cycle_id', $currentCycle->id)
+                ->where('status', 'completed')
+                ->where('updated_at', '>=', now()->subDay())
                 ->count();
 
-            /*
-            |--------------------------------------------------------------------------
-            | Abnormal Readings
-            |--------------------------------------------------------------------------
-            */
-            $accountsAbnormal = max(
-                0,
-                $totalReadings - ($accountsRead + $accountsNotRead)
-            );
-
-            /*
-            |--------------------------------------------------------------------------
-            | Zero Consumption
-            |--------------------------------------------------------------------------
-            */
-            $zeroConsumption = Reading::whereNotNull('previous_reading')
-                ->whereNotNull('current_reading')
-                ->whereRaw('ABS(current_reading - previous_reading) < 0.001')
-                ->where('billing_cycle_id', $currentCycle->id)
+            $totalReReadPending = ReadingReread::where('billing_cycle_id', $currentCycle->id)
+                ->where('status', 'pending')
                 ->count();
+
+            $totalReReadCompleted = ReadingReread::where('billing_cycle_id', $currentCycle->id)
+                ->where('status', 'completed')
+                ->count();
+         
         }
-
-        
 
         if($currentCycle) {
             $readings = Reading::with([
@@ -392,17 +346,7 @@ class DashboardController extends Controller
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Global Metrics
-        |--------------------------------------------------------------------------
-        */
-        $billingAreaEdits = AuditLog::where(
-            'action',
-            'BILLING_EDIT'
-        )->count();
-
-        $gpsMismatch = ExceptionGpsMismatch::count();
+      
 
         return view('dashboard.supervisor', [
             'overviewData' => [
@@ -418,13 +362,12 @@ class DashboardController extends Controller
                 'read' => $read,
                 'accountsRead' => $accountsRead,
                 'accountsNotRead' => $accountsNotRead,
-                'accountsAbnormal' => $accountsAbnormal,
-                'zeroConsumption' => $zeroConsumption,
-                'billingAreaEdits' => $billingAreaEdits,
-                'gpsMismatch' => $gpsMismatch,
                 'totalAssignedAccounts' => $totalAssignedAccounts,
                 'pending' => $pending,
                 'readings' => $readings,
+                'totalReRead' => $totalReRead,
+                'totalReReadCompleted' => $totalReReadCompleted,
+                'totalReReadPending' => $totalReReadPending,
 
             ]
         ]);

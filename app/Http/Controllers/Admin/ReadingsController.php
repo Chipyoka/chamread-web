@@ -114,7 +114,7 @@ class ReadingsController extends Controller
 
         return back()->with(
             'success',
-            'Re-read instruction created successfully.'
+            'Re-read instruction created.'
         );
     }
 
@@ -142,7 +142,7 @@ class ReadingsController extends Controller
 
         return back()->with(
             'success',
-            'Re-read marked as completed successfully.'
+            'Re-read marked as completed.'
         );
     }
  

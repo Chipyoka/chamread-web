@@ -7,16 +7,7 @@
         </div>
 
         <!-- METRIC CARDS -->
-        <div class=" grid grid-cols-3 gap-x-4 gap-y-8">
-            <div class="flex items-center justify-between bg-blue-50/40 border-t-8 border-blue-100/70 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
-                <div class="">
-                    <h2 class="text-3xl font-bold text-primary">{{ $completionRate ?? '00'}}%</h2>
-                    <p class="text-gray-500 text-xs uppercase mt-2">Completion rate (%)</p>
-                </div>
-                <div class="flex items-center justify-center p-4 bg-blue-50 rounded-full">
-                    <i data-lucide="pie-chart" class="w-7 h-7 text-primary"></i>
-                </div>
-            </div>
+        <div class=" grid grid-cols-2 gap-x-4 gap-y-8">
 
             <!-- card total read -->
             <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-green-500 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
@@ -43,9 +34,86 @@
         </div>
     </div>
 
+    <div class="grid grid-cols-2 gap-x-4 gap-y-8">
+        <div class="min-h-60 bg-white border rounded-md border-gray-200  px-6 py-4 ">
+            <p class="text-gray-400 text-xs uppercase mt-2">Current billing cycle</p>
+            <div class="flex items-center justify-between my-4">
+            <h2 class="text-xl font-semibold">{{ $currentCycle->name ?? 'Not Set' }}</h2>
+
+
+            @if(Auth::user()->role === 'ADMIN' || Auth::user()->role === 'SUPERVISOR')
+                <!-- Edit -->
+                <x-micro-button
+                    variant="edit"
+                    href="{{ route('management.cycles.index') }}"
+                    icon="edit"
+                    size="sm"
+                >
+                    Update
+                </x-micro-button>
+            @endif
+            
+            </div>
+            <!-- Date cards -->
+            <div class="cursor-default grid grid-cols-2 gap-x-4 gap-y-8 my-2">
+                <div class="bg-blue-50/70 p-4 rounded-sm border border-blue-100 hover:shadow-sm hover:border-blue-200 transition-all duration-300 ease-in-out">
+                    <p class="text-lg font-medium">{{ $currentCycle?->start_date ? \Carbon\Carbon::parse($currentCycle->start_date)->format('d M, Y') : '-' }}</p>
+                    <p class="text-gray-500 text-xs uppercase">Start date</p>
+                </div>
+                <div class="bg-blue-50/70 p-4 rounded-sm border border-blue-100 hover:shadow-sm hover:border-blue-200 transition-all duration-300 ease-in-out">
+                    <p class="text-lg font-medium">{{ $currentCycle?->end_date ? \Carbon\Carbon::parse($currentCycle->end_date)->format('d M, Y') : '-' }}</p>
+                    <p class="text-gray-500 text-xs uppercase">End date</p>
+                </div>
+            </div>
+            <!-- card completetion-->
+            <div class="flex items-center justify-between bg-blue-50/40 border-t-8 border-blue-100/70 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
+                <div class="">
+                    <h2 class="text-3xl font-bold text-primary">{{ $completionRate ?? '00'}}%</h2>
+                    <p class="text-gray-500 text-xs uppercase mt-2">Completion rate (%)</p>
+                </div>
+                <div class="flex items-center justify-center p-4 bg-blue-50 rounded-full">
+                    <i data-lucide="pie-chart" class="w-10 h-10 text-primary"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top 5 CSAs -->
+        <div class="min-h-60 bg-white border rounded-md border-gray-200  px-6 py-4">
+            <p class="text-gray-400 text-xs uppercase my-2">Re-Reading Overview </p>
+            <div>
+                @if($read < 1 && $totalAssignedAccounts < 1)
+                    <div class="flex flex-col gap-4 items-center justify-center w-full border border-gray-100 rounded-sm bg-gray-50/70 min-h-60">
+                        <i data-lucide="chart-no-axes-column" class="w-8 h-8 text-gray-300"></i>
+                        <p class="text-gray-400 text-xs">No data available yet</p>
+                    </div>
+
+                @else
+                    <div class="flex justify-between items-start gap-2">
+                        
+                        <x-charts.reading-donut-chart2
+                            :completed="$totalReReadCompleted"
+                            :pending="$totalReReadPending"
+                        />
+
+                        <div class="w-1/3">
+                            <div class="mb-2 bg-white/40 border-gray-200 border rounded-md flex items-center justify-between py-1.5 px-3  text-sm">
+                                <p class="text-xxs text-gray-500">Re-Readings</p>
+                                <p class="">{{$totalReReadCompleted ?? 0}}</p>
+                            </div>
+                            <div class=" bg-white/40 border-gray-200 border rounded-md flex items-center justify-between py-1.5 px-3  text-sm">
+                                <p class=" text-xxs text-gray-500">Pending</p>
+                                <p class="">{{$totalReReadPending ?? 0}}</p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
     <!-- Table -->
     <div class="bg-white rounded-md p-4 space-y-4 border border-gray-200 overflow-hidden">
-
+    <p class="text-gray-400 text-xs uppercase mt-2">Readings</p>
         @if(count($readings) > 0)
 
             <table class="min-w-full divide-y divide-gray-100">
