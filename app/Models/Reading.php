@@ -97,4 +97,10 @@ class Reading extends Model
         )
         ->latestOfMany();
     }
+    public function pendingReread()
+{
+    return $this->hasOne(ReadingReread::class)
+        ->where('status', 'pending')
+        ->latestOfMany();
+}
 }

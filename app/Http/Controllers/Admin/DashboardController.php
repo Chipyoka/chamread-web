@@ -184,7 +184,9 @@ public function index()
      
 
     if($currentCycle) {
-        $readings = Reading::where('billing_cycle_id', $currentCycle->id)->paginate(10);
+        $readings = Reading::with([
+        'pendingReread',
+        ])->where('billing_cycle_id', $currentCycle->id)->paginate(10);
     }
 
 

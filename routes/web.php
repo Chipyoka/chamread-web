@@ -123,7 +123,9 @@ Route::middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->group(functio
              */
             Route::get('/', [ReadingsController::class, 'index'])->name('index');
             Route::get('/{reading}', [ReadingsController::class, 'show'])->name('show');
+            Route::post('/{reading}/re-read', [ReadingsController::class, 'requestReread'])->name('re-read');
             
+            Route::get('/{reading}/re-read/complete', [ReadingsController::class, 'completeReread'])->name('re-read.complete');
             Route::get('/{reading}/export', [ReadingsController::class, 'export'])->name('export');
            
         });
