@@ -2,6 +2,17 @@
 
     <div class="p-6 space-y-6">
 
+          <x-slot:breadcrumb>
+            <x-breadcrumb :items="[
+                [
+                    'label'=>'System'
+                ],
+                [
+                    'label'=>'Flags'
+                ]
+            ]"/>
+        </x-slot:breadcrumb>
+
     <!-- header -->
         <div class="flex items-center justify-between">
             <div>

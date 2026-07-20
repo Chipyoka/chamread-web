@@ -1,5 +1,16 @@
 <x-app-layout>
 
+      <x-slot:breadcrumb>
+            <x-breadcrumb :items="[
+                [
+                    'label'=>'Management'
+                ],
+                [
+                    'label'=>'ERP'
+                ]
+            ]"/>
+        </x-slot:breadcrumb>
+
     <div 
         class="max-w-7xl mx-auto py-8 px-6 space-y-8"
         x-data="importTracker()"

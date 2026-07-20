@@ -1,6 +1,17 @@
 <x-app-layout>
     <div x-data="billingCycleForm()" class="p-6 space-y-6">
 
+          <x-slot:breadcrumb>
+            <x-breadcrumb :items="[
+                [
+                    'label'=>'Management'
+                ],
+                [
+                    'label'=>'Billing Cycles'
+                ]
+            ]"/>
+        </x-slot:breadcrumb>
+
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>

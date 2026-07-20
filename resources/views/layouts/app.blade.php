@@ -65,8 +65,15 @@
                 <!-- Sidebar Navigation -->
                 <x-sidebar />
 
+
                 <!-- Main Content -->
                 <div class="w-full overflow-y-auto h-full max-h-[84dvh]">
+                    @isset($breadcrumb)
+                        <div class="mt-2">
+                            {{ $breadcrumb }}
+                        </div>
+                    @endisset
+
                     {{ $slot }}
                 </div>
             </main>

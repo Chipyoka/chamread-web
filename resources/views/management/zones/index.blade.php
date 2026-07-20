@@ -1,4 +1,14 @@
 <x-app-layout>
+          <x-slot:breadcrumb>
+            <x-breadcrumb :items="[
+                [
+                    'label'=>'Management'
+                ],
+                [
+                    'label'=>'Zones'
+                ]
+            ]"/>
+        </x-slot:breadcrumb>
 
     <div class="p-6 space-y-6">
           <!-- Header -->

@@ -1,5 +1,16 @@
 <x-app-layout>
     <div class="p-6 space-y-6">
+        <x-slot:breadcrumb>
+            <x-breadcrumb :items="[
+                [
+                    'label'=>'System'
+                ],
+                [
+                    'label'=>'Devices'
+                ]
+            ]"/>
+        </x-slot:breadcrumb>
+
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-medium text-gray-500">Devices</h1>

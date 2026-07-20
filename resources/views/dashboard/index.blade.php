@@ -1,5 +1,18 @@
 <x-app-layout>
     <div class="p-4">
+        <x-slot:breadcrumb>
+            <x-breadcrumb :items="[
+                [
+                    'label'=>'Dashboard',
+                    'url'=>route('dashboard.dashboard.index')
+                ],
+                [
+                    'label'=>'Overview'
+                ]
+            ]"/>
+        </x-slot:breadcrumb>
+
+        <!-- content -->
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-4 text-gray-500 space-y-6">
        
             <!-- Top card row for CURRENT BILLING CYCLE + TOP 5 CSAs -->

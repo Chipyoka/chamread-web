@@ -1,6 +1,17 @@
 <x-app-layout>
     <div class="p-6 space-y-6">
 
+          <x-slot:breadcrumb>
+            <x-breadcrumb :items="[
+                [
+                    'label'=>'System'
+                ],
+                [
+                    'label'=>'Meter Reading Codes'
+                ]
+            ]"/>
+        </x-slot:breadcrumb>
+
         <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
