@@ -129,6 +129,3 @@ body {
 .fade-fast { animation-duration: 0.3s; }
 .fade-slow { animation-duration: 0.8s; }
 
-.z-x{
-  z-index: 9999 !important;
-}

@@ -259,9 +259,28 @@ Route::middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->group(functio
          * USERS MANAGEMENT
          * =====================================================
          */
-        Route::prefix('users')->name('users.')->group(function () {
-            Route::get('/', [ERPController::class, 'index'])->name('index');
-        });
+  
+          Route::prefix('users')
+            ->name('users.')
+            ->controller(UsersController::class)
+            ->group(function () {
+                
+                // Main listing page
+                Route::get('/', 'index')->name('index');
+                
+                // Store new user
+                Route::post('/', 'store')->name('store');
+                
+                // Update user
+                Route::put('/{user}', 'update')->name('update');
+                
+                // Toggle user status (ACTIVE/SUSPENDED)
+                Route::patch('/{user}/toggle-status', 'toggleStatus')->name('toggle-status');
+                
+                // Delete user
+                Route::delete('/{user}', 'destroy')->name('destroy');
+            });
+
 
       
 
