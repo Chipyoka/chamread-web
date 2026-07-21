@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Reading;
+use App\Models\ReadingReread;
 use App\Models\MeterReadingCode;
 use App\Models\BillingCycle;
 use Carbon\Carbon;
@@ -539,6 +540,371 @@ class ReadingsController extends Controller
             ],
 
             'results' => $results,
+        ]);
+    }
+
+    /**
+     * Batch store re-reads 
+     */
+    public function batchStoreRereads(Request $request)
+    {
+        $request->validate([
+            'readings' => 'required|array|min:1',
+        ]);
+
+        Log::info('Batch reread sync started', [
+            'total_readings' => count($request->readings),
+            'csa_id' => auth()->id(),
+        ]);
+
+        $processed = 0;
+        $failed = 0;
+
+        $results = [];
+
+        $currentCycle = BillingCycle::where('status', 'active')->latest()->first();
+
+        if ($currentCycle->can_upload === false) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Upload is locked',
+            ], 500);
+        }
+
+        foreach ($request->readings as $index => $readingData) {
+
+            DB::beginTransaction();
+
+            $photoPath = null;
+            $oldPhotoPath = null;
+
+            try {
+
+                /*
+                |--------------------------------------------------------------------------
+                | Validate Individual Reread
+                |--------------------------------------------------------------------------
+                */
+
+                $validated = validator($readingData, [
+                    'reading_id'      => 'required|exists:readings,id',
+                    'account_id'      => 'required|exists:customer_accounts,id',
+                    'account_number'  => 'required|string|max:255',
+                    'current_reading' => 'required|numeric',
+                    'reading_time'    => 'required|date',
+                ])->validate();
+
+                $readingTime = $this->resolveReadingTime($validated['reading_time']);
+
+                Log::info('Processing batch reread', [
+                    'reading_id' => $validated['reading_id'],
+                    'account_number' => $validated['account_number'],
+                ]);
+
+                /*
+                |--------------------------------------------------------------------------
+                | Fetch Pending Reread Record
+                |--------------------------------------------------------------------------
+                */
+
+                $reread = ReadingReread::where('reading_id', $validated['reading_id'])
+                    ->where('status', 'pending')
+                    ->first();
+
+                if (!$reread) {
+
+                    DB::rollBack();
+
+                    $failed++;
+
+                    Log::warning('No pending reread found for reading (batch)', [
+                        'index' => $index,
+                        'reading_id' => $validated['reading_id'],
+                        'account_id' => $validated['account_id'],
+                        'csa_id' => auth()->id(),
+                    ]);
+
+                    $results[] = [
+                        'account_number' => $validated['account_number'],
+                        'success' => false,
+                        'message' => 'No pending reread request found for this reading.',
+                        'error_code' => 'NO_PENDING_REREAD',
+                        'reading_id' => $validated['reading_id'],
+                    ];
+
+                    continue;
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Fetch the Reading Being Re-read
+                |--------------------------------------------------------------------------
+                */
+
+                $reading = Reading::where('id', $validated['reading_id'])
+                    ->where('account_id', $validated['account_id'])
+                    ->first();
+
+                if (!$reading) {
+
+                    DB::rollBack();
+
+                    $failed++;
+
+                    Log::warning('Reading not found for reread (batch)', [
+                        'index' => $index,
+                        'reading_id' => $validated['reading_id'],
+                        'account_id' => $validated['account_id'],
+                        'csa_id' => auth()->id(),
+                    ]);
+
+                    $results[] = [
+                        'account_number' => $validated['account_number'],
+                        'success' => false,
+                        'message' => 'Original reading not found for this account.',
+                        'error_code' => 'READING_NOT_FOUND',
+                        'reading_id' => $validated['reading_id'],
+                    ];
+
+                    continue;
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Handle Photo
+                |--------------------------------------------------------------------------
+                |
+                | Mobile app should send:
+                | photo_base64
+                |--------------------------------------------------------------------------
+                */
+
+                if (!empty($readingData['photo_base64'])) {
+
+                    Log::info('Processing batch reread photo', [
+                        'account_number' => $validated['account_number'],
+                    ]);
+
+                    $base64Image = $readingData['photo_base64'];
+
+                    if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
+
+                        $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
+
+                        $extension = strtolower($type[1]);
+
+                    } else {
+
+                        $extension = 'jpg';
+                    }
+
+                    $imageData = base64_decode($base64Image);
+
+                    if ($imageData === false) {
+                        throw new \Exception('Invalid base64 image');
+                    }
+
+                    $hash = strtoupper(Str::random(6));
+
+                    $filename = sprintf(
+                        '%s_%s_%s.%s',
+                        $validated['account_number'],
+                        $readingTime->format('Ymd_His'),
+                        $hash,
+                        $extension
+                    );
+
+                    $photoPath = 'readings/' . $filename;
+
+                    Storage::disk('public')->put($photoPath, $imageData);
+
+                    $oldPhotoPath = $reading->photo_path;
+
+                    Log::info('Batch reread photo stored', [
+                        'photo_path' => $photoPath,
+                    ]);
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Update Reading
+                |--------------------------------------------------------------------------
+                */
+
+                $reading->update([
+                    'current_reading' => $validated['current_reading'],
+                    'consumption' => $reading->previous_reading !== null
+                        ? $validated['current_reading'] - $reading->previous_reading
+                        : null,
+                    'photo_path' => $photoPath ?? $reading->photo_path,
+                    'reading_time' => $readingTime,
+                    'synced_at' => now(),
+                ]);
+
+                /*
+                |--------------------------------------------------------------------------
+                | Update Reread Record
+                |--------------------------------------------------------------------------
+                */
+
+                $reread->update([
+                    'new_value' => $validated['current_reading'],
+                    'status' => 'complete',
+                ]);
+
+                /*
+                |--------------------------------------------------------------------------
+                | Cleanup replaced photo
+                |--------------------------------------------------------------------------
+                */
+
+                if ($oldPhotoPath && Storage::disk('public')->exists($oldPhotoPath)) {
+
+                    Storage::disk('public')->delete($oldPhotoPath);
+
+                    Log::info('Old reading photo replaced (batch reread)', [
+                        'old_photo_path' => $oldPhotoPath,
+                    ]);
+                }
+
+                DB::commit();
+
+                $processed++;
+
+                $results[] = [
+                    'account_number' => $validated['account_number'],
+                    'success' => true,
+                    'reading_id' => $reading->id,
+                    'reread_id' => $reread->id,
+                    'message' => 'Reread synced successfully',
+                ];
+
+                Log::info('Batch reread synced successfully', [
+                    'reading_id' => $reading->id,
+                    'reread_id' => $reread->id,
+                    'account_number' => $validated['account_number'],
+                ]);
+
+            } catch (Throwable $e) {
+
+                DB::rollBack();
+
+                $failed++;
+
+                /*
+                |--------------------------------------------------------------------------
+                | Cleanup orphaned photo
+                |--------------------------------------------------------------------------
+                */
+
+                if ($photoPath && Storage::disk('public')->exists($photoPath)) {
+
+                    Storage::disk('public')->delete($photoPath);
+
+                    Log::warning('Orphaned batch reread photo deleted', [
+                        'photo_path' => $photoPath,
+                    ]);
+                }
+
+                Log::error('Batch reread failed', [
+                    'index' => $index,
+                    'account_number' => $readingData['account_number'] ?? null,
+                    'reading_id' => $readingData['reading_id'] ?? null,
+                    'error' => $e->getMessage(),
+                    'line' => $e->getLine(),
+                ]);
+
+                $results[] = [
+                    'account_number' => $readingData['account_number'] ?? null,
+                    'success' => false,
+                    'message' => app()->environment('production')
+                        ? 'Failed to sync reread'
+                        : $e->getMessage(),
+                ];
+            }
+        }
+
+        Log::info('Batch reread sync completed', [
+            'processed' => $processed,
+            'failed' => $failed,
+        ]);
+
+        return response()->json([
+            'success' => $failed === 0,
+
+            'summary' => [
+                'total' => count($request->readings),
+                'processed' => $processed,
+                'failed' => $failed,
+            ],
+
+            'results' => $results,
+        ]);
+    }
+
+
+    /**
+     * Get pending rereads
+     */
+    public function pendingRereads(Request $request)
+    {
+        $csaId = auth()->id();
+
+        $currentCycle = BillingCycle::where('status', 'active')->latest()->first();
+
+        if (!$currentCycle) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No active billing cycle found',
+            ], 500);
+        }
+
+        Log::info('Fetching pending rereads', [
+            'csa_id' => $csaId,
+            'billing_cycle_id' => $currentCycle->id,
+        ]);
+
+        $readings = Reading::where('csa_id', $csaId)
+            ->where('billing_cycle_id', $currentCycle->id)
+            ->whereHas('rereads', function ($query) {
+                $query->where('status', 'pending');
+            })
+            ->with([
+                'account:id,account_number,customer_name',
+                'rereads' => function ($query) {
+                    $query->where('status', 'pending');
+                },
+            ])
+            ->get();
+
+        $data = $readings->map(function ($reading) {
+
+            $pendingReread = $reading->rereads->first();
+
+            return [
+                'id'      => $reading->id,
+                'account_id'      => $reading->account_id,
+                'account_number'  => $reading->account?->account_number,
+                'customer_name'   => $reading->account?->customer_name,
+                'previous_reading' => $reading->previous_reading,
+                'meter_reading_code' => $reading->code?->code,
+                'current_reading' => $reading->current_reading,
+                'reread_id'       => $pendingReread?->id,
+                'reread_reason'   => $pendingReread?->reason,
+                'photo_path'      => $reading->photo_path,
+                'reading_time'    => $reading->reading_time,
+            ];
+        });
+
+        Log::info('Pending rereads fetched', [
+            'csa_id' => $csaId,
+            'billing_cycle_id' => $currentCycle->id,
+            'total' => $data->count(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
         ]);
     }
 }

@@ -21,4 +21,10 @@ class MeterReadingCode extends Model
         'type' => 'string',
         'status' => 'string',
     ];
+
+    
+    public function readings()
+    {
+        return $this->hasMany(Reading::class);
+    }
 }

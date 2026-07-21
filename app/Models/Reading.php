@@ -66,6 +66,10 @@ class Reading extends Model
     {
         return $this->hasOne(ReadingGpsCheck::class);
     }
+    public function code()
+    {
+        return $this->belongsTo(MeterReadingCode::class, 'meter_reading_code');
+    }
 
     public function exceptions()
     {
