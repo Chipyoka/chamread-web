@@ -11,7 +11,10 @@ class BillingCycle extends Model
         'end_date' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'can_upload' => 'boolean',
+        'can_download' => 'boolean',
     ];
+
 
     protected $fillable = [
         'name',

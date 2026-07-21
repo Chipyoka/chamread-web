@@ -86,7 +86,7 @@ class AssignmentsController extends Controller
                     return [
                         'id' => $a->id,
                         'account_number' => $a->account_number,
-                        'customer_name' => $a->name,
+                        'customer_name' => $a->customer_name,
                         'address' => $a->address,
                         'phone' => $a->phone,
                         'billing_area' => $a->billing_area,

@@ -243,6 +243,13 @@ class AccountsController extends Controller
             ], 500);
         }
 
+        if ($currentCycle->can_download === false) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Download is locked',
+            ], 500);
+        }
+
         /*
         |--------------------------------------------------------------------------
         | Extract Target (sync cap)

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Reading;
 use App\Models\MeterReadingCode;
+use App\Models\BillingCycle;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,13 +21,17 @@ class ReadingsController extends Controller
      */
     public function reasons()
     {
-        $reasons = MeterReadingCode::where('status', 'active')
+        $items = MeterReadingCode::where('status', 'active')
             ->orderBy('id')
-            ->get();
+            ->get(['id', 'code', 'name', 'type'])
+            ->groupBy('type');
 
         return response()->json([
             'success' => true,
-            'data' => $reasons,
+            'data' => [
+                'codes' => $items->get('reading', collect())->values(),
+                'comments' => $items->get('explanation', collect())->values(),
+            ],
         ]);
     }
 
@@ -271,6 +276,15 @@ class ReadingsController extends Controller
         $failed = 0;
 
         $results = [];
+
+        $currentCycle = BillingCycle::where('status', 'active')->latest()->first();
+
+        if ($currentCycle->can_upload === false) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Upload is locked',
+            ], 500);
+        }
 
         foreach ($request->readings as $index => $readingData) {
 
