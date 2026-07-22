@@ -190,7 +190,7 @@ class DashboardController extends Controller
 
 
               // total flagged
-            $totalFlagged = Flaggable::active()->distinct('flaggable_id')->count();
+                $totalFlagged = Flaggable::active()->distinct('flaggable_id')->count();
         }
 
         

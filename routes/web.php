@@ -333,10 +333,13 @@ Route::middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->group(functio
             Route::delete('/{flag}', [FlagController::class, 'destroy'])->name('destroy');
             Route::post('/bulk-update', [FlagController::class, 'bulkUpdate'])->name('bulk-update');
 
+            Route::post('/run-evaluation', [FlagController::class, 'runEvaluation'])->name('evaluate');
+
             // Flag Rule routes
             Route::post('/rules', [FlagController::class, 'storeRule'])->name('rule.store');
             Route::put('/rules/{flagRule}', [FlagController::class, 'updateRule'])->name('rule.update');
             Route::delete('/rules/{flagRule}', [FlagController::class, 'destroyRule'])->name('rule.destroy');
+
         });
 
 

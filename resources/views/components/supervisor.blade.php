@@ -169,7 +169,12 @@
                             </td>
 
                             <!-- Actions -->
-                            <td class="px-6 py-4 text-right text-xs space-x-2">
+                            <td class="px-6 py-4 text-right text-xs space-x-2 flex items-center justify-end ">
+                                @if($reading->flags->isNotEmpty())
+                                    <span class="inline-flex justify-center items-center w-6 h-6 bg-amber-400 rounded-full animate-pulse">
+                                        <i data-lucide="flag" class="w-3 h-3 text-white"></i>
+                                    </span>
+                                @endif
 
                                 <!-- View -->
                                 <x-micro-button

@@ -5,6 +5,7 @@ namespace App\Services;
 
 use App\Models\Flag;
 use App\Models\FlagRule;
+use App\Models\Flaggable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
@@ -50,16 +51,20 @@ class FlagService
      * Re-evaluate a model: remove expired/incorrect flags and reapply.
      * Useful when a record is updated and rules may no longer match.
      */
-    public function reevaluate(Model $model): array
-    {
-        // Remove only automatically applied flags
-        $model->flags()
-            ->wherePivot('source', 'rule')
-            ->detach();
+        public function reevaluate(Model $model): array
+        {
+            // Remove only automatically applied, non-expired flags
+           Flaggable::where('flaggable_type', get_class($model))
+                ->where('flaggable_id', $model->getKey())
+                ->where('source', 'rule')
+                ->where(function ($query) {
+                    $query->whereNull('expires_at')
+                        ->orWhere('expires_at', '>', now());
+                })
+                ->delete();
 
-        // Run fresh evaluation
-        return $this->evaluate($model);
-    }
+            return $this->evaluate($model);
+        }
 
     /**
      * Manually attach a flag to a model (for admin UI).

@@ -6,6 +6,7 @@ namespace App\Services;
 use App\Models\FlagRule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class RuleEvaluator
 {
@@ -113,7 +114,7 @@ class RuleEvaluator
         }
 
         // Try accessor method first (getStatusAttribute)
-        $accessor = 'get' . studly_case($field) . 'Attribute';
+        $accessor = 'get' . Str::studly($field) . 'Attribute';
         if (method_exists($model, $accessor)) {
             return $model->{$field};
         }

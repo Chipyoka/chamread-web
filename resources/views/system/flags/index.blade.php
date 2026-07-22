@@ -20,13 +20,26 @@
                 <p class="text-sm text-gray-500">Define flags on which system alerts and charts will be based.</p>
             </div>
 
-             <button 
-                id="addNewFlag"
-                class="inline-flex items-center px-3 py-2.5 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary/90 transition"
-            >
-                <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
-                New Flag
-            </button>
+            <div class="flex items-center justify-end gap-4">
+
+                <form action="{{ route('systems.flags.evaluate') }}" method="POST" onsubmit="return confirm('Are you sure you want to trigger flag evaluation?')">
+                    @csrf
+                    <button type="submit"                    
+                        class="inline-flex items-center px-3 py-2.5 bg-amber-500 text-white text-sm font-medium rounded-md hover:bg-primary/90 transition"
+                    >
+                        <i data-lucide="scan-line" class="w-4 h-4 mr-2"></i>
+                        Run Flag Evaluation
+                    </button>
+                </form>
+    
+                 <button 
+                    id="addNewFlag"
+                    class="inline-flex items-center px-3 py-2.5 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary/90 transition"
+                >
+                    <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                    New Flag
+                </button>
+            </div>
         </div>
 
         <!-- Tabs -->

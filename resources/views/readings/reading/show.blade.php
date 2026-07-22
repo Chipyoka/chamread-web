@@ -71,6 +71,22 @@
              
             </div>
         </div>
+           @if($reading->flags->isNotEmpty())
+            <!-- Flags -->
+            <div class="bg-white rounded-md p-6 space-y-4 border border-gray-200">
+                
+                <h3 class="text-gray-400 text-xs uppercase my-2">Flags</h3>
+                <div class="flex flex-wrap gap-6 p-2">
+
+                    @foreach($reading->flags as $flag)
+                        <span class="badge bg-amber-400 text-white px-2 py-1.5 rounded-sm uppercase text-xxs animate-pulse" >
+                            {{ $flag->name }}
+                        </span>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
          <!-- reading Info Card -->
         <div class="bg-white rounded-md p-6 space-y-4 border border-gray-200">
          <h3 class="text-gray-400 text-xs uppercase my-2">Readings Information</h3>
@@ -87,7 +103,7 @@
                     </div>
                 @endif
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-1 w-full gap-4">
+            <div class="grid grid-cols-2  w-full gap-4">
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Previous Reading</h2>
                     <p class="text-gray-500 font-semibold">{{ number_format((float) ($reading->previous_reading ?: 0), 3) }}</p>
@@ -118,9 +134,13 @@
                         {{ $value?? 'Not provided' }}
                     </p>
                 </div>
-                  <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
+                <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Reading Time</h2>
                     <p class="text-gray-500 font-semibold"> {{ $reading->reading_time->format('Y-m-d H:i:s') ?? '-' }}</p>
+                </div>
+                <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
+                    <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Meter Reading Code</h2>
+                    <p class="text-gray-500 font-semibold"> {{ $reading->code->code ?? '-' }} - {{ $reading->code->name ?? '-' }}</p>
                 </div>
 
            
@@ -129,6 +149,8 @@
             </div>
          </div>
         </div>
+
+     
 
         <!-- Customer Info Card -->
         <div class="bg-white rounded-md p-6 space-y-4 border border-gray-200">
@@ -167,6 +189,8 @@
                 </div>
             </div>
         </div>
+
+    
 
 
     </div>

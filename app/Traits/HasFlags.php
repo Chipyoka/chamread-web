@@ -17,8 +17,10 @@ trait HasFlags
         return $this->morphToMany(Flag::class, 'flaggable', 'flaggables')
                     ->withPivot(['source', 'created_by', 'context', 'expires_at', 'id'])
                     ->withTimestamps()
-                    ->wherePivotNull('expires_at')
-                    ->orWherePivot('expires_at', '>', now());
+                    ->where(function ($query) {
+                        $query->whereNull('flaggables.expires_at')
+                            ->orWhere('flaggables.expires_at', '>', now());
+                    });
     }
 
     /**
@@ -35,7 +37,8 @@ trait HasFlags
      * Attach a flag by its code.
      * Returns the pivot record or false if already flagged.
      */
-    public function attachFlag(string $flagCode, string $source = 'manual', array $context = null, $userId = null, $expiresAt = null): Flaggable|false
+
+    public function attachFlag(string $flagCode, string $source = 'manual', array $context = null, $userId = null, $expiresAt = null): bool
     {
         $flag = Flag::where('code', $flagCode)->first();
         
@@ -47,13 +50,13 @@ trait HasFlags
         $existing = $this->flags()->where('flags.id', $flag->id)->exists();
         
         if ($existing) {
-            return false; // Already flagged, skip
+            return false;
         }
 
         $this->flags()->attach($flag->id, [
             'source' => $source,
             'created_by' => $userId,
-            'context' => $context,
+            'context' => $context ? json_encode($context) : null,  // <-- Fix: encode array to JSON
             'expires_at' => $expiresAt,
             'created_at' => now(),
             'updated_at' => now(),
@@ -61,7 +64,6 @@ trait HasFlags
 
         return true;
     }
-
     /**
      * Detach a flag by its code.
      */

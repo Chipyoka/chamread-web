@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Flag;
 use App\Models\FlagRule;
+use App\Models\CustomerAccount;
+use App\Models\Reading;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Schema;
+use App\Services\FlagService;
+use Illuminate\Http\RedirectResponse;
 
 class FlagController extends Controller
 {
@@ -168,7 +172,7 @@ class FlagController extends Controller
             default => null,
         };
 
-        if (!$table || !Schema::hasColumn($table, $request->column)) {
+        if (!$table || !Schema::hasColumn($table, $request->field)) {
             return response()->json([
                 'errors' => [
                     'column' => [
@@ -294,5 +298,25 @@ class FlagController extends Controller
         }
 
         return response()->json(['message' => 'All changes saved successfully']);
+    }
+
+    /**
+     * Re-evaluate all accounts and readings against active flag rules.
+     */
+    public function runEvaluation(FlagService $flagService): RedirectResponse
+    {
+        CustomerAccount::chunk(200, function ($accounts) use ($flagService) {
+            foreach ($accounts as $account) {
+                $flagService->reevaluate($account);
+            }
+        });
+
+        Reading::chunk(200, function ($readings) use ($flagService) {
+            foreach ($readings as $reading) {
+                $flagService->reevaluate($reading);
+            }
+        });
+
+        return back()->with('success', 'All flags re-evaluated successfully.');
     }
 }
