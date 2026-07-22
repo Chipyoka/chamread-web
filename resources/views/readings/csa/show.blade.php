@@ -151,14 +151,6 @@
                 <form action="{{ route('readings.csas.assign.store', $csa) }}" method="POST" class="space-y-4">
                     @csrf
 
-                    <!-- Target -->
-                    <div>
-                        <x-input-label for="target" :value="__('Target')" />
-                        <x-text-input id="target" name="target" type="number" class="mt-1 block w-full" value="{{ old('name') }}" required autofocus />
-                        <x-input-error :messages="$errors->get('target')" class="mt-2" />
-                    </div>
-
-
                     <!-- Zone -->
                     <div>
                         <x-input-label for="zone_id" :value="__('Zone')" />

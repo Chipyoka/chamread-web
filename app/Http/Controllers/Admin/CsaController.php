@@ -97,8 +97,15 @@ class CsaController extends Controller
         //     ->latest()
         //     ->get();
 
-         $devices = Device::all();
-         $zones = Zone::withCount('customerAccounts')->get();
+         $devices = Device::whereNotIn(
+                'id',
+                User::whereNotNull('device_id')->pluck('device_id')
+            )->get();
+
+         $zones = Zone::withCount('customerAccounts')
+            ->has('customerAccounts')
+            ->get();
+            
         $cycles = BillingCycle::latest()->get();
 
         $assignments = CsaAssignment::where('csa_id', $csa->id)
@@ -242,7 +249,7 @@ class CsaController extends Controller
             'zone_id' => 'required|exists:zones,id',
             'billing_cycle_id' => 'required|exists:billing_cycles,id',
             'device_id' => 'nullable|exists:devices,id',
-            'target' => 'required|integer',
+            'target' => 'nullable|integer',
             'assignment_type' => 'nullable|in:primary,secondary',
             'covered_csa_id' => 'nullable|exists:users,id',
             'covering_reason' => 'nullable|string|max:255',
@@ -251,7 +258,7 @@ class CsaController extends Controller
 
 
         // validate target
-        $customerCount = CustomerAccount::count();
+        $customerCount = CustomerAccount::where('zone_id', $data['zone_id'])->count();
 
         $target = !empty($data['target'])
             ? (int) $data['target']
@@ -270,6 +277,13 @@ class CsaController extends Controller
         if ($existingAssignment) {
             return redirect()->back()
             ->with('warning', 'Zone already taken.');
+        }
+
+        $existingUser = User::where('device_id', $data['device_id'])->first();
+
+        if ($existingUser) {
+           return redirect()->back()
+            ->with('warning', 'Device already taken.');
         }
 
         // Attempt to find existing assignment for the CSA + zone + cycle + type
