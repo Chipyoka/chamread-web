@@ -247,7 +247,7 @@ class AccountsController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Download is locked',
-            ], 500);
+            ], 423);
         }
 
         /*

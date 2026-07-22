@@ -284,7 +284,7 @@ class ReadingsController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Upload is locked',
-            ], 500);
+            ], 423);
         }
 
         foreach ($request->readings as $index => $readingData) {
@@ -565,10 +565,15 @@ class ReadingsController extends Controller
         $currentCycle = BillingCycle::where('status', 'active')->latest()->first();
 
         if ($currentCycle->can_upload === false) {
+            Log::warning('Upload is locked.', [
+                'cycle' => $currentCycle->name,
+                'csa_id' => auth()->id(),
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Upload is locked',
-            ], 500);
+            ], 423);
         }
 
         foreach ($request->readings as $index => $readingData) {
@@ -749,7 +754,7 @@ class ReadingsController extends Controller
 
                 $reread->update([
                     'new_value' => $validated['current_reading'],
-                    'status' => 'complete',
+                    'status' => 'completed',
                 ]);
 
                 /*
@@ -844,6 +849,7 @@ class ReadingsController extends Controller
 
 
     /**
+     * ******************************************
      * Get pending rereads
      */
     public function pendingRereads(Request $request)
@@ -882,7 +888,7 @@ class ReadingsController extends Controller
             $pendingReread = $reading->rereads->first();
 
             return [
-                'id'      => $reading->id,
+                'reading_id'      => $reading->id,
                 'account_id'      => $reading->account_id,
                 'account_number'  => $reading->account?->account_number,
                 'customer_name'   => $reading->account?->customer_name,

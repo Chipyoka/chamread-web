@@ -51,7 +51,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('/save', [ReadingsController::class, 'store'])->name('store');
 
             Route::post('/batch', [ReadingsController::class, 'batchStore'])->name('batchStore');
-            Route::get('/batch/rereads', [ReadingsController::class, 'batchStoreRereads'])->name('batch-rereads');
+            Route::post('/batch/rereads', [ReadingsController::class, 'batchStoreRereads'])->name('batch-rereads');
 
             Route::get('/reasons', [ReadingsController::class, 'reasons'])->name('reasons');
             Route::get('/rereads', [ReadingsController::class, 'pendingRereads'])->name('rereads');
