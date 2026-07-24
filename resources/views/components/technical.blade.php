@@ -3,7 +3,7 @@
     <!-- Top card row  -->
     <div class=" bg-white border rounded-md border-gray-200  px-6 py-4">
         <div class="text-gray-500 mb-6">
-            <p class="text-gray-400 text-xs uppercase my-2">key performance metrics</p>
+            <p class="text-gray-400 text-xs uppercase my-2">technical cases metrics</p>
         </div>
 
         <!-- METRIC CARDS -->
@@ -13,7 +13,7 @@
             <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-primary rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
                 <div class="">
                     <h2 class="text-3xl font-bold text-primary">{{ $totalTechnicalCases ?? 0 }}</h2>
-                    <p class="text-gray-500 text-xs uppercase mt-2">Technical Cases</p>
+                    <p class="text-gray-500 text-xs uppercase mt-2">Total Cases Reported</p>
                 </div>
                 <div class="flex items-center justify-center p-4 bg-blue-100/70 rounded-full">
                     <i data-lucide="wrench" class="w-7 h-7 text-primary"></i>
@@ -24,7 +24,7 @@
             <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-amber-400 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
                 <div class="">
                     <h2 class="text-3xl font-bold text-amber-400">{{ $pendingResolves ?? 0 }}</h2>
-                    <p class="text-gray-500 text-xs uppercase mt-2">Pending Resolve</p>
+                    <p class="text-gray-500 text-xs uppercase mt-2">Cases Pending</p>
                 </div>
                 <div class="flex items-center justify-center p-4 bg-amber-100/70 rounded-full">
                     <i data-lucide="clock-arrow-down" class="w-7 h-7 text-amber-400"></i>
