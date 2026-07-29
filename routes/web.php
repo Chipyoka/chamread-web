@@ -146,6 +146,7 @@ Route::middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->group(functio
             Route::get('/{reading}/technical/resolve', [ReadingsController::class, 'resolveReading'])->name('resolve');
 
             Route::get('/{reading}/export', [ReadingsController::class, 'export'])->name('export');
+            Route::get('/export/bulk', [ReadingsController::class, 'exportExcel'])->name('export.excel');
            
         });
 

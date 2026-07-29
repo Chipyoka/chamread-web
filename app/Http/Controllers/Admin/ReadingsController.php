@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Hash;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use App\Models\ReadingResolve;
+use App\Exports\MeterReadingsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 use App\Services\AuditLogService;
 
@@ -31,21 +33,69 @@ class ReadingsController extends Controller
     /**
      * Load initial page
      */
-    public function index()
+   public function index(Request $request)
     {
         $currentCycle = BillingCycle::where('status', 'active')->first();
-        $readings = [];
-
-        if($currentCycle) {
-            $readings = Reading::where('billing_cycle_id', $currentCycle->id)->paginate(10);
+        
+        if (!$currentCycle) {
+            return view('readings.reading.index', [
+                'readings' => collect(),
+                'zones' => Zone::orderBy('name')->get(),
+                'districts' => collect(),
+            ]);
         }
 
+        $query = Reading::with(['account', 'account.zone', 'csa', 'billingCycle'])
+            ->where('billing_cycle_id', $currentCycle->id);
 
+        // Apply duration filter
+        if ($request->duration === 'today') {
+            $query->whereDate('reading_time', today());
+        } elseif ($request->duration === 'this_week') {
+            $query->whereBetween('reading_time', [now()->startOfWeek(), now()->endOfWeek()]);
+        }
+
+        // Apply search filter by account number
+        if ($request->filled('search')) {
+            $query->whereHas('account', function ($q) use ($request) {
+                $q->where('account_number', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        // Apply zone filter
+        if ($request->filled('zone')) {
+            $query->whereHas('account', function ($q) use ($request) {
+                $q->where('zone_id', $request->zone);
+            });
+        }
+
+        // Apply district filter (from zone relation)
+        if ($request->filled('district')) {
+            $query->whereHas('account.zone', function ($q) use ($request) {
+                $q->where('district', $request->district);
+            });
+        }
+
+        $readings = $query->orderBy('reading_time', 'desc')->paginate(15)->withQueryString();
+
+        // Get zones for filter dropdown
+        $zones = Zone::orderBy('name')->get();
+
+        // Get districts from zones for filter dropdown
+        $districts = Zone::whereNotNull('district')
+            ->distinct()
+            ->pluck('district')
+            ->sort()
+            ->values();
 
         return view('readings.reading.index', compact(
-            'readings',
+            'readings', 
+            'zones', 
+            'districts',
+            'currentCycle'
         ));
     }
+
 
     /**
      * show reading with associated account
@@ -229,5 +279,24 @@ class ReadingsController extends Controller
             'success',
             'Reading resolved successfully.'
         );
+    }
+
+
+     public function exportExcel(Request $request)
+    {
+        $currentCycle = BillingCycle::where('status', 'active')->first();
+        
+        if (!$currentCycle) {
+            return back()->with('error', 'No active billing cycle found.');
+        }
+
+        $duration = $request->filled('duration') ? $request->duration : null;
+        $search = $request->filled('search') ? $request->search : null;
+        $zoneId = $request->filled('zone') ? $request->zone : null;
+        $district = $request->filled('district') ? $request->district : null;
+
+        $export = new MeterReadingsExport($currentCycle->id, $duration, $search, $zoneId, $district);
+        
+        return Excel::download($export, 'meter_readings_' . date('Y-m-d_His') . '.xlsx');
     }
 }

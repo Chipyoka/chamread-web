@@ -139,6 +139,10 @@
                     <p class="text-gray-500 font-semibold"> {{ $reading->reading_time->format('Y-m-d H:i:s') ?? '-' }}</p>
                 </div>
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
+                    <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Synced At</h2>
+                    <p class="text-gray-500 font-semibold"> {{ $reading->synced_at->format('Y M d H:i:s') ?? '-' }}</p>
+                </div>
+                <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Meter Reading Code</h2>
                     <p class="text-gray-500 font-semibold"> {{ $reading->code->code ?? '-' }} - {{ $reading->code->name ?? '-' }}</p>
                 </div>
