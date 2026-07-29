@@ -432,46 +432,78 @@ class CsaController extends Controller
         ));
     }
 
-
-    /**
-     * Get assigned accounts: all customer accounts with the same zone_id as the CSA
-     */
     public function assignedAccounts(User $csa)
     {
         $this->ensureCSA($csa);
 
         $currentCycle = BillingCycle::latest()->first();
-        $assignment = CsaAssignment::where('csa_id', $csa->id)->where('status', 'active')->first();
+
+        $assignment = CsaAssignment::where('csa_id', $csa->id)
+            ->where('status', 'active')
+            ->first();
+
+        abort_unless($assignment, 404, 'No active assignment for this CSA.');
+
         $target = $assignment->target ?? 0;
 
-        // Step 1: Fetch accounts
-        $accounts = CustomerAccount::where('zone_id', $assignment->zone_id)
-            ->orderBy('id') // important for deterministic results
-            ->take($target);
+        // Step 1: the fixed set of account IDs this CSA is assigned to
+        $accountIds = CustomerAccount::where('zone_id', $assignment->zone_id)
+            ->orderBy('id')
+            ->take($target)
+            ->pluck('id');
 
-        $accounts = CustomerAccount::fromSub($accounts, 'accounts')
+        // Step 2: base query - one query does status derivation + filter together
+        $baseQuery = CustomerAccount::query()
+            ->whereIn('customer_accounts.id', $accountIds)
+            ->leftJoin('readings', function ($join) use ($currentCycle) {
+                $join->on('readings.account_id', '=', 'customer_accounts.id')
+                    ->where('readings.billing_cycle_id', '=', $currentCycle->id);
+            })
             ->with('zone')
-            ->paginate(10);
+            ->select('customer_accounts.*')
+            ->selectRaw("COALESCE(readings.status, 'NOT_READ') as read_status")
+            ->orderBy('customer_accounts.id');
 
-        // Step 2: Fetch all readings for these accounts in ONE query
-        $readings = Reading::where('billing_cycle_id', $currentCycle->id)
-            ->whereIn('account_id', $accounts->pluck('id'))
-            ->get()
-            ->groupBy('account_id');
+        // Apply filter based on status query parameter
+        if (request('status') === 'read') {
+            // Filter for accounts with actual 'READ' status in the database
+            $baseQuery->where('readings.status', 'read');
+        } elseif (request('status') === 'not-read') {
+            // Filter for accounts with no reading or NOT_READ status
+            $baseQuery->where(function ($q) {
+                $q->whereNull('readings.status')
+                ->orWhere('readings.status', 'NOT_READ');
+            });
+        }
 
-        // Step 3: Attach computed status to each account
-        $accounts->getCollection()->transform(function ($account) use ($readings) {
+        // Step 3: Paginate the results
+        $accounts = $baseQuery->paginate(10)->withQueryString();
 
-            $reading = $readings->get($account->id)?->first();
+        // Step 4: Calculate totals from ALL accounts (unfiltered)
+        $totalAssigned = CustomerAccount::whereIn('id', $accountIds)->count();
 
-            $account->read_status = $reading
-                ? $reading->status
-                : 'NOT_READ';
+        // Get all accounts with their status for counting (without pagination and without filter)
+        $allAccountsWithStatus = CustomerAccount::query()
+            ->whereIn('customer_accounts.id', $accountIds)
+            ->leftJoin('readings', function ($join) use ($currentCycle) {
+                $join->on('readings.account_id', '=', 'customer_accounts.id')
+                    ->where('readings.billing_cycle_id', '=', $currentCycle->id);
+            })
+            ->select('customer_accounts.*')
+            ->selectRaw("COALESCE(readings.status, 'NOT_READ') as read_status")
+            ->get();
 
-            return $account;
-        });
+        // Count total pending/not_read (derived)
+        $totalPending = $allAccountsWithStatus->filter(function ($account) {
+            return $account->read_status === 'NOT_READ';
+        })->count();
 
-        return view('readings.csa.accounts', compact('accounts', 'csa'));
+        // Count total read (actual DB status)
+        $totalRead = $allAccountsWithStatus->filter(function ($account) {
+            return $account->read_status === 'read';
+        })->count();
+
+        return view('readings.csa.accounts', compact('accounts', 'csa', 'totalAssigned', 'totalPending', 'totalRead'));
     }
     /**
      * Ensure user is CSA

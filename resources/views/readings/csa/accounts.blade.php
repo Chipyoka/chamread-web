@@ -39,6 +39,53 @@
             </div>
         </div>
 
+        <!-- Overview -->
+        <div class=" bg-white border rounded-md border-gray-200  px-6 py-4">
+            <div class="text-gray-500 mb-6">
+                <p class="text-gray-400 text-xs uppercase my-2">key performance metrics</p>
+            </div>
+            <!-- METRIC CARDS -->
+            <div class=" grid grid-cols-3 gap-x-4 gap-y-8">
+
+                <!-- card total assigned accounts within current cycle-->
+                <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-primary rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
+                    <div class="">
+                        <h2 class="text-3xl font-bold text-primary">{{ $totalAssigned  ?? 0}}</h2>
+                        <p class="text-gray-500 text-xs uppercase mt-2">Accounts Assigned</p>
+                    </div>
+                    <div class="flex items-center justify-center p-4 bg-blue-100/70 rounded-full">
+                        <i data-lucide="list" class="w-7 h-7 text-primary"></i>
+                    </div>
+                </div>
+
+                <!-- card total read -->
+                <div 
+                onclick="window.location.href='{{ request()->fullUrlWithQuery(['status' => request('status') === 'read' ? '' : 'read']) }}'"
+                class="hover-sweep cursor-pointer flex items-center justify-between bg-gray-50/70 border-t-8 border-green-500 rounded-sm px-4 py-4 hover:shadow-md transition-all duration-300 ease-in-out ">
+                    <div class="">
+                        <h2 class="text-3xl font-bold text-green-500">{{ $totalRead ?? 0 }}</h2>
+                        <p class="text-gray-500 text-xs uppercase mt-2">Marked Read</p>
+                    </div>
+                    <div class="flex items-center justify-center p-4 bg-green-100/70 rounded-full">
+                        <i data-lucide="circle-check" class="w-7 h-7 text-green-500"></i>
+                    </div>
+                </div>
+
+                <!-- card pending -->
+                <div 
+                onclick="window.location.href='{{ request()->fullUrlWithQuery(['status' => request('status') === 'not-read' ? '' : 'not-read']) }}'"
+                class="hover-sweep flex items-center justify-between cursor-pointer bg-gray-50/70 border-t-8 border-amber-400 rounded-sm px-4 py-4  hover:shadow-md transition-all duration-300 ease-in-out ">
+                    <div class="">
+                        <h2 class="text-3xl font-bold text-amber-400">{{ $totalPending ?? 0 }}</h2>
+                        <p class="text-gray-500 text-xs uppercase mt-2">Pending</p>
+                    </div>
+                    <div class="flex items-center justify-center p-4 bg-amber-100/70 rounded-full">
+                        <i data-lucide="clock" class="w-7 h-7 text-amber-400"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Table -->
         <div class="bg-white rounded-md p-4 space-y-4 border border-gray-200 overflow-hidden">
 
@@ -51,7 +98,17 @@
                             <th class="px-6 py-3">Meter #</th>
                             <th class="px-6 py-3">Customer</th>
                             <th class="px-6 py-3">Phone</th>
-                            <th class="px-6 py-3">Reading Status</th>
+                            <th class="px-6 py-3  hover:text-gray-700 transition-colors">
+                                <div class="flex items-center space-x-1">
+                                    <span>Reading Status</span>
+                                    @if(request('status') === 'not-read')
+                                        <span class="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Filtered</span>
+                                        <i data-lucide="x" class="w-4 h-4 ml-1"></i>
+                                    @else
+                                          <i data-lucide="filter" class="w-4 h-4 ml-1"></i>
+                                    @endif
+                                </div>
+                            </th>
                             <th class="px-6 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
