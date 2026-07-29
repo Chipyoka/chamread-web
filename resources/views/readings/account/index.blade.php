@@ -128,11 +128,7 @@
                     </span>
                 @endif
 
-                <!-- Results Count -->
-                <div class="ml-auto text-xs text-gray-400">
-                    Showing {{ $accounts->firstItem() ?? 0 }} - {{ $accounts->lastItem() ?? 0 }} 
-                    of {{ $accounts->total() }} result{{ $accounts->total() !== 1 ? 's' : '' }}
-                </div>
+            
             </form>
 
             @if($accounts->count() > 0)

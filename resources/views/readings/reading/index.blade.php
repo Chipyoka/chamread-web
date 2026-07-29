@@ -139,11 +139,6 @@
                     ])->filter()->count();
                 @endphp
                 
-             
-
-                <!-- Results Count -->
-                <div class="ml-auto text-xs text-gray-400"> {{ $readings->total() }} result{{ $readings->total() !== 1 ? 's' : '' }}
-                </div>
             </form>
 
             @if($readings->count() > 0)
