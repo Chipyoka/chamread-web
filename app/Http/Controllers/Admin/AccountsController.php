@@ -13,6 +13,8 @@ use App\Models\CsaAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\CustomerAccountsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 use App\Services\AuditLogService;
 
@@ -29,10 +31,32 @@ class AccountsController extends Controller
     /**
      * Load initial page
      */
-    public function index()
+ 
+    public function index(Request $request)
     {
-        $accounts = CustomerAccount::paginate(10);
-        return view('readings.account.index', compact('accounts'));
+        $query = CustomerAccount::with('zone');
+
+        // Zone filter
+        if ($request->filled('zone')) {
+            $query->where('zone_id', $request->zone);
+        }
+
+        // Search by account number
+        if ($request->filled('search')) {
+            $query->where('account_number', 'like', '%' . $request->search . '%');
+        }
+        // Search by account number
+        if ($request->filled('category')) {
+            $query->where('customer_category', 'like', '%' . $request->category . '%');
+        }
+
+        $accounts = $query->paginate(10)->withQueryString();
+        $accountsTotal = CustomerAccount::count();
+        
+        // Get zones for the filter dropdown
+        $zones = Zone::orderBy('name')->get();
+
+        return view('readings.account.index', compact('accounts', 'zones', 'accountsTotal'));
     }
 
 
@@ -145,5 +169,20 @@ class AccountsController extends Controller
 
         return $pdf->download($fileName);
     }
+
+     /**
+     * Export customer accounts to Excel.
+     */
+    public function exportExcel(Request $request)
+    {
+        $zoneId = $request->filled('zone') ? $request->zone : null;
+        $search = $request->filled('search') ? $request->search : null;
+        $category = $request->filled('category') ? $request->category : null;
+
+        $export = new CustomerAccountsExport($zoneId, $search, $category);
+        
+        return Excel::download($export, 'customer_accounts_' . date('Y-m-d_His') . '.xlsx');
+    }
+
  
 }

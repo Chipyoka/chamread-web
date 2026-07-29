@@ -121,6 +121,7 @@ Route::middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->group(functio
             Route::delete('/{account}', [AccountsController::class, 'destroy'])->name('destroy');
             
             Route::get('/{account}/export', [AccountsController::class, 'export'])->name('export');
+            Route::get('/accounts/export/bulk', [AccountsController::class, 'exportExcel'])->name('export.excel');
            
         });
 

@@ -71,6 +71,11 @@
                 </div>
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
+                    <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Category</h2>
+                    <p class="text-gray-500 font-semibold">{{ $account->customer_category ?? '-' }}</p>
+                </div>
+
+                <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Zone</h2>
                     <p class="text-gray-500 font-semibold">{{ $account->zone?->name ?? '-' }}</p>
                 </div>
