@@ -40,6 +40,7 @@ class Sidebar extends Component
                     ['name' => 'CSAs',     'route' => 'readings.csas.index',    'pattern' => 'readings.csas.*',    'icon' => 'users',     'roles' => ['SUPERVISOR', 'ADMIN']],
                     ['name' => 'Accounts', 'route' => 'readings.accounts.index','pattern' => 'readings.accounts.*','icon' => 'file-text', 'roles' => ['SUPERVISOR', 'ADMIN']],
                     ['name' => 'Meter Readings', 'route' => 'readings.meter-readings.index',      'pattern' => 'readings.meter-readings.*',      'icon' => 'list-todo', 'roles' => ['SUPERVISOR', 'ADMIN']],
+                    ['name' => 'Field Issues', 'route' => 'readings.issues.index',      'pattern' => 'readings.issues.*',      'icon' => 'octagon-alert', 'roles' => ['SUPERVISOR', 'ADMIN']],
                 ],
             ],
             [

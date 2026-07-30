@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\MonthlyTemplateController;
 use App\Http\Controllers\Admin\DeviceController;
 use App\Http\Controllers\Admin\ZoneController;
 use App\Http\Controllers\Admin\FlagController;
+use App\Http\Controllers\Admin\CustomerAccountIssueController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -148,6 +149,29 @@ Route::middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->group(functio
             Route::get('/{reading}/export', [ReadingsController::class, 'export'])->name('export');
             Route::get('/export/bulk', [ReadingsController::class, 'exportExcel'])->name('export.excel');
            
+        });
+
+        /**
+         * =====================================================
+         * FIELD ISSUES FOR CUSTOMER ACCOUNTS
+         * =====================================================
+         */
+        Route::prefix('issues')
+        ->name('issues.')
+        ->controller(CustomerAccountIssueController::class)
+        ->group(function () {
+
+            // List
+            Route::get('/', 'index')
+                ->name('index');
+
+            // Export to Excel
+            Route::get('/export', 'export')
+                ->name('export');
+
+            // Update status
+            Route::patch('/{customerAccountIssue}/status', 'updateStatus')
+                ->name('update-status');
         });
 
     });
