@@ -14,6 +14,31 @@
 
         <!-- content -->
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-4 text-gray-500 space-y-6">
+            @php
+                $endDate = \Carbon\Carbon::parse($currentCycle->end_date);
+                $today = \Carbon\Carbon::today();
+            @endphp
+
+            @if($today->gte($endDate))
+                <div class="mb-4 rounded-md border border-amber-200 bg-amber-50/50 p-4 text-amber-500">
+                    <div class="font-semibold flex gap-2 items-center animate-pulse">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 "></i>
+                        Billing Cycle Warning
+                    </div>
+
+                    @if($today->isSameDay($endDate))
+                        <p class="mt-1 text-xs">
+                            This billing cycle ends today. Ensure all outstanding activities are completed before the day ends.
+                        </p>
+                    @else
+                        <p class="mt-1 text-xs">
+                            We are <strong>{{ $endDate->diffInDays($today) }}</strong>
+                            {{ Str::plural('day', $endDate->diffInDays($today)) }}
+                            past the end date for this billing cycle. Please take the necessary action.
+                        </p>
+                    @endif
+                </div>
+            @endif
        
             <!-- Top card row for CURRENT BILLING CYCLE + TOP 5 CSAs -->
             <div class="grid grid-cols-2 gap-x-4 gap-y-8">

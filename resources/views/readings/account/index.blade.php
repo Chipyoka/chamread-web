@@ -149,8 +149,11 @@
                                 <tr class="hover:bg-gray-50 transition">
 
                                     <!-- Account Number -->
-                                    <td class="px-6 py-3 text-xs text-gray-500 font-medium whitespace-nowrap">
+                                    <td class="px-6 py-3 text-xs text-gray-500 font-medium ">
                                         {{ $account->account_number }}
+                                        @if($account->flags->isNotEmpty())
+                                          <div title="flagged" class="w-2 h-2 rounded-full bg-amber-300 animate-pulse inline-block ml-1"></div>
+                                        @endif
                                     </td>
 
                                     <!-- Meter Number -->

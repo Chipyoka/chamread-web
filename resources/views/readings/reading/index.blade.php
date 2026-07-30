@@ -166,6 +166,9 @@
                                     <!-- Account Number -->
                                     <td class="px-6 py-3 text-xs text-gray-500 font-medium whitespace-nowrap">
                                         {{ $reading->account->account_number }}
+                                         @if($reading->flags->isNotEmpty())
+                                          <div title="Flagged" class="w-2 h-2 rounded-full bg-amber-300 animate-pulse inline-block ml-1"></div>
+                                        @endif
                                     </td>
 
                                     <!-- Zone -->
