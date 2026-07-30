@@ -160,7 +160,7 @@
                         </div>
                     </div>
     
-                    <!-- card abnormal -->
+                    <!-- card accounts flagged -->
                     <div x-on:click="$dispatch('open-modal', 'accounts-flagged')" class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-amber-400 rounded-sm px-4 py-4 cursor-pointer hover:shadow-md transition-all duration-300 ease-in-out ">
                         <div class="">
                             <h2 class="text-3xl font-bold text-amber-400">{{ $flaggedAccounts->count() ?? 0 }}</h2>
@@ -171,11 +171,24 @@
                         </div>
                     </div>
 
-                    <!-- card abnormal -->
-                    <div x-on:click="$dispatch('open-modal', 'readings-flagged')" class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-amber-400 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
+                    <!-- card readings flagged -->
+                    <div x-on:click="$dispatch('open-modal', 'readings-flagged')" class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-amber-400 rounded-sm px-4 py-4 cursor-pointer hover:shadow-md transition-all duration-300 ease-in-out ">
                         <div class="">
                             <h2 class="text-3xl font-bold text-amber-400">{{ $flaggedReadings->count() ?? 0 }}</h2>
                             <p class="text-gray-500 text-xs uppercase mt-2">Flagged Readings</p>
+                        </div>
+                        <div class="flex items-center justify-center p-4 bg-amber-100/70 rounded-full">
+                            <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400"></i>
+                        </div>
+                    </div>
+
+                    <!-- card issues -->
+                    <div  
+                    onclick="window.location.href='{{ route('readings.issues.index')}}'"
+                    class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-amber-400 rounded-sm px-4 py-4 cursor-pointer hover:shadow-md transition-all duration-300 ease-in-out ">
+                        <div class="">
+                            <h2 class="text-3xl font-bold text-amber-400">{{ $reportedIssues ?? 0 }}</h2>
+                            <p class="text-gray-500 text-xs uppercase mt-2">Account Issues Reported</p>
                         </div>
                         <div class="flex items-center justify-center p-4 bg-amber-100/70 rounded-full">
                             <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400"></i>

@@ -11,6 +11,7 @@ use App\Models\AuditLog;
 use App\Models\Reading;
 use App\Models\Flaggable;
 use App\Models\ReadingReread;
+use App\Models\CustomerAccountIssue;
 use App\Models\ReadingResolve;
 use App\Models\Dma;
 use App\Models\BillingCycle;
@@ -64,6 +65,7 @@ class DashboardController extends Controller
         $zeroConsumption = 0;
         $totalAssignedAccounts = 0;
         $readings = [];
+        $reportedIssues = 0;
 
 
         $read = CustomerAccount::whereExists(function ($query) {
@@ -132,7 +134,9 @@ class DashboardController extends Controller
                 : 0;
 
                 
-
+            $reportedIssues = CustomerAccountIssue::whereDate(
+                'created_at','>=', $currentCycle->start_date
+            )->count();
             /*
             |--------------------------------------------------------------------------
             | Top CSAs
@@ -238,6 +242,7 @@ class DashboardController extends Controller
             'totalFlagged',
             'flaggedAccounts',
             'flaggedReadings',
+            'reportedIssues',
         ));
     }
 
