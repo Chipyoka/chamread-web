@@ -17,9 +17,6 @@
                 <h1 class="text-2xl font-medium text-gray-500">Customer Accounts</h1>
                 <p class="text-xs text-gray-500">
                     Manage Customer Accounts
-                    @if($accounts->total() > 0)
-                        <span class="ml-2 text-gray-400">({{ $accounts->total() }} total)</span>
-                    @endif
                 </p>
             </div>
 

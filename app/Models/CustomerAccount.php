@@ -4,6 +4,9 @@ namespace App\Models;
 
 use App\Traits\HasFlags;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
+use App\Models\CsaAssignment;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class CustomerAccount extends Model
 {
@@ -77,5 +80,20 @@ class CustomerAccount extends Model
     public function exceptions()
     {
         return $this->hasMany(SystemException::class);
+    }
+
+    /**
+     * Assigned csa
+     */
+    public function assignedCsa(): HasOneThrough
+    {
+        return $this->hasOneThrough(
+            User::class,           // Final model
+            CsaAssignment::class,  // Intermediate model
+            'zone_id',             // Foreign key on csa_assignments...
+            'id',                  // Foreign key on users...
+            'zone_id',             // Local key on customer_accounts...
+            'csa_id'               // Local key on csa_assignments...
+        )->where('users.role', 'CSA');
     }
 }

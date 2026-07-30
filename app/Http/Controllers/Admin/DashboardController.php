@@ -254,13 +254,12 @@ class DashboardController extends Controller
         $totalAssignedAccounts = 0;
         $readings = [];
         $totalReRead = 0;
+        $accountPendingList = [];
 
 
-        $read = CustomerAccount::whereExists(function ($query) {
-                $query->selectRaw(1)
-                    ->from('readings')
-                    ->whereColumn('readings.account_id', 'customer_accounts.id');
-            })->count();
+    
+
+    
 
         /*
         |--------------------------------------------------------------------------
@@ -289,6 +288,18 @@ class DashboardController extends Controller
             
             // Accounts WITHOUT readings (pending)
             $pending = $total - $read;
+
+            $accountReadList = CustomerAccount::with('assignedCsa')->whereIn('zone_id', $assignedZoneIds)->whereExists(function ($query) {
+                $query->selectRaw(1)
+                    ->from('readings')
+                    ->whereColumn('readings.account_id', 'customer_accounts.id');
+            })->paginate(50);
+
+            $accountPendingList = CustomerAccount::with('assignedCsa')->whereIn('zone_id', $assignedZoneIds)->whereNotExists(function ($query) {
+                    $query->selectRaw(1)
+                        ->from('readings')
+                        ->whereColumn('readings.account_id', 'customer_accounts.id');
+                })->paginate(50);
       
             // Total readings in cycle
             $totalReadings = Reading::where(
@@ -361,6 +372,8 @@ class DashboardController extends Controller
                 'totalReRead' => $totalReRead,
                 'totalReReadCompleted' => $totalReReadCompleted,
                 'totalReReadPending' => $totalReReadPending,
+                'accountPendingList' => $accountPendingList,
+                'accountReadList' => $accountReadList,
 
             ]
         ]);

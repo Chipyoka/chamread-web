@@ -10,10 +10,10 @@
         <div class=" grid grid-cols-2 gap-x-4 gap-y-8">
 
             <!-- card total read -->
-            <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-green-500 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
+            <div x-on:click="$dispatch('open-modal', 'accounts-read')" class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-green-500 rounded-sm px-4 py-4 cursor-pointer hover:shadow-md transition-all duration-300 ease-in-out ">
                 <div class="">
                     <h2 class="text-3xl font-bold text-green-500">{{ $accountsRead ?? 0 }}</h2>
-                    <p class="text-gray-500 text-xs uppercase mt-2">Marked Read</p>
+                    <p class="text-gray-500 text-xs uppercase mt-2">Accounts Read</p>
                 </div>
                 <div class="flex items-center justify-center p-4 bg-green-100/70 rounded-full">
                     <i data-lucide="circle-check" class="w-7 h-7 text-green-500"></i>
@@ -21,10 +21,10 @@
             </div>
 
             <!-- card abnormal -->
-            <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-amber-400 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
+            <div x-on:click="$dispatch('open-modal', 'accounts-pending')" class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-amber-400 rounded-sm px-4 py-4 cursor-pointer hover:shadow-md transition-all duration-300 ease-in-out ">
                 <div class="">
                     <h2 class="text-3xl font-bold text-amber-400">{{ $pending ?? 0 }}</h2>
-                    <p class="text-gray-500 text-xs uppercase mt-2">Pending</p>
+                    <p class="text-gray-500 text-xs uppercase mt-2">Accounts Pending</p>
                 </div>
                 <div class="flex items-center justify-center p-4 bg-amber-100/70 rounded-full">
                     <i data-lucide="clock-arrow-down" class="w-7 h-7 text-amber-400"></i>
@@ -329,6 +329,192 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </x-modal>
+
+
+    <!-- Accounts read modal -->
+    <x-modal name="accounts-read" max-width="4xl" :closable="false">
+        <div class="p-6">
+            <h2 class="text-lg font-semibold text-green-400 mb-2">Showing Accounts Read</h2>
+                @if(count($accountReadList) > 0)
+
+                    <div class="max-h-[65dvh] overflow-y-auto thin-scrollbar">
+                        <table class="min-w-full divide-y divide-gray-100">
+                            <thead class="bg-gray-50">
+                                <tr class="text-left text-xxs text-gray-500 uppercase tracking-wider">
+                                    <th class="px-6 py-3">Account</th>
+                                    <th class="px-6 py-3">Customer</th>
+                                    <th class="px-6 py-3">Address</th>
+                                    <th class="px-6 py-3">Zone</th>
+                                    <th class="px-6 py-3">CSA</th>
+                                    <th class="px-6 py-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody class="bg-white divide-y divide-gray-100">
+
+                                @foreach($accountReadList as $account)
+                                    <tr class="hover:bg-gray-50 transition">
+
+                                        <!-- Account Number -->
+                                        <td class="px-6 py-4 text-xs text-gray-500 font-medium">
+                                            {{ $account->account_number ?? "-" }}
+                                        </td>
+
+                                        <!-- customer name -->
+                                        <td class="px-6 py-4 text-xs text-gray-500 font-medium">
+                                            {{ $account->customer_name ?? "-" }}
+                                        </td>
+
+                                        <!-- account address -->
+                                        <td class="px-6 py-4 text-xs text-gray-500 font-medium">
+                                            {{ $account->address ?? "-"}}
+                                        </td>
+
+                                        <!-- zone -->
+                                        <td class="px-6 py-4 text-xs text-gray-500">
+                                        {{ $account->zone->name ?? "-" }}
+                                        </td>
+
+
+                                        <!-- Reading time -->
+                                        <td class="px-6 py-4 text-xs text-gray-500">
+                                            {{$account->assignedCsa?->name ?? '-' }}
+                                        </td>
+
+                                        <!-- Actions -->
+                                        <td class="px-6 py-4 text-right text-xs space-x-2 flex items-center justify-end ">
+                                            @if($account->flags->isNotEmpty())
+                                                <span class="inline-flex justify-center items-center w-6 h-6 bg-amber-400 rounded-full animate-pulse">
+                                                    <i data-lucide="flag" class="w-3 h-3 text-white"></i>
+                                                </span>
+                                            @endif
+
+                                            <!-- View -->
+                                            <x-micro-button
+                                                href="{{ route('readings.accounts.show', $account) }}"
+                                                color="blue"
+                                                icon="eye"
+                                                size="sm"
+                                            >
+                                                View
+                                            </x-micro-button>
+
+
+                                        </td>
+                                    </tr>
+                                @endforeach
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                @else
+
+                    <!-- Empty State -->
+                    <div class="p-10 text-center">
+                        <div class="flex flex-col items-center space-y-3">
+                            <i data-lucide="list-todo" class="w-10 h-10 text-gray-300"></i>
+                            <p class="text-gray-500 text-xs">No accounts found.</p>
+                        </div>
+                    </div>
+
+                @endif
+        </div>
+    </x-modal>
+
+
+    <!-- Accounts Pending modal -->
+    <x-modal name="accounts-pending" max-width="4xl" :closable="false">
+        <div class="p-6 ">
+            <h2 class="text-lg font-semibold text-amber-400 mb-2">Showing Accounts Pending</h2>
+                 @if(count($accountPendingList) > 0)
+
+                 <div class="max-h-[65dvh] overflow-y-auto thin-scrollbar">
+                     <table class="min-w-full divide-y divide-gray-100">
+                         <thead class="bg-gray-50">
+                             <tr class="text-left text-xxs text-gray-500 uppercase tracking-wider">
+                                 <th class="px-6 py-3">Account</th>
+                                 <th class="px-6 py-3">Customer</th>
+                                 <th class="px-6 py-3">Address</th>
+                                 <th class="px-6 py-3">Zone</th>
+                                 <th class="px-6 py-3">CSA</th>
+                                 <th class="px-6 py-3 text-right">Actions</th>
+                             </tr>
+                         </thead>
+         
+                         <tbody class="bg-white divide-y divide-gray-100 ">
+         
+                             @foreach($accountPendingList as $account)
+                                 <tr class="hover:bg-gray-50 transition">
+         
+                                     <!-- Account Number -->
+                                     <td class="px-6 py-4 text-xs text-gray-500 font-medium">
+                                         {{ $account->account_number ?? "-" }}
+                                     </td>
+         
+                                     <!-- customer name -->
+                                     <td class="px-6 py-4 text-xs text-gray-500 font-medium">
+                                         {{ $account->customer_name ?? "-" }}
+                                     </td>
+         
+                                     <!-- account address -->
+                                     <td class="px-6 py-4 text-xs text-gray-500 font-medium">
+                                         {{ $account->address ?? "-"}}
+                                     </td>
+         
+                                     <!-- zone -->
+                                     <td class="px-6 py-4 text-xs text-gray-500">
+                                        {{ $account->zone->name ?? "-" }}
+                                     </td>
+         
+         
+                                     <!-- Reading time -->
+                                     <td class="px-6 py-4 text-xs text-gray-500">
+                                         {{$account->assignedCsa?->name ?? '-' }}
+                                     </td>
+         
+                                     <!-- Actions -->
+                                     <td class="px-6 py-4 text-right text-xs space-x-2 flex items-center justify-end ">
+                                         @if($account->flags->isNotEmpty())
+                                             <span class="inline-flex justify-center items-center w-6 h-6 bg-amber-400 rounded-full animate-pulse">
+                                                 <i data-lucide="flag" class="w-3 h-3 text-white"></i>
+                                             </span>
+                                         @endif
+         
+                                         <!-- View -->
+                                         <x-micro-button
+                                             href="{{ route('readings.accounts.show', $account) }}"
+                                             color="blue"
+                                             icon="eye"
+                                             size="sm"
+                                         >
+                                             View
+                                         </x-micro-button>
+         
+         
+                                     </td>
+                                 </tr>
+                             @endforeach
+         
+                         </tbody>
+                     </table>
+                 </div>
+
+           
+
+        @else
+
+            <!-- Empty State -->
+            <div class="p-10 text-center">
+                <div class="flex flex-col items-center space-y-3">
+                    <i data-lucide="list-todo" class="w-10 h-10 text-gray-300"></i>
+                    <p class="text-gray-500 text-xs">No accounts found.</p>
+                </div>
+            </div>
+
+        @endif
         </div>
     </x-modal>
 
