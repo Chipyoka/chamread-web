@@ -91,7 +91,21 @@
             </div>
         </div>
 
-    
+               @if($account->flags->isNotEmpty())
+            <!-- Flags -->
+            <div class="bg-white rounded-md p-6 space-y-4 border border-gray-200">
+                
+                <h3 class="text-gray-400 text-xs uppercase my-2">Flags</h3>
+                <div class="flex flex-wrap gap-6 p-2">
+
+                    @foreach($account->flags as $flag)
+                        <span class="badge bg-amber-400 text-white px-2 py-1.5 rounded-sm uppercase text-xxs animate-pulse" >
+                            {{ $flag->name }}
+                        </span>
+                    @endforeach
+                </div>
+            </div>
+        @endif
         <!-- Consumption Trend chart -->
         <div class="bg-white rounded-md p-6 space-y-4 border border-gray-200">
             <h3 class="text-gray-400 text-xs uppercase my-2">Consumption Trend (Last 6 months)</h3>

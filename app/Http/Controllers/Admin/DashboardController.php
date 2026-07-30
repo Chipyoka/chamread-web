@@ -201,6 +201,20 @@ class DashboardController extends Controller
             ])->where('billing_cycle_id', $currentCycle->id)->paginate(10);
         }
 
+        // Readings that have at least one flag
+        $flaggedReadings = Reading::whereHas('flags')
+            ->with(['flags'])  // eager load flags 
+            ->latest()
+            ->limit(50)
+            ->get();
+
+        // Accounts that have at least one flag
+        $flaggedAccounts = CustomerAccount::whereHas('flags')
+            ->with('flags')  // eager load flags
+            ->latest()
+            ->limit(50)
+            ->get();
+
 
        
 
@@ -221,7 +235,9 @@ class DashboardController extends Controller
             'totalAssignedAccounts',
             'pending',
             'readings',
-            'totalFlagged'
+            'totalFlagged',
+            'flaggedAccounts',
+            'flaggedReadings',
         ));
     }
 

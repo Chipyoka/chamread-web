@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="p-4">
+    <div class="p-4" x-data="">
         <x-slot:breadcrumb>
             <x-breadcrumb :items="[
                 [
@@ -99,7 +99,7 @@
                 </div>
 
                 <!-- METRIC CARDS -->
-                <div class=" grid grid-cols-4 gap-x-4 gap-y-8">
+                <div class=" grid grid-cols-3 gap-x-4 gap-y-8">
     
                     <!-- card total assigned accounts within current cycle-->
                     <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-primary rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
@@ -108,7 +108,7 @@
                             <p class="text-gray-500 text-xs uppercase mt-2">Accounts Assigned</p>
                         </div>
                         <div class="flex items-center justify-center p-4 bg-blue-100/70 rounded-full">
-                            <i data-lucide="list" class="w-7 h-7 text-primary"></i>
+                            <i data-lucide="list" class="w-5 h-5 text-primary"></i>
                         </div>
                     </div>
     
@@ -116,34 +116,47 @@
                     <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-green-500 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
                         <div class="">
                             <h2 class="text-3xl font-bold text-green-500">{{ $accountsRead ?? 0 }}</h2>
-                            <p class="text-gray-500 text-xs uppercase mt-2">Marked Read</p>
+                            <p class="text-gray-500 text-xs uppercase mt-2">Accounts Read</p>
                         </div>
                         <div class="flex items-center justify-center p-4 bg-green-100/70 rounded-full">
-                            <i data-lucide="circle-check" class="w-7 h-7 text-green-500"></i>
+                            <i data-lucide="circle-check" class="w-5 h-5 text-green-500"></i>
+                        </div>
+                    </div>
+
+                    
+                    <!-- card Total CSAs-->
+                    <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-slate-400 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
+                        <div class="">
+                            <h2 class="text-3xl font-bold text-slate-400">{{ $totalCsas ?? 0 }}</h2>
+                            <p class="text-gray-500 text-xs uppercase mt-2">CSA Accounts</p>
+                        </div>
+                        <div class="flex items-center justify-center p-4 bg-slate-100/70 rounded-full">
+                            <i data-lucide="users" class="w-5 h-5 text-slate-400"></i>
                         </div>
                     </div>
     
                     <!-- card abnormal -->
-                    <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-amber-400 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
+                    <div x-on:click="$dispatch('open-modal', 'accounts-flagged')" class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-amber-400 rounded-sm px-4 py-4 cursor-pointer hover:shadow-md transition-all duration-300 ease-in-out ">
                         <div class="">
-                            <h2 class="text-3xl font-bold text-amber-400">{{ $totalFlagged ?? 0 }}</h2>
-                            <p class="text-gray-500 text-xs uppercase mt-2">Flagged</p>
+                            <h2 class="text-3xl font-bold text-amber-400">{{ $flaggedAccounts->count() ?? 0 }}</h2>
+                            <p class="text-gray-500 text-xs uppercase mt-2">Flagged Accounts</p>
                         </div>
                         <div class="flex items-center justify-center p-4 bg-amber-100/70 rounded-full">
-                            <i data-lucide="alert-triangle" class="w-7 h-7 text-amber-400"></i>
+                            <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400"></i>
+                        </div>
+                    </div>
+
+                    <!-- card abnormal -->
+                    <div x-on:click="$dispatch('open-modal', 'readings-flagged')" class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-amber-400 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
+                        <div class="">
+                            <h2 class="text-3xl font-bold text-amber-400">{{ $flaggedReadings->count() ?? 0 }}</h2>
+                            <p class="text-gray-500 text-xs uppercase mt-2">Flagged Readings</p>
+                        </div>
+                        <div class="flex items-center justify-center p-4 bg-amber-100/70 rounded-full">
+                            <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400"></i>
                         </div>
                     </div>
     
-                    <!-- card Total CSAs-->
-                    <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-primary rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
-                        <div class="">
-                            <h2 class="text-3xl font-bold text-primary">{{ $totalCsas ?? 0 }}</h2>
-                            <p class="text-gray-500 text-xs uppercase mt-2">Active CSA Accounts</p>
-                        </div>
-                        <div class="flex items-center justify-center p-4 bg-blue-100/70 rounded-full">
-                            <i data-lucide="users" class="w-7 h-7 text-primary"></i>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -172,4 +185,179 @@
             
         </div>
     </div>
+
+    
+    <!-- =============================================== -->
+     <!-- MODAL SECTION -->
+    <!-- =============================================== -->
+
+
+    <!-- Flagged Accounts modal -->
+    <x-modal name="accounts-flagged" max-width="4xl" :closable="false">
+        <div class="p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-2">Showing Accounts Flagged</h2>
+                @if(count($flaggedAccounts) > 0)
+
+                    <div class="max-h-[65dvh] overflow-y-auto thin-scrollbar">
+                        <table class="min-w-full divide-y divide-gray-100">
+                            <thead class="bg-gray-50">
+                                <tr class="text-left text-xxs text-gray-500 uppercase tracking-wider">
+                                    <th class="px-6 py-3">Account</th>
+                                    <th class="px-6 py-3">Zone</th>
+                                    <th class="px-6 py-3">CSA</th>
+                                    <th class="px-6 py-3">Reason</th>
+                                    <th class="px-6 py-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody class="bg-white divide-y divide-gray-100">
+
+                                @foreach($flaggedAccounts as $account)
+                                    <tr class="hover:bg-gray-50 transition">
+
+                                        <!-- Account Number -->
+                                        <td class="px-6 py-4 text-xs text-gray-500 font-medium">
+                                            {{ $account->account_number ?? "-" }}
+                                        </td>
+
+                                        <!-- zone -->
+                                        <td class="px-6 py-4 text-xs text-gray-500">
+                                        {{ $account->zone->name ?? "-" }}
+                                        </td>
+
+
+                                        <!-- Reading time -->
+                                        <td class="px-6 py-4 text-xs text-gray-500">
+                                            {{$account->assignedCsa?->name ?? '-' }}
+                                        </td>
+
+                                          <!-- Reason Code (flag) -->
+                                        <td class="px-6 py-4 text-xs text-gray-500  gap-2">
+                                             @foreach($account->flags as $flag)
+                                                <p class="text-gray-500 px-2 py-1.5 rounded-sm uppercase text-xxs" >
+                                                    {{ $flag->name }}
+                                                </p>
+                                            @endforeach
+                                        </td>
+
+                                        <!-- Actions -->
+                                        <td class="px-6 py-4 text-right text-xs space-x-2 flex items-center justify-end ">
+                                       
+
+                                            <!-- View -->
+                                            <x-micro-button
+                                                href="{{ route('readings.accounts.show', $account) }}"
+                                                color="blue"
+                                                icon="eye"
+                                                size="sm"
+                                            >
+                                                View
+                                            </x-micro-button>
+
+
+                                        </td>
+                                    </tr>
+                                @endforeach
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                @else
+
+                    <!-- Empty State -->
+                    <div class="p-10 text-center">
+                        <div class="flex flex-col items-center space-y-3">
+                            <i data-lucide="list-todo" class="w-10 h-10 text-gray-300"></i>
+                            <p class="text-gray-500 text-xs">No accounts found.</p>
+                        </div>
+                    </div>
+
+                @endif
+        </div>
+    </x-modal>
+
+    <!-- Flagged Readings modal -->
+    <x-modal name="readings-flagged" max-width="4xl" :closable="false">
+        <div class="p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-2">Showing Readings Flagged</h2>
+                @if(count($flaggedReadings) > 0)
+
+                    <div class="max-h-[65dvh] overflow-y-auto thin-scrollbar">
+                        <table class="min-w-full divide-y divide-gray-100">
+                            <thead class="bg-gray-50">
+                                <tr class="text-left text-xxs text-gray-500 uppercase tracking-wider">
+                                    <th class="px-6 py-3">Account</th>
+                                    <th class="px-6 py-3">Time</th>
+                                    <th class="px-6 py-3">CSA</th>
+                                    <th class="px-6 py-3">Reason</th>
+                                    <th class="px-6 py-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody class="bg-white divide-y divide-gray-100">
+
+                                @foreach($flaggedReadings as $reading)
+                                    <tr class="hover:bg-gray-50 transition">
+
+                                        <!-- Account Number -->
+                                        <td class="px-6 py-4 text-xs text-gray-500 font-medium">
+                                            {{ $reading->account->account_number ?? "-" }}
+                                        </td>
+
+                                        <!-- Reading time -->
+                                        <td class="px-6 py-4 text-xs text-gray-500">
+                                          {{ $reading->reading_time?->format('Y-m-d H:i:s') ?? '-' }}
+                                        </td>
+
+                                        <!-- Meter Reader (CSA) -->
+                                        <td class="px-6 py-4 text-xs text-gray-500">
+                                            {{$reading->csa?->name ?? '-' }}
+                                        </td>
+
+                                        <!-- Reason Code (flag) -->
+                                        <td class="px-6 py-4 text-xs text-gray-500  gap-2">
+                                             @foreach($reading->flags as $flag)
+                                                <p class="text-gray-500 px-2 py-1.5 rounded-sm uppercase text-xxs" >
+                                                    {{ $flag->name }}
+                                                </p>
+                                            @endforeach
+                                        </td>
+
+                                        <!-- Actions -->
+                                        <td class="px-6 py-4 text-right text-xs space-x-2 flex items-center justify-end ">
+
+                                            <!-- View -->
+                                            <x-micro-button
+                                                href="{{ route('readings.meter-readings.show', $reading) }}"
+                                                color="blue"
+                                                icon="eye"
+                                                size="sm"
+                                            >
+                                                View
+                                            </x-micro-button>
+
+
+                                        </td>
+                                    </tr>
+                                @endforeach
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                @else
+
+                    <!-- Empty State -->
+                    <div class="p-10 text-center">
+                        <div class="flex flex-col items-center space-y-3">
+                            <i data-lucide="list-todo" class="w-10 h-10 text-gray-300"></i>
+                            <p class="text-gray-500 text-xs">No accounts found.</p>
+                        </div>
+                    </div>
+
+                @endif
+        </div>
+    </x-modal>
+
 </x-app-layout>
