@@ -32,7 +32,7 @@
                         </p>
                     @else
                         <p class="mt-1 text-xs">
-                            We are <strong>{{ $endDate->diffInDays($today) }}</strong>
+                            <strong>{{ $endDate->diffInDays($today) }}</strong>
                             {{ Str::plural('day', $endDate->diffInDays($today)) }}
                             past the end date for this billing cycle. Please take the necessary action.
                         </p>
