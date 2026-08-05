@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\ReadingsController;
 use App\Http\Controllers\Api\AccountsController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CustomerAccountIssueController;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
 
@@ -67,6 +68,18 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             Route::post('/search', [AccountsController::class, 'search'])->name('search');
             Route::patch('/{account}/update', [AccountsController::class, 'updateAccount'])->name('update');
             Route::get('/download', [AccountsController::class, 'downloadZoneAccounts'])->name('downloadZoneAccounts');
+        });
+
+
+        // Customer Account Issue Routes
+        Route::prefix('reports')->group(function () {
+            // Check if account exists
+            Route::get('check-account', [CustomerAccountIssueController::class, 'checkAccount'])
+                ->name('check-account');
+            
+            // Submit an issue report
+            Route::post('submit', [CustomerAccountIssueController::class, 'store'])
+                ->name('submit');
         });
 
     });
