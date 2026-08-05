@@ -603,6 +603,8 @@ class ReadingsController extends Controller
                     'account_id'      => 'required|exists:customer_accounts,id',
                     'account_number'  => 'required|string|max:255',
                     'current_reading' => 'required|numeric',
+                    'meter_reading_code' => 'required|exists:meter_reading_codes,id',
+                    'comment'           => 'nullable|string|max:255',
                     'reading_time'    => 'required|date',
                 ])->validate();
 
@@ -745,6 +747,8 @@ class ReadingsController extends Controller
 
                 $reading->update([
                     'current_reading' => $validated['current_reading'],
+                    'meter_reading_code' => $validated['meter_reading_code'] ?? null,
+                    'comment' => $validated['comment'] ?? null,
                     'consumption' => $reading->previous_reading !== null
                         ? $validated['current_reading'] - $reading->previous_reading
                         : null,
