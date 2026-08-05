@@ -6,7 +6,7 @@
     </div>
 
     <!-- Login Form Container -->
-    <div class="max-h-[90dvh] w-full">
+    <div class="hidden xl:block max-h-[90dvh] w-full">
         <div class="px-6 py-4 bg-white/90 backdrop-blur-md rounded-sm shadow-lg w-6xl ">
             <div class="flex items-center justify-between mb-6 gap-6">
 
@@ -108,4 +108,19 @@
             </div>
         </div>
     </div>
+
+    <!-- Small Screen Notice -->
+    <div class="xl:hidden h-[98dvh] flex flex-col items-center justify-center space-y-4 bg-white p-4">
+        <div class="flex items-center justify-center gap-2 h-fit w-fit px-4 py-3 bg-amber-50 rounded-sm">
+            <i data-lucide="circle-alert" class="w-6 h-6 text-amber-600"></i>
+
+          <p class="text-amber-600">
+              You need to use a larger screen.
+          </p>
+      </div>
+
+      <p class="text-xs text-center text-gray-400 max-w-[70%]">
+          Dashboard cannot be loaded using a smaller screen.
+      </p>
+  </div>
 </x-guest-layout>

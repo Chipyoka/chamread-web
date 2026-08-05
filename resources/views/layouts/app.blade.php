@@ -49,13 +49,13 @@
         </style>
     </head>
 
-    <body class="font-sans antialiased mx-auto">
+    <body class="font-sans antialiased mx-auto main">
         <!-- Top Progress Bar (replaces old full-screen loader overlay) -->
         <div id="page-loader-track">
             <div id="page-loader-bar"></div>
         </div>
 
-        <div class="hidden lg:block min-h-[80dvh] bg-slate-50">
+        <div class="hidden xl:block min-h-[80dvh] bg-slate-50">
             <div class="min-h-4 bg-primary"></div>
 
             @include('layouts.navigation')
@@ -80,12 +80,12 @@
         </div>
 
         <!-- Small Screen Notice -->
-        <div class="lg:hidden h-screen flex flex-col items-center justify-center space-y-4">
+        <div class="xl:hidden h-screen flex flex-col items-center justify-center space-y-4">
             <div class="flex items-center justify-center gap-2 h-fit w-fit px-4 py-3 bg-amber-50 rounded-sm">
                 <i data-lucide="circle-alert" class="w-6 h-6 text-amber-600"></i>
 
                 <p class="text-amber-600">
-                    You need to use a laptop.
+                    You need to use a larger screen.
                 </p>
             </div>
 

@@ -7,7 +7,7 @@
   --color-secondary: #956142;
 }
 
-body{
+body.main{
   max-width: 1920px !important;
   
 }
