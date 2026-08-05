@@ -310,7 +310,7 @@ class ReadingsController extends Controller
                     'current_reading'   => 'nullable|numeric',
 
                     'status'            => 'required|in:read,not_read',
-                    'meter_reading_code' => 'nullable|exists:meter_reading_codes,id',
+                    'meter_reading_code' => 'required|exists:meter_reading_codes,id',
                     'comment'           => 'nullable|string|max:255',
 
                     'latitude'          => 'nullable|numeric',
@@ -324,6 +324,13 @@ class ReadingsController extends Controller
 
                 Log::info('Processing batch reading', [
                     'account_number' => $validated['account_number'],
+                ]);
+
+                Log::info('Request Data', [
+                    'account_number' => $validated['account_number'],
+                    'billing_cycle_id' => $validated['billing_cycle_id'],
+                    'current_reading' => $validated['current_reading'],
+                    'meter_reading_code' => $validated['meter_reading_code'],
                 ]);
 
                 /*
@@ -453,7 +460,7 @@ class ReadingsController extends Controller
                     'current_reading' => $validated['current_reading'],
                     'meter_status' => null,
 
-                    'this_month_code' => null,
+                    'this_month_code' =>  $validated['meter_reading_code'] ?? null,
 
                     'status' => $validated['status'],
                     'meter_reading_code' => $validated['meter_reading_code'] ?? null,

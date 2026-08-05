@@ -87,25 +87,24 @@ class MeterReadingsExport extends StringValueBinder implements
     public function headings(): array
     {
         return [
-            'ACCOUNT NUMBER',
-            'CUSTOMER NAME',
+            'ACCOUNT_NUMBER',
+            'CUSTOMER_NAME',
             'PHONE',
             'ADDRESS',
             'ZONE',
             'DISTRICT',
-            'PREVIOUS READING (M3)',
-            'CURRENT READING (M3)',
-            'CONSUMPTION (M3)',
+            'PREVIOUS_READING',
+            'CURRENT_READING',
+            'CONSUMPTION',
             'STATUS',
-            'METER STATUS',
-            'THIS MONTH CODE',
+            'METER_STATUS',
+            'METER_READING_CODE',
             'COMMENT',
-            'READING DATE',
-            'READING TIME',
-            'CSA NAME',
-            'BILLING CYCLE',
-            'CREATED AT',
-            'UPDATED AT'
+            'READING_TIME',
+            'CSA_NAME',
+            'BILLING_CYCLE',
+            'CREATED_AT',
+            'UPDATED_AT'
         ];
     }
 
@@ -124,14 +123,13 @@ class MeterReadingsExport extends StringValueBinder implements
             $reading->account->address ?? '',
             $reading->account->zone->name ?? '',
             $reading->account->zone->district ?? '',
-            number_format((float) ($reading->previous_reading ?: 0), 3, '.', ''),
-            number_format((float) ($reading->current_reading ?: 0), 3, '.', ''),
-            number_format($consumption, 3, '.', ''),
+            $reading->previous_reading ?? 0,
+            $reading->current_reading ?? 0,
+            $consumption ?? 0,
             ucfirst($reading->status),
             $reading->meter_status ?? '',
-            $reading->this_month_code ?? '',
+            $reading->code->code  ?? '',
             $reading->comment ?? '',
-            $reading->reading_date ? $reading->reading_date : '',
             $reading->reading_time ? $reading->reading_time : '',
             $reading->csa->name ?? '',
             $reading->billingCycle->name ?? '',
@@ -217,7 +215,6 @@ class MeterReadingsExport extends StringValueBinder implements
                 $sheet->getColumnDimension('G')->setWidth(22); // Previous Reading
                 $sheet->getColumnDimension('H')->setWidth(22); // Current Reading
                 $sheet->getColumnDimension('I')->setWidth(22); // Consumption
-                $sheet->getColumnDimension('N')->setWidth(15); // Reading Date
                 $sheet->getColumnDimension('O')->setWidth(20); // Reading Time
                 $sheet->getColumnDimension('P')->setWidth(25); // CSA Name
                 $sheet->getColumnDimension('Q')->setWidth(20); // Billing Cycle

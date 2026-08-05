@@ -12,16 +12,19 @@ class Reading extends Model
     protected $fillable = [
          'account_id','account_number','csa_id','billing_cycle_id',
         'zone_id','dma_id',
-        'previous_reading','current_reading',
-        'status','reason_code',
+        'previous_reading','current_reading', 'consumption',
+        'status','reason_code','meter_status',
         'photo_path','latitude','longitude',
-        'reading_time','synced_at','comment'
+        'reading_time','synced_at','comment','reading_date',
+        'meter_reading_code','this_month_code'
+
     ];
       protected $casts = [
         'synced_at' => 'datetime',
         'reading_time' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'reading_date' => 'date',
 
         'previous_reading' => 'float',
         'current_reading' => 'float',
