@@ -21,25 +21,25 @@ use App\Http\Controllers\Admin\CustomerAccountIssueController;
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-     return redirect()->route(auth()->check() ? 'dashboard.dashboard.index' : 'login');
-});
+    Route::get('/', function () {
+        return redirect()->route(auth()->check() ? 'dashboard.dashboard.index' : 'login');
+    });
 
 
-Route::get('/search', [DashboardController::class, 'search'])->middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->name('dashboard.search.results');
+    Route::get('/search', [DashboardController::class, 'search'])->middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->name('dashboard.search.results');
 
 
-Route::middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::get('/csas/map', [ProfileController::class,'edit'])->name('csas.map');
-    Route::get('/readings', [ReadingsController::class,'index'])->name('readings.index');
-    Route::get('/accounts', [AccountsController::class,'index'])->name('accounts.index');
-    Route::get('/analytics', [AnalyticsController::class,'index'])->name('analytics.index');
-    Route::get('/admin/settings', [AdminController::class,'index'])->name('readings.settings');
-    Route::get('/audit', [AuditController::class,'index'])->name('audit.index');
-});
+    Route::middleware(['auth','role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])->group(function () {
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+        Route::get('/csas/map', [ProfileController::class,'edit'])->name('csas.map');
+        Route::get('/readings', [ReadingsController::class,'index'])->name('readings.index');
+        Route::get('/accounts', [AccountsController::class,'index'])->name('accounts.index');
+        Route::get('/analytics', [AnalyticsController::class,'index'])->name('analytics.index');
+        Route::get('/admin/settings', [AdminController::class,'index'])->name('readings.settings');
+        Route::get('/audit', [AuditController::class,'index'])->name('audit.index');
+    });
 
 
 
