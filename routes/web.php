@@ -18,6 +18,9 @@ use App\Http\Controllers\Admin\DeviceController;
 use App\Http\Controllers\Admin\ZoneController;
 use App\Http\Controllers\Admin\FlagController;
 use App\Http\Controllers\Admin\CustomerAccountIssueController;
+use App\Http\Controllers\AppDownloadController;
+
+
 
 use Illuminate\Support\Facades\Route;
 
@@ -42,7 +45,11 @@ use Illuminate\Support\Facades\Route;
     });
 
 
-
+    // app download routes
+    Route::get('/downloads', [AppDownloadController::class, 'index'])->name('downloads.index');
+    Route::get('/downloads/{filename}', [AppDownloadController::class, 'download'])
+        ->where('filename', '.*\.apk')
+        ->name('downloads.file');
     /**
      * DASHBOARD ROUTES
      */
