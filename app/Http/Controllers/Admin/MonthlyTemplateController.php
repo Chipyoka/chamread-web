@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Exports\MonthlyTemplateExport;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Storage;
 
 use Illuminate\Support\Facades\Auth;
 
@@ -57,40 +58,58 @@ class MonthlyTemplateController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $file = $request->file('template');
+   
 
-        $path = $file->store('imports/monthly-templates');
+/*
+|--------------------------------------------------------------------------
+| Store uploaded file
+|--------------------------------------------------------------------------
+*/
 
-        /*
-        |--------------------------------------------------------------------------
-        | Create import tracking record
-        |--------------------------------------------------------------------------
-        */
+$file = $request->file('template');
 
-        $process = ImportProcess::create([
-            'user_id' => auth()->id(),
-            'billing_cycle_id' => $validated['billing_cycle_id'],
-            'file_name' => $file->getClientOriginalName(),
-            'status' => ImportProcess::STATUS_PENDING,
-            'progress' => 0,
-            'current_step' => 'Waiting...',
-        ]);
+$path = $file->store(
+    'imports/monthly-templates',
+    'local'
+);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Dispatch import job
-        |--------------------------------------------------------------------------
-        */
+if (!$path) {
+    return redirect()
+        ->back()
+        ->with('error', 'Failed to store uploaded file.');
+}
 
-        ProcessMonthlyTemplateJob::dispatch(
-            $process,
-            $path
-        );
+/*
+|--------------------------------------------------------------------------
+| Create import tracking record
+|--------------------------------------------------------------------------
+*/
 
-        return redirect()
-            ->route('management.erp.index')
-            ->with('process_id', $process->id)
-            ->with('success', 'Import started successfully.');
+$process = ImportProcess::create([
+    'user_id' => auth()->id(),
+    'billing_cycle_id' => $validated['billing_cycle_id'],
+    'file_name' => $file->getClientOriginalName(),
+    'status' => ImportProcess::STATUS_PENDING,
+    'progress' => 0,
+    'current_step' => 'Waiting...',
+]);
+
+/*
+|--------------------------------------------------------------------------
+| Dispatch import job
+|--------------------------------------------------------------------------
+*/
+
+ProcessMonthlyTemplateJob::dispatch(
+    $process,
+    $path
+);
+
+return redirect()
+    ->route('management.erp.index')
+    ->with('process_id', $process->id)
+    ->with('success', 'Import started successfully.');
+
     }
 
     /**

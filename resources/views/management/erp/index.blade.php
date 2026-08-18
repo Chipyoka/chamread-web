@@ -117,7 +117,7 @@
                            "
                        >
 
-                           <div class="grid grid-cols-4 gap-4">
+                           <div class="flex items-center justify-between gap-2 w-full max-w-full">
 
                                <p class="font-medium text-gray-500 text-xs truncate" title="{{ $import->file_name ?? 'No name' }}">
                                    {{ $import->file_name ?? "No name" }}
@@ -133,9 +133,14 @@
                                <p class="font-medium text-gray-500 text-xs text-right">
                                     <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
                                    {{ $import->status === 'completed' ? 'bg-green-100 text-green-800' : '' }}
-                                   {{ $import->status === 'failed' ? 'bg-yellow-100 text-yellow-800' : '' }}">
-                                   {{ ucfirst($import->status ?? '-') }}
+								   {{ $import->status === 'processing' ? 'bg-amber-100 text-amber-500 animate-pulse' : '' }}
+                                   {{ $import->status === 'failed' ? 'bg-red-100 text-red-800' : '' }}">
+                                   {{ ucfirst($import->status ?? '-') }} {{$import->progress ?? '-' }}%
                                </span>
+                               </p>
+							   
+							   <p class="font-medium text-gray-400 text-xxs">
+                                  {{ $import->current_step ?? "" }}
                                </p>
 
                            </div>

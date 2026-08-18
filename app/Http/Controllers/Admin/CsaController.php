@@ -249,7 +249,7 @@ class CsaController extends Controller
             'zone_id' => 'required|exists:zones,id',
             'billing_cycle_id' => 'required|exists:billing_cycles,id',
             'device_id' => 'nullable|exists:devices,id',
-            'target' => 'nullable|integer',
+   
             'assignment_type' => 'nullable|in:primary,secondary',
             'covered_csa_id' => 'nullable|exists:users,id',
             'covering_reason' => 'nullable|string|max:255',
@@ -260,9 +260,7 @@ class CsaController extends Controller
         // validate target
         $customerCount = CustomerAccount::where('zone_id', $data['zone_id'])->count();
 
-        $target = !empty($data['target'])
-            ? (int) $data['target']
-            : $customerCount;
+        $target = $customerCount;
 
         if ($target > $customerCount) {
               return redirect()->back()
@@ -303,7 +301,7 @@ class CsaController extends Controller
                 'billing_cycle_id' => $data['billing_cycle_id'],
             ],
             [
-                'target' => $data['target'],
+                'target' => $target,
                 'status' => 'active',
                 'assigned_at' => now(),
                 'end_at' => $data['end_at'] ?? null,
@@ -505,6 +503,7 @@ class CsaController extends Controller
 
         return view('readings.csa.accounts', compact('accounts', 'csa', 'totalAssigned', 'totalPending', 'totalRead'));
     }
+    
     /**
      * Ensure user is CSA
      */
