@@ -29,15 +29,28 @@ class CsaController extends Controller
     /**
      * List all CSAs
      */
-    public function index()
+    public function index(Request $request)
     {
-        $csas = User::where('role', 'CSA')->with('activeAssignment.zone')
-            ->latest()
-            ->paginate(15);
+         $query = User::where('role', 'CSA')->with('activeAssignment.zone');
+
+      
+        // Zone filter
+        if ($request->filled('zone')) {
+            $query->whereHas('activeAssignment', function ($q) use ($request) {
+                $q->where('zone_id', $request->zone);
+            });
+        }
+        // Search by name
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        $csas = $query->paginate(10)->withQueryString();
+        $csasTotal = User::where('role', 'CSA')->count();
 
         $zones = Zone::all();
 
-        return view('readings.csa.index', compact('csas', 'zones'));
+        return view('readings.csa.index', compact('csas', 'zones', 'csasTotal'));
     }
 
     /**
@@ -503,7 +516,7 @@ class CsaController extends Controller
 
         return view('readings.csa.accounts', compact('accounts', 'csa', 'totalAssigned', 'totalPending', 'totalRead'));
     }
-    
+
     /**
      * Ensure user is CSA
      */

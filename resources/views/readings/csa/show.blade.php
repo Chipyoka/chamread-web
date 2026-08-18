@@ -23,18 +23,20 @@
                        Assign
                    </x-micro-button>
     
-                   <form action="{{ route('readings.csas.destroy', $csa) }}" class="delete-form" method="POST" onsubmit="return confirm('Delete this CSA?')">
-                       @csrf
-                       @method('DELETE')
-                        <x-micro-button
-                       variant="delete"
-                       icon="trash"
-                       size="md"
-                       type="submit"
-                   >
-                      Delete
-                   </x-micro-button>
-                   </form>
+                   @if(Auth::user()->role === 'ADMIN')
+                        <form action="{{ route('readings.csas.destroy', $csa) }}" class="delete-form" method="POST" onsubmit="return confirm('Delete this CSA?')">
+                            @csrf
+                            @method('DELETE')
+                                <x-micro-button
+                            variant="delete"
+                            icon="trash"
+                            size="md"
+                            type="submit"
+                        >
+                            Delete
+                        </x-micro-button>
+                        </form>
+                   @endif
                 </div>
            
 
