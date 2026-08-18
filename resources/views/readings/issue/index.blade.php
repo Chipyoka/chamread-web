@@ -21,7 +21,7 @@
                 </p>
             </div>
 
-            @if(Auth::user()->role === 'ADMIN')
+            @if(in_array(Auth::user()->role, ['ADMIN', 'IT']))
                 @if($issues->total() > 0)
                     <a
                         href="{{ route('readings.issues.export', request()->query()) }}"
@@ -358,7 +358,7 @@
                         <!-- Action Buttons -->
                         <div class="pt-4 border-t border-gray-100 flex justify-between items-center">
                             <div class="flex items-center space-x-3 gap-4">
-                                @if(Auth::user()->role === 'ADMIN')
+                                @if(in_array(Auth::user()->role, ['ADMIN', 'IT']))
                                     <!-- Mark Complete Button -->
                                     <template x-if="viewIssue.status === 'pending'">
                                         <form method="POST" 

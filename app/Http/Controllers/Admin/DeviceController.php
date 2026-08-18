@@ -26,7 +26,7 @@ class DeviceController extends Controller
      */
     public function store(Request $request)
     {
-        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])) {
+        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])) {
             return response()->json([
                 'error' => 'Insufficient permissions.'
             ], 403);
@@ -72,7 +72,7 @@ class DeviceController extends Controller
      */
     public function update(Request $request, Device $device)
     {
-        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])) {
+        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])) {
             return response()->json([
                 'error' => 'Insufficient permissions.'
             ], 403);
@@ -118,7 +118,7 @@ class DeviceController extends Controller
      */
     public function destroy(Device $device)
     {
-        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])) {
+        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])) {
             return response()->json([
                 'error' => 'Insufficient permissions.'
             ], 403);
@@ -133,7 +133,7 @@ class DeviceController extends Controller
      */
     public function bulkUpdate(Request $request)
     {
-        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])) {
+        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])) {
             return response()->json([
                 'error' => 'Insufficient permissions.'
             ], 403);

@@ -21,7 +21,7 @@
                 </p>
             </div>
 
-            @if(Auth::user()->role === 'ADMIN')
+            @if(in_array(Auth::user()->role, ['ADMIN', 'IT']))
                 @if($readings->total() > 0)
                     <a
                         href="{{ route('readings.meter-readings.export.excel', request()->query()) }}"

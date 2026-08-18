@@ -8,7 +8,7 @@
                     <h2 class="text-xl font-semibold">{{ $currentCycle->name ?? 'Not Set' }}</h2>
 
 
-                    @if(Auth::user()->role === 'ADMIN' || Auth::user()->role === 'SUPERVISOR')
+                    @if(in_array(Auth::user()->role, ['ADMIN', 'IT']) || Auth::user()->role === 'SUPERVISOR')
                         <!-- Edit -->
                         <x-micro-button
                             variant="edit"

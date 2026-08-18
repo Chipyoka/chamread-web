@@ -30,7 +30,7 @@ class ZoneController extends Controller
      */
     public function store(Request $request)
     {
-        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])) {
+        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])) {
             return response()->json([
                 'error' => 'Insufficient permissions.'
             ], 403);
@@ -67,7 +67,7 @@ class ZoneController extends Controller
      */
     public function update(Request $request, Zone $zone)
     {
-        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])) {
+        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])) {
             return response()->json([
                 'error' => 'Insufficient permissions.'
             ], 403);
@@ -104,7 +104,7 @@ class ZoneController extends Controller
      */
     public function destroy(Zone $zone)
     {
-        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])) {
+        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])) {
             return response()->json([
                 'error' => 'Insufficient permissions.'
             ], 403);
@@ -125,7 +125,7 @@ class ZoneController extends Controller
      */
     public function bulkUpdate(Request $request)
     {
-        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])) {
+        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])) {
             return response()->json([
                 'error' => 'Insufficient permissions.'
             ], 403);
@@ -155,7 +155,7 @@ class ZoneController extends Controller
      */
     public function import(Request $request)
     {
-        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])) {
+        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])) {
             return response()->json([
                 'error' => 'Insufficient permissions.'
             ], 403);
@@ -202,7 +202,7 @@ class ZoneController extends Controller
      */
     public function downloadTemplate()
     {
-        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])) {
+        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])) {
             return redirect()->back()
                 ->with('error', 'Insufficient permissions.');
         }

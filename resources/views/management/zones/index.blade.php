@@ -162,7 +162,7 @@
                                         </button>
                                         
                                         <!-- Check if user is admin -->
-                                        @if(Auth::user()->role === 'ADMIN')
+                                        @if(in_array(Auth::user()->role, ['ADMIN', 'IT']))
                                     
 
                                             <button class="delete-row inline-flex items-center gap-1 text-red-600 hover:text-red-800 transition-colors text-xs font-medium">

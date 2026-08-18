@@ -20,7 +20,7 @@
             </div>
 
             <!-- allow only admins -->
-            @if(Auth::user()->role === 'ADMIN')
+            @if(in_array(Auth::user()->role, ['ADMIN', 'IT','COMMERCIAL']))
                 <button
                     type="button"
                     x-on:click="$dispatch('open-modal', 'create-cycle')"

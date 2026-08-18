@@ -255,7 +255,7 @@ use Illuminate\Support\Facades\Route;
 
     Route::prefix('management')
         ->name('management.')
-        ->middleware(['auth', 'role:ADMIN,IT'])
+        ->middleware(['auth', 'role:ADMIN,IT,COMMERCIAL'])
         ->group(function () {
 
             Route::prefix('monthly-template')

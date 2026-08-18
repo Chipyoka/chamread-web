@@ -47,7 +47,7 @@ class MonthlyTemplateController extends Controller
             ],
         ]);
 
-        if(!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])){
+        if(!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])){
             return redirect()->back()
             ->with('error', 'Insufficient permissions.');
         };
@@ -136,7 +136,7 @@ return redirect()
         BillingCycle $billingCycle,
         MonthlyTemplateService $service
     ) {
-        if(!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])){
+        if(!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])){
             return redirect()->back()
             ->with('error', 'Insufficient permissions.');
         };

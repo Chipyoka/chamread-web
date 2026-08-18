@@ -11,6 +11,7 @@ use Illuminate\Validation\Rules;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class UsersController extends Controller
 {
@@ -128,6 +129,12 @@ class UsersController extends Controller
      */
     public function toggleStatus(User $user)
     {
+           // check user role
+        if(!in_array(Auth::user()->role, ['ADMIN'])){
+            return redirect()->back()
+            ->with('error', 'Insufficient permissions.');
+        };
+
         // Prevent toggling if already INACTIVE
         if ($user->status === 'INACTIVE') {
             return redirect()
@@ -150,6 +157,12 @@ class UsersController extends Controller
      */
     public function destroy(User $user)
     {
+           // check user role
+        if(!in_array(Auth::user()->role, ['ADMIN'])){
+            return redirect()->back()
+            ->with('error', 'Insufficient permissions.');
+        };
+        
         // Prevent deleting yourself
         if ($user->id === auth()->id()) {
             return redirect()

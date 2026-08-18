@@ -26,7 +26,7 @@
         </div>
 
 
-        @if(Auth::user()->role === 'ADMIN')
+        @if(in_array(Auth::user()->role, ['ADMIN', 'IT']))
 
             <button
                 type="button"
@@ -255,7 +255,7 @@
                         <td class="px-6 py-3 text-right text-xs space-x-2">
 
 
-                    @if(Auth::user()->role === 'ADMIN')
+                    @if(in_array(Auth::user()->role, ['ADMIN', 'IT']))
 
                         <!-- Edit -->
 

@@ -23,7 +23,7 @@
                        Assign
                    </x-micro-button>
     
-                   @if(Auth::user()->role === 'ADMIN')
+                   @if(in_array(Auth::user()->role, ['ADMIN', 'IT']))
                         <form action="{{ route('readings.csas.destroy', $csa) }}" class="delete-form" method="POST" onsubmit="return confirm('Delete this CSA?')">
                             @csrf
                             @method('DELETE')

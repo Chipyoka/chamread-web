@@ -31,7 +31,7 @@ class FlagController extends Controller
      */
     public function store(Request $request)
     {
-        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])) {
+        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])) {
             return response()->json([
                 'error' => 'Insufficient permissions.'
             ], 403);
@@ -72,7 +72,7 @@ class FlagController extends Controller
      */
     public function update(Request $request, Flag $flag)
     {
-        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])) {
+        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])) {
             return response()->json([
                 'error' => 'Insufficient permissions.'
             ], 403);
@@ -121,7 +121,7 @@ class FlagController extends Controller
      */
     public function destroy(Flag $flag)
     {
-        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])) {
+        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])) {
             return response()->json([
                 'error' => 'Insufficient permissions.'
             ], 403);
@@ -142,7 +142,7 @@ class FlagController extends Controller
      */
     public function storeRule(Request $request)
     {
-        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])) {
+        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])) {
             return response()->json([
                 'error' => 'Insufficient permissions.'
             ], 403);
@@ -204,7 +204,7 @@ class FlagController extends Controller
      */
     public function updateRule(Request $request, FlagRule $flagRule)
     {
-        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])) {
+        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])) {
             return response()->json([
                 'error' => 'Insufficient permissions.'
             ], 403);
@@ -260,7 +260,7 @@ class FlagController extends Controller
      */
     public function destroyRule(FlagRule $flagRule)
     {
-        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])) {
+        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])) {
             return response()->json([
                 'error' => 'Insufficient permissions.'
             ], 403);
@@ -275,7 +275,7 @@ class FlagController extends Controller
      */
     public function bulkUpdate(Request $request)
     {
-        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL'])) {
+        if (!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])) {
             return response()->json([
                 'error' => 'Insufficient permissions.'
             ], 403);
