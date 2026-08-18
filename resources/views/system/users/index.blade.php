@@ -58,7 +58,7 @@
                     >
                         <option value="">All Roles</option>
                         @foreach($roles as $role)
-                            <option value="{{ $role }}" {{ request('role') == $role ? 'selected' : '' }}>
+                            <option class="uppercase" value="{{ $role }}" {{ request('role') == $role ? 'selected' : '' }}>
                                 {{ ucfirst(strtolower($role)) }}
                             </option>
                         @endforeach
@@ -153,7 +153,7 @@
 
                                     <!-- Role -->
                                     <td class="px-6 py-4">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xxs uppercase font-medium
                                             {{ $user->role === 'ADMIN' ? 'bg-red-100 text-red-800' : '' }}
                                             {{ $user->role === 'IT' ? 'bg-purple-100 text-purple-800' : '' }}
                                             {{ $user->role === 'SUPERVISOR' ? 'bg-blue-100 text-blue-800' : '' }}

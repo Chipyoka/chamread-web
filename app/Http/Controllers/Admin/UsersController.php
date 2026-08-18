@@ -39,7 +39,10 @@ class UsersController extends Controller
             ->withQueryString();
 
         // Get filter options
-        $roles = User::select('role')->distinct()->pluck('role');
+        $roles = User::where('role', '!=', 'CSA')
+        ->select('role')
+        ->distinct()
+        ->pluck('role');
         $statuses = User::select('status')->distinct()->pluck('status');
         $devices = Device::where('status', 'active')->orderBy('name')->get(['id', 'name']);
 
@@ -82,6 +85,12 @@ class UsersController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        // check user role
+        if(!in_array(Auth::user()->role, ['ADMIN'])){
+            return redirect()->back()
+            ->with('error', 'Insufficient permissions.');
+        };
+
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
