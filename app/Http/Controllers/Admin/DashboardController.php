@@ -81,6 +81,15 @@ class DashboardController extends Controller
         */
 
         $pending = 0;
+        $totalTechnicalCases = 0;
+
+        $technicalCodes = [
+            '6', // stuck metet
+            '7', // damaged meter
+            '20', // leaking meter
+            '25', // reversing meter
+        ];
+
 
             if ($currentCycle) {
                 $assignedZoneIds = CsaAssignment::where(
@@ -106,6 +115,14 @@ class DashboardController extends Controller
 
         if ($currentCycle) {
 
+         $totalTechnicalCases = Reading::where(
+                    'billing_cycle_id',
+                    $currentCycle->id
+                )
+                ->whereIn('this_month_code', $technicalCodes)
+                ->count();
+
+            
             // Total assigned CSA records
             $assignedCsas = CsaAssignment::where(
                 'billing_cycle_id',
@@ -246,6 +263,7 @@ class DashboardController extends Controller
             'flaggedReadings',
             'reportedIssues',
             'totalAccountsLoaded',
+            'totalTechnicalCases',
         ));
     }
 
@@ -433,12 +451,10 @@ class DashboardController extends Controller
         */
 
         $technicalCodes = [
-            '01',
-            '02',
-            '05',
-            '08',
-            '09',
-            '12',
+            '6', // stuck metet
+            '7', // damaged meter
+            '20', // leaking meter
+            '25', // reversing meter
         ];
 
 
@@ -559,12 +575,10 @@ class DashboardController extends Controller
 
                     $labels = [
 
-                        '01' => 'Meter Fault',
-                        '02' => 'Leak Detected',
-                        '05' => 'Damaged Meter',
-                        '08' => 'Blocked Meter',
-                        '09' => 'No Access',
-                        '12' => 'Other Issue',
+                        '6' => 'Stuck Meter',
+                        '7' => 'Damaged Meter',
+                        '20' => 'Leaking Meter',
+                        '25' => 'Reversing Meter',
 
                     ];
 

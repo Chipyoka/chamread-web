@@ -42,10 +42,27 @@
 				@endif
 			@endif
        
+            <!-- warning of technical cases -->
+             <div>
+                @if($totalTechnicalCases > 0)
+                    <div onClick="window.location.href='{{ route('dashboard.technical.index') }}'" class="cursor-pointer mb-4 rounded-md border border-amber-200 bg-amber-50/50 p-4 text-amber-500">
+                        <div class="font-semibold flex gap-2 items-center animate-pulse">
+                            <i data-lucide="alert-triangle" class="w-5 h-5 "></i>
+                            Technical Cases Warning
+                        </div>
+
+                        <p class="mt-1 text-xs">
+                            <strong>{{ $totalTechnicalCases }}</strong> readings found with technical issues. Click to review.
+                        </p>
+                    </div>
+                @endif
+             </div>
+            <!-- Total accounts loaded -->
             <div class="hover-sweep flex items-center justify-between bg-white border rounded-md border-gray-200  px-4 py-4 cursor-default">
-                <p class="text-gray-400 text-xs uppercase mt-2">Total Accounts Loaded</p>
+                <p class="text-gray-500 text-xs font-medium uppercase mt-2">Total Accounts Loaded</p>
                 <h2 class="text-3xl font-bold text-primary">{{ $totalAccountsLoaded ?? '00' }}</h2>
             </div>
+
             <!-- Top card row for CURRENT BILLING CYCLE + TOP 5 CSAs -->
             <div class="grid grid-cols-2 gap-x-4 gap-y-8">
                 <div class="min-h-60 bg-white border rounded-md border-gray-200  px-6 py-4 ">
