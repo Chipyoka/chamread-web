@@ -116,7 +116,7 @@ class ReadingsController extends Controller
     {
         $consumption = (($reading->current_reading ?? 0) - ($reading->previous_reading ?? 0));
 
-        $pdf = Pdf::loadView('readings.meter-reading.pdf', [
+        $pdf = Pdf::loadView('readings.reading.pdf', [
             'reading' => $reading,
             'consumption' => $consumption,
             'date' => now()->format('Y-m-d H:i:s'),

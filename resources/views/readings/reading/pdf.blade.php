@@ -170,7 +170,7 @@
 
     <div class="row">
         <div class="label">Account</div>
-        <div class="value">{{ $reading->account->name ?? '-' }} - {{ $reading->account->account_number ?? '-' }}</div>
+        <div class="value">{{ $reading->account->customer_name ?? '-' }} - {{ $reading->account->account_number ?? '-' }}</div>
     </div>
 
     <div class="row">
