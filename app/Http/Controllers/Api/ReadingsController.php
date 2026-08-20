@@ -402,14 +402,6 @@ class ReadingsController extends Controller
                         'csa_id' => auth()->id(),
                         'timestamp' => now()->toDateTimeString(),
                     ]);
-
-                    $results[] = [
-                        'account_number' => $validated['account_number'],
-                        'success' => false,
-                        'message' => 'Photo is missing.',
-                        'error_code' => 'MISSING_PHOTO',
-                    ];
-                    continue;
                 }
 
                 if (!empty($readingData['photo_base64'])) {
