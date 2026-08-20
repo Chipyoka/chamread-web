@@ -384,20 +384,14 @@ class CsaController extends Controller
                 'account_id',
             ])
             ->map(function ($reading) {
-
                 return [
                     'id' => $reading->id,
-
                     'lat' => (float) $reading->latitude,
-
                     'lng' => (float) $reading->longitude,
-
                     'time' => $reading->created_at?->format('Y-m-d H:i:s'),
-
                     'account' => $reading->account?->account_number ?? 'N/A',
                 ];
             })
-            ->unique(fn ($point) => $point['lat'] . ',' . $point['lng'])
             ->values()
             ->toArray();
 
