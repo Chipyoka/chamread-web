@@ -56,9 +56,13 @@ class ReadingsController extends Controller
         }
 
         // Apply search filter by account number
-        if ($request->filled('search')) {
-            $query->whereHas('account', function ($q) use ($request) {
-                $q->where('account_number', 'like', '%' . $request->search . '%');
+       if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->whereHas('account', function ($accountQuery) use ($request) {
+                    $accountQuery->where('account_number', 'like', '%' . $request->search . '%');
+                })->orWhereHas('csa', function ($csaQuery) use ($request) {
+                    $csaQuery->where('name', 'like', '%' . $request->search . '%');
+                });
             });
         }
 

@@ -71,7 +71,7 @@
                             type="text" 
                             id="search" 
                             name="search"
-                            placeholder="Search by Account #..."
+                            placeholder="Search by CSA or Account..."
                             class="w-full text-xs border-gray-200 focus:ring-primary focus:border-primary text-gray-500 bg-gray-50 px-3 py-1.5 pl-8 rounded-sm"
                             value="{{ request('search') }}"
                         >
@@ -149,10 +149,10 @@
                             <tr class="text-left text-xs text-gray-500 uppercase tracking-wider">
                                 <th class="px-6 py-3 whitespace-nowrap">Account #</th>
                                 <th class="px-6 py-3 whitespace-nowrap">Zone</th>
+                                <th class="px-6 py-3 whitespace-nowrap">CSA</th>
                                 <th class="px-6 py-3 whitespace-nowrap">Prev</th>
                                 <th class="px-6 py-3 whitespace-nowrap">Current</th>
                                 <th class="px-6 py-3 whitespace-nowrap">Consumption</th>
-                                <th class="px-6 py-3 whitespace-nowrap">Status</th>
                                 <th class="px-6 py-3 whitespace-nowrap">Reading Time</th>
                                 <th class="px-6 py-3 text-right whitespace-nowrap">Actions</th>
                             </tr>
@@ -176,6 +176,11 @@
                                         {{ $reading->account->zone->name ?? '-' }}
                                     </td>
 
+                                    <!-- Zone -->
+                                    <td class="px-6 py-3 text-xs text-gray-500 whitespace-nowrap">
+                                         {{ $reading->csa->name ?? "-" }}
+                                    </td>
+
                                     <!-- Previous reading -->
                                     <td class="px-6 py-3 text-xs text-gray-500 whitespace-nowrap">
                                         {{ number_format((float) ($reading->previous_reading ?: 0)) }}
@@ -192,20 +197,6 @@
                                             $consumption = (($reading->current_reading ?? 0) - ($reading->previous_reading ?? 0));
                                         @endphp
                                         {{ $consumption }}
-                                    </td>
-
-                                    <!-- Reading status -->
-                                    <td class="px-6 py-3 text-xs text-gray-500 whitespace-nowrap">
-                                        <span class="
-                                            px-2 py-1 text-xs rounded uppercase
-                                            @if($reading->status === 'read')
-                                                bg-green-100 text-green-700
-                                            @else
-                                                bg-red-100 text-red-700
-                                            @endif
-                                        ">
-                                            {{ $reading->status === 'read' ? 'Read' : 'Not read' }}
-                                        </span>
                                     </td>
 
                                     <!-- Reading time -->

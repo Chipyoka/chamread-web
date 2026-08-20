@@ -37,7 +37,7 @@
 <script>
 (function () {
     // ==== CONFIG ====
-    const IDLE_TIMEOUT_MS   = 14 * 60 * 1000; // time of inactivity before warning shows (14 min)
+    const IDLE_TIMEOUT_MS   = 20 * 60 * 1000; // time of inactivity before warning shows (20 min)
     const COUNTDOWN_SECONDS = 60;             // countdown shown in modal before auto logout
 
     const modal        = document.getElementById('idle-modal');
