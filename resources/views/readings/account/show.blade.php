@@ -141,8 +141,8 @@
                             <tr class="hover:bg-gray-50 transition">
                                 <td class="px-6 py-4 text-sm text-gray-500">{{ $reading->zone->name ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-500">{{ $reading->billingCycle->name ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-500">{{ number_format((float) ($reading->previous_reading ?: 0), 3) }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-500">{{ number_format((float) ($reading->current_reading ?: 0), 3) }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ number_format((float) ($reading->previous_reading ?: 0)) }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ number_format((float) ($reading->current_reading ?: 0)) }}</td>
                                    <td class="px-6 py-4 text-sm text-gray-500">
                                     <span class="
                                         px-2 py-1 text-xs rounded uppercase

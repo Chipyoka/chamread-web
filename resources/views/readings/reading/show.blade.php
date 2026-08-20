@@ -106,12 +106,12 @@
             <div class="grid grid-cols-2  w-full gap-4">
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Previous Reading</h2>
-                    <p class="text-gray-500 font-semibold">{{ number_format((float) ($reading->previous_reading ?: 0), 3) }}</p>
+                    <p class="text-gray-500 font-semibold">{{ number_format((float) ($reading->previous_reading ?: 0)) }}</p>
                 </div>
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Current Reading</h2>
-                    <p class="text-gray-500 font-semibold">{{ number_format((float) ($reading->current_reading ?: 0), 3) }}</p>
+                    <p class="text-gray-500 font-semibold">{{ number_format((float) ($reading->current_reading ?: 0)) }}</p>
                 </div>
 
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
@@ -121,7 +121,7 @@
                             $consumption = (($reading->current_reading ?? 0) - ($reading->previous_reading ?? 0));
                         @endphp
 
-                        {{ number_format($consumption, 3, '.', '') }}
+                        {{ $consumption }}
                     </p>
                 </div>
 

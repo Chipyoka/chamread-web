@@ -150,7 +150,7 @@
 
                             <!-- current reading -->
                             <td class="px-6 py-4 text-xs text-gray-500 font-medium">
-                                {{ number_format((float) ($reading->current_reading ?: 0), 3) }}
+                                {{ number_format((float) ($reading->current_reading ?: 0)) }}
                             </td>
 
                             <!-- Consumption (hot loading) -->
@@ -159,7 +159,7 @@
                                     $consumption = (($reading->current_reading ?? 0) - ($reading->previous_reading ?? 0));
                                 @endphp
 
-                                {{ number_format($consumption, 3, '.', '') }}
+                                {{ $consumption }}
                             </td>
 
 

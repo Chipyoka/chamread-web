@@ -134,8 +134,8 @@
     <div class="row">
         <div class="label">ReadingS</div>
         <div class="value">
-            Prev: {{ number_format((float)($reading->previous_reading ?? 0), 3) }} | Current: {{ number_format((float)($reading->current_reading ?? 0), 3) }} | Consumption: 
-            {{ number_format($consumption, 3, '.', '') }}
+            Prev: {{ number_format((float)($reading->previous_reading ?? 0)) }} | Current: {{ number_format((float)($reading->current_reading ?? 0)) }} | Consumption: 
+            {{ $consumption }}
         </div>
     </div>
 

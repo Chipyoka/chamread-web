@@ -149,9 +149,9 @@
                             <tr class="text-left text-xs text-gray-500 uppercase tracking-wider">
                                 <th class="px-6 py-3 whitespace-nowrap">Account #</th>
                                 <th class="px-6 py-3 whitespace-nowrap">Zone</th>
-                                <th class="px-6 py-3 whitespace-nowrap">Prev (m3)</th>
-                                <th class="px-6 py-3 whitespace-nowrap">Current (m3)</th>
-                                <th class="px-6 py-3 whitespace-nowrap">Consumption (m3)</th>
+                                <th class="px-6 py-3 whitespace-nowrap">Prev</th>
+                                <th class="px-6 py-3 whitespace-nowrap">Current</th>
+                                <th class="px-6 py-3 whitespace-nowrap">Consumption</th>
                                 <th class="px-6 py-3 whitespace-nowrap">Status</th>
                                 <th class="px-6 py-3 whitespace-nowrap">Reading Time</th>
                                 <th class="px-6 py-3 text-right whitespace-nowrap">Actions</th>
@@ -178,12 +178,12 @@
 
                                     <!-- Previous reading -->
                                     <td class="px-6 py-3 text-xs text-gray-500 whitespace-nowrap">
-                                        {{ number_format((float) ($reading->previous_reading ?: 0), 3) }}
+                                        {{ number_format((float) ($reading->previous_reading ?: 0)) }}
                                     </td>
 
                                     <!-- current reading -->
                                     <td class="px-6 py-3 text-xs text-gray-500 font-medium whitespace-nowrap">
-                                        {{ number_format((float) ($reading->current_reading ?: 0), 3) }}
+                                        {{ number_format((float) ($reading->current_reading ?: 0)) }}
                                     </td>
 
                                     <!-- Consumption -->
@@ -191,7 +191,7 @@
                                         @php
                                             $consumption = (($reading->current_reading ?? 0) - ($reading->previous_reading ?? 0));
                                         @endphp
-                                        {{ number_format($consumption, 3, '.', '') }}
+                                        {{ $consumption }}
                                     </td>
 
                                     <!-- Reading status -->
