@@ -81,7 +81,7 @@
         <div class="min-h-60 bg-white border rounded-md border-gray-200  px-6 py-4">
             <p class="text-gray-400 text-xs uppercase my-2">Re-Reading Overview </p>
             <div>
-                @if($read < 1 && $totalAssignedAccounts < 1)
+                @if($totalReReadCompleted < 1 && $totalReReadPending < 1)
                     <div class="flex flex-col gap-4 items-center justify-center w-full border border-gray-100 rounded-sm bg-gray-50/70 min-h-60">
                         <i data-lucide="chart-no-axes-column" class="w-8 h-8 text-gray-300"></i>
                         <p class="text-gray-400 text-xs">No data available yet</p>

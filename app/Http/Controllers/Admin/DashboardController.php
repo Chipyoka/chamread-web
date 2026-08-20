@@ -152,7 +152,7 @@ class DashboardController extends Controller
 
                     $user = User::find($item->csa_id);
 
-                    $item->csa_name = $user?->username ?? 'Unknown';
+                    $item->csa_name = $user?->name ?? 'Unknown';
 
                     return $item; // KEEP AS OBJECT
                 });
@@ -219,6 +219,8 @@ class DashboardController extends Controller
             ->limit(50)
             ->get();
 
+        $totalAccountsLoaded = CustomerAccount::count();
+
 
        
 
@@ -243,6 +245,7 @@ class DashboardController extends Controller
             'flaggedAccounts',
             'flaggedReadings',
             'reportedIssues',
+            'totalAccountsLoaded',
         ));
     }
 

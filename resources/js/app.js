@@ -1,5 +1,5 @@
 import './bootstrap';
-import Chart from 'chart.js/auto';
+import { initAllCharts, watchForCharts } from './chart-manager';
 
 import { createIcons, icons } from 'lucide';
 import Alpine from 'alpinejs';
@@ -8,10 +8,14 @@ import 'notyf/notyf.min.css';
 
 window.Alpine = Alpine;
 window.Notyf = Notyf;
-window.Chart = Chart;
 
 Alpine.start();
-
-
 createIcons({ icons });
 
+document.addEventListener('DOMContentLoaded', () => {
+    initAllCharts();
+    watchForCharts();
+});
+
+// If you use Livewire's SPA navigation, re-init on page swap too:
+document.addEventListener('livewire:navigated', () => initAllCharts());

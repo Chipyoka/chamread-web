@@ -42,6 +42,10 @@
 				@endif
 			@endif
        
+            <div class="hover-sweep flex items-center justify-between bg-white border rounded-md border-gray-200  px-4 py-4 cursor-default">
+                <p class="text-gray-400 text-xs uppercase mt-2">Total Accounts Loaded</p>
+                <h2 class="text-3xl font-bold text-primary">{{ $totalAccountsLoaded ?? '00' }}</h2>
+            </div>
             <!-- Top card row for CURRENT BILLING CYCLE + TOP 5 CSAs -->
             <div class="grid grid-cols-2 gap-x-4 gap-y-8">
                 <div class="min-h-60 bg-white border rounded-md border-gray-200  px-6 py-4 ">
@@ -132,7 +136,19 @@
                     <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-primary rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
                         <div class="">
                             <h2 class="text-3xl font-bold text-primary">{{ $totalAssignedAccounts ?? 0}}</h2>
-                            <p class="text-gray-500 text-xs uppercase mt-2">Accounts Assigned</p>
+                            <!-- also calculate assignment percentage -->
+                            <p class="text-gray-500 text-xs uppercase mt-2">
+                                @php
+                                    $assignmentPercentage = $totalAccountsLoaded > 0 ? round(($totalAssignedAccounts / $totalAccountsLoaded) * 100) : 0
+                                @endphp
+
+                                <!-- color coded span for percentage -->
+                                 <span class="
+                                 font-semibold @if ($assignmentPercentage >= 80) text-green-500 @elseif($assignmentPercentage >= 50) text-yellow-500 @else text-red-500 @endif
+                                 "
+                                 >{{ $assignmentPercentage }}%</span>
+                                Accounts Assigned
+                            </p>
                         </div>
                         <div class="flex items-center justify-center p-4 bg-blue-100/70 rounded-full">
                             <i data-lucide="list" class="w-5 h-5 text-primary"></i>
