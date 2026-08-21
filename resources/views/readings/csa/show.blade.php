@@ -77,8 +77,9 @@
 
                 <div  class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Device</h2>
-                    <p class="text-gray-500 font-semibold">
-                        {{ $csa->device->name ?? '-' }} - {{ $csa->device->model ?? '-' }}
+                   
+                    <p class="text-gray-500 font-semibold truncate" title="{{ $csa->device->name ?? '-' }} - {{ $csa->device->model ?? '-' }} - {{ $csa->device->serial_number ?? '-' }}">
+                        {{ $csa->device->name ?? '-' }} {{ $csa->device->model ?? '-' }} - {{ $csa->device->serial_number ?? '-' }}
                     </p>
                 </div>
                 <div  class="px-2 py-1.5 bg-gray-50 rounded-sm">
@@ -145,7 +146,7 @@
     </div>
 
 
-       <!-- Create cycle modal -->
+       <!-- Create assign modal -->
         <x-modal name="create-cycle" max-width="lg" :closable="false">
             <div class="p-6">
                 <h2 class="text-lg font-semibold text-gray-900">Assign Device and Zone to CSA</h2>
@@ -185,7 +186,7 @@
                         <select id="device_id" name="device_id" class="mt-1 block w-full border-gray-300 shadow-sm focus:ring focus:ring-primary focus:ring-opacity-50" required>
                             <option value="">-- Select Device--</option>
                             @foreach($devices as $device)
-                                <option value="{{ $device->id }}">{{ $device->name }} - {{ $device->model }} </option>
+                                <option value="{{ $device->id }}">{{ $device->name }} {{ $device->model }} - {{ $device->serial_number }}</option>
                             @endforeach
                         </select>
                         <x-input-error :messages="$errors->get('device_id')" class="mt-2" />
