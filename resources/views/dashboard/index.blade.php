@@ -111,7 +111,7 @@
                 <div class="min-h-60 bg-white border rounded-md border-gray-200  px-6 py-4">
                     <p class="text-gray-400 text-xs uppercase my-2">Reading progress</p>
                     <div>
-                        @if($read < 1 && $totalAssignedAccounts < 1)
+                        @if($accountsRead < 1 && $totalAssignedAccounts < 1)
                             <div class="flex flex-col gap-4 items-center justify-center w-full border border-gray-100 rounded-sm bg-gray-50/70 min-h-60">
                                 <i data-lucide="chart-no-axes-column" class="w-8 h-8 text-gray-300"></i>
                                 <p class="text-gray-400 text-xs">No data available yet</p>
@@ -121,14 +121,14 @@
                             <div class="flex justify-between items-start gap-2">
                                
                                 <x-charts.reading-donut-chart
-                                    :read="$read"
+                                    :read="$accountsRead"
                                     :pending="$totalAssignedAccounts"
                                 />
 
                                 <div class="w-1/3">
                                     <div class="mb-2 bg-white/40 border-gray-200 border rounded-md flex items-center justify-between py-1.5 px-3  text-sm">
                                         <p class="text-xxs text-gray-500">Readings</p>
-                                        <p class="">{{$read ?? 0}}</p>
+                                        <p class="">{{$accountsRead ?? 0}}</p>
                                     </div>
                                     <div class=" bg-white/40 border-gray-200 border rounded-md flex items-center justify-between py-1.5 px-3  text-sm">
                                         <p class=" text-xxs text-gray-500">Pending</p>

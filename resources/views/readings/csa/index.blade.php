@@ -21,7 +21,7 @@
             </h1>
 
             <p class="text-xs text-gray-500">
-                Manage Customer Service Agents <span class="bg-gray-200/70 text-gray-500 px-2 py-0.5 rounded-sm font-medium">{{ $csasTotal ?? 0 }} total</span> 
+                Manage Customer Service Agents (CSAs) and their assigned accounts.
             </p>
         </div>
 
@@ -47,7 +47,52 @@
 
 
 
+ <!-- Overview -->
+        <div class=" bg-white border rounded-md border-gray-200  px-6 py-4">
+            <div class="text-gray-500 mb-6">
+                <p class="text-gray-400 text-xs uppercase my-2">summary</p>
+            </div>
+            <!-- METRIC CARDS -->
+            <div class=" grid grid-cols-3 gap-x-4 gap-y-8">
 
+                <!-- card total assigned accounts within current cycle-->
+                <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-primary rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
+                    <div class="">
+                        <h2 class="text-3xl font-bold text-primary">{{ $csasTotal  ?? 0}}</h2>
+                        <p class="text-gray-500 text-xs uppercase mt-2">Total CSAs</p>
+                    </div>
+                    <div class="flex items-center justify-center p-4 bg-blue-100/70 rounded-full">
+                        <i data-lucide="users" class="w-7 h-7 text-primary"></i>
+                    </div>
+                </div>
+
+                <!-- card total read -->
+                <div 
+                onclick="window.location.href='{{ request()->fullUrlWithQuery(['status' => request('status') === 'withReadings' ? '' : 'withReadings']) }}'"
+                class="hover-sweep cursor-pointer flex items-center justify-between bg-gray-50/70 border-t-8 border-green-500 rounded-sm px-4 py-4 hover:shadow-md transition-all duration-300 ease-in-out ">
+                    <div class="">
+                        <h2 class="text-3xl font-bold text-green-500">{{ $withReadings ?? 0 }}</h2>
+                        <p class="text-gray-500 text-xs uppercase mt-2">With Readings</p>
+                    </div>
+                    <div class="flex items-center justify-center p-4 bg-green-100/70 rounded-full">
+                        <i data-lucide="circle-check" class="w-7 h-7 text-green-500"></i>
+                    </div>
+                </div>
+
+                <!-- card pending -->
+                <div 
+                onclick="window.location.href='{{ request()->fullUrlWithQuery(['status' => request('status') === 'withoutReadings' ? '' : 'withoutReadings']) }}'"
+                class="hover-sweep flex items-center justify-between cursor-pointer bg-gray-50/70 border-t-8 border-amber-400 rounded-sm px-4 py-4  hover:shadow-md transition-all duration-300 ease-in-out ">
+                    <div class="">
+                        <h2 class="text-3xl font-bold text-amber-400">{{ $withoutReadings ?? 0 }}</h2>
+                        <p class="text-gray-500 text-xs uppercase mt-2">Without Readings</p>
+                    </div>
+                    <div class="flex items-center justify-center p-4 bg-amber-100/70 rounded-full">
+                        <i data-lucide="circle-x" class="w-7 h-7 text-amber-400"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     <!-- Table -->
 
@@ -139,12 +184,12 @@
 
 
                     <th class="px-6 py-3">
-                        Status
+                        Readings
                     </th>
 
 
                     <th class="px-6 py-3">
-                        Last Login
+                        Status
                     </th>
 
 
@@ -182,6 +227,11 @@
 
                             {{ $csa->activeAssignment->zone->name ?? '-' }}
 
+                        </td>
+
+                        
+                        <td class="px-6 py-3 text-xs text-gray-500">
+                            {{ $csa->readings->count() ?? 0}}
                         </td>
                         <!-- Status -->
 
@@ -232,17 +282,6 @@
                         <!-- Last Login -->
 
 
-                        <td class="px-6 py-3 text-xs text-gray-500">
-
-
-                            {{ 
-                                $csa->last_login_at
-                                ? $csa->last_login_at->diffForHumans()
-                                : 'Never'
-                            }}
-
-
-                        </td>
 
 
 

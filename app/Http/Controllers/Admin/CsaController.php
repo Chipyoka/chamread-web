@@ -31,26 +31,85 @@ class CsaController extends Controller
      */
     public function index(Request $request)
     {
-         $query = User::where('role', 'CSA')->with('activeAssignment.zone');
+        $currentCycle = BillingCycle::latest()->first();
 
-      
+        $query = User::where('role', 'CSA')
+            ->with('activeAssignment.zone')
+            ->withCount([
+                'readings as readings_count' => function ($q) {
+                    $q->where('status', 'read');
+                }
+            ])
+            ->orderByDesc('readings_count');
+
+        // Default values when there is no active billing cycle
+        $withReadings = 0;
+        $withoutReadings = 0;
+
+        if ($currentCycle) {
+            // Counts (only for the current billing cycle)
+            $withReadings = User::where('role', 'CSA')
+                ->whereHas('activeAssignment', function ($q) use ($currentCycle) {
+                    $q->where('billing_cycle_id', $currentCycle->id);
+                })
+                ->whereHas('readings', function ($q) {
+                    $q->where('status', 'read');
+                })
+                ->count();
+
+            $withoutReadings = User::where('role', 'CSA')
+                ->whereHas('activeAssignment', function ($q) use ($currentCycle) {
+                    $q->where('billing_cycle_id', $currentCycle->id);
+                })
+                ->whereDoesntHave('readings', function ($q) {
+                    $q->where('status', 'read');
+                })
+                ->count();
+
+            // Status filter (only applies when a current billing cycle exists)
+            if ($request->filled('status')) {
+                $query->whereHas('activeAssignment', function ($q) use ($currentCycle) {
+                    $q->where('billing_cycle_id', $currentCycle->id);
+                });
+
+                if ($request->status === 'withReadings') {
+                    $query->whereHas('readings', function ($q) {
+                        $q->where('status', 'read');
+                    });
+                } elseif ($request->status === 'withoutReadings') {
+                    $query->whereDoesntHave('readings', function ($q) {
+                        $q->where('status', 'read');
+                    });
+                }
+            }
+        }
+
         // Zone filter
         if ($request->filled('zone')) {
             $query->whereHas('activeAssignment', function ($q) use ($request) {
                 $q->where('zone_id', $request->zone);
             });
         }
+
         // Search by name
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
         $csas = $query->paginate(10)->withQueryString();
+
+        // Total CSA count (not scoped)
         $csasTotal = User::where('role', 'CSA')->count();
 
         $zones = Zone::all();
 
-        return view('readings.csa.index', compact('csas', 'zones', 'csasTotal'));
+        return view('readings.csa.index', compact(
+            'csas',
+            'zones',
+            'csasTotal',
+            'withReadings',
+            'withoutReadings'
+        ));
     }
 
     /**
