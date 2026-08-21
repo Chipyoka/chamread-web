@@ -366,6 +366,10 @@ class CsaController extends Controller
             ->latest()
             ->paginate(10);
 
+        $totalReadings = $csa->readings()
+            ->where('billing_cycle_id', $currentCycle->id)
+            ->count();
+
         /*
         |--------------------------------------------------------------------------
         | Extract GPS points for map
@@ -434,6 +438,7 @@ class CsaController extends Controller
             'csa',
             'points',
             'pointsT',
+            'totalReadings',
         ));
     }
 

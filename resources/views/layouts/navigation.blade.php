@@ -25,7 +25,7 @@
                         }
                     @endphp
 
-                    <h4 class="ml-6 text-xl font-medium text-gray-500 capitalize">{{ $greeting }}, {{ Auth::user()->username ?? 'Guest' }}</h4>
+                    <h4 class="ml-6 text-xl font-medium text-gray-500 capitalize">{{ $greeting }}, {{ explode('.', Auth::user()->username)[0] ?? 'Guest' }}</h4>
 
                 
 
@@ -105,7 +105,7 @@
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-sm text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <div class="capitalize">{{ Auth::user()->username }}</div>
+                            <div class="capitalize">{{ explode('.', Auth::user()->username)[0] }}</div>
 
                             <div class="ms-1">
                                 <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">

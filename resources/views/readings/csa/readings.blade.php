@@ -5,7 +5,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-semibold text-gray-500"> Readings for <span class="text-secondary">{{ $csa->name ?? "CSA" }}</span></h1>
-                <p class="text-sm text-gray-500">Scroll to the bottom to view map</p>
+                <p class="text-sm text-gray-500">Scroll to the bottom to view total readings</p>
             </div>
 
             <div class="flex items-center space-x-2">
@@ -40,9 +40,24 @@
             </div>
         </div>
 
+        
+        <!-- CSA Info Card -->
+        <div class="bg-white rounded-md p-2 space-y-4 border border-gray-200">
+            <x-maps.agent-trail :points="$points" />
+        </div>
+        @php
+            $pointsCount = count($points);
+        @endphp
+
+        @if($pointsCount > 0)
+            <p class="text-xs text-gray-400 uppercase my-4">{{$pointsCount}} points mapped for the current billing cycle.</p>
+        @else
+            <p class="w-fit py-1.5 px-3 bg-amber-50/70 text-xs text-amber-500 uppercase my-4">No mapping data available for this CSA in the current billing cycle.</p>
+        @endif
+
         <!-- CSA Readings -->
         <div class="bg-white border border-gray-200 rounded-md p-6 space-y-4">
-            <h3 class="text-gray-400 text-xs uppercase my-2">Readings</h3>
+            <h3 class="text-gray-400 text-xs uppercase my-2">Readings <span class="bg-gray-100 text-gray-500 px-2 py-1 rounded">{{ $totalReadings }} total</span></h3>
 
             @if($readings->count() > 0)
                 <table class="min-w-full divide-y divide-gray-100">
@@ -92,19 +107,6 @@
                 <p class="text-gray-500 text-sm">No readings found for this CSA.</p>
             @endif
         </div>
-            <!-- CSA Info Card -->
-        <div class="bg-white rounded-md p-2 space-y-4 border border-gray-200">
-            <x-maps.agent-trail :points="$points" />
-        </div>
-        @php
-            $pointsCount = count($points);
-        @endphp
-
-        @if($pointsCount > 0)
-            <p class="text-xs text-gray-400 uppercase my-4">Showing mapping for the current billing cycle.</p>
-        @else
-            <p class="w-fit py-1.5 px-3 bg-amber-50/70 text-xs text-amber-500 uppercase my-4">No mapping data available for this CSA in the current billing cycle.</p>
-        @endif
 
     </div>
 </x-app-layout>
