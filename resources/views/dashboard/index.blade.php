@@ -233,28 +233,7 @@
                 </div>
             </div>
 
-            <div class="min-h-60 bg-white border rounded-md border-gray-200  px-6 py-4">
-                <p class="text-gray-400 text-xs uppercase my-2">Top performers</p>
-                <div>
-                    @if($topCsas->isEmpty())
-                        <div class="flex flex-col gap-4 items-center justify-center  border border-gray-100 rounded-sm bg-gray-50/70 min-h-60">
-                            <i data-lucide="chart-no-axes-column" class="w-8 h-8 text-gray-300"></i>
-                            <p class="text-gray-400 text-xs">No data available yet</p>
-                        </div>
-                    @else
-                        @php
-                            $labels = $topCsas->map(fn($u) => $u->csa_name)->values();
-                            $counts = $topCsas->map(fn($u) => $u->total_readings)->values();
-                        @endphp
-                       <x-charts.bar-chart
-                            title="Top 5 Users"
-                            dataset-label="Reading Count"
-                            :labels="$labels->toArray()"
-                            :dataset="$counts->toArray()"
-                        />
-                    @endif
-                </div>
-            </div>
+       
             
         </div>
     </div>

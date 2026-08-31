@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\PerformanceController;
 use App\Http\Controllers\Admin\AccountsController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\AdminController;
@@ -61,6 +62,7 @@ use Illuminate\Support\Facades\Route;
         Route::get('/overview', [DashboardController::class, 'index'])->name('dashboard.index');
         Route::get('/supervisor', [DashboardController::class, 'supervisor'])->name('supervisor.index');
         Route::get('/technical', [DashboardController::class, 'technical'])->name('technical.index');
+        Route::get('/performance', [PerformanceController::class, 'index'])->name('performance.index');
 
 
     });
