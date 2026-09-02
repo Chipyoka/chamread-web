@@ -21,8 +21,12 @@
                 </p>
             </div>
 
+          
             @if(in_array(Auth::user()->role, ['ADMIN', 'IT']))
-                @if($readings->total() > 0)
+            @php
+                $r =  method_exists($readings, 'total') ? $readings->total() : $readings->count();
+            @endphp
+                @if($r > 0)
                     <a
                         href="{{ route('readings.meter-readings.export.excel', request()->query()) }}"
                         class="inline-flex items-center px-3 py-2.5 bg-primary text-white text-xs font-medium rounded-md hover:bg-primary/90 transition"
@@ -30,7 +34,7 @@
                         <i data-lucide="file-up" class="w-4 h-4 mr-2"></i>
                         Export Excel
                         <span class="ml-1.5 px-1.5 py-0.5 bg-white/20 rounded-sm text-[10px]">
-                            {{ $readings->total() }}
+                             {{ method_exists($readings, 'total') ? $readings->total() : $readings->count() }}
                         </span>
                     </a>
                 @else

@@ -48,7 +48,7 @@ class DashboardController extends Controller
         $totalBillingCycles = BillingCycle::count();
 
         // Latest billing cycle
-        $currentCycle = BillingCycle::latest()->first();
+        $currentCycle = BillingCycle::where('status', 'active')->first();
 
         /*
         |--------------------------------------------------------------------------
@@ -66,6 +66,8 @@ class DashboardController extends Controller
         $totalAssignedAccounts = 0;
         $readings = [];
         $reportedIssues = 0;
+        $totalFlagged = 0;
+         $flaggedReadings = collect();
 
 
         $read = CustomerAccount::whereExists(function ($query) {
@@ -220,7 +222,7 @@ class DashboardController extends Controller
             $readings = Reading::with([
             'pendingReread',
             ])->where('billing_cycle_id', $currentCycle->id)->paginate(10);
-        }
+        
 
         // Readings that have at least one flag
         $flaggedReadings = Reading::whereHas('flags')
@@ -229,12 +231,15 @@ class DashboardController extends Controller
             ->limit(50)
             ->get();
 
+        }
         // Accounts that have at least one flag
         $flaggedAccounts = CustomerAccount::whereHas('flags')
             ->with('flags')  // eager load flags
             ->latest()
             ->limit(50)
             ->get();
+
+       
 
         $totalAccountsLoaded = CustomerAccount::count();
 
@@ -278,7 +283,7 @@ class DashboardController extends Controller
         $totalBillingCycles = BillingCycle::count();
 
         // Latest billing cycle
-        $currentCycle = BillingCycle::latest()->first();
+        $currentCycle = BillingCycle::where('status', 'active')->first();
 
         /*
         |--------------------------------------------------------------------------
@@ -297,6 +302,11 @@ class DashboardController extends Controller
         $readings = [];
         $totalReRead = 0;
         $accountPendingList = [];
+        $read = 0;
+        $totalReReadCompleted = 0;
+        $totalReReadPending = 0;
+        $accountReadList = [];
+        
 
 
     
@@ -426,7 +436,7 @@ class DashboardController extends Controller
      */
     public function technical()
     {
-        $currentCycle = BillingCycle::latest()->first();
+        $currentCycle = BillingCycle::where('status', 'active')->first();
 
         /*
         |--------------------------------------------------------------------------

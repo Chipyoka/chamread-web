@@ -37,6 +37,13 @@ class AssignmentsController extends Controller
             ], 404);
         }
 
+        if ($currentCycle->status !== 'active') {
+            return response()->json([
+                'success' => false,
+                'message' => 'No active billing cycle found.'
+            ], 404);
+        }
+
         // Get CSA assignments for current billing cycle
         $assignments = CsaAssignment::with(['zone', 'dma'])
             ->where('csa_id', $user->id)

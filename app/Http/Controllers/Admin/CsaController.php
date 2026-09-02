@@ -31,7 +31,7 @@ class CsaController extends Controller
      */
     public function index(Request $request)
     {
-        $currentCycle = BillingCycle::latest()->first();
+        $currentCycle = BillingCycle::where('status', 'active')->first();
 
         $query = User::where('role', 'CSA')
             ->with('activeAssignment.zone')
@@ -416,7 +416,7 @@ class CsaController extends Controller
         $this->ensureCSA($csa);
 
         // Current billing cycle
-        $currentCycle = BillingCycle::latest()->first();
+        $currentCycle = BillingCycle::where('status', 'active')->first();
 
         // Readings
         $readings = $csa->readings()
@@ -505,7 +505,7 @@ class CsaController extends Controller
     {
         $this->ensureCSA($csa);
 
-        $currentCycle = BillingCycle::latest()->first();
+        $currentCycle = BillingCycle::where('status', 'active')->first();
 
         $assignment = CsaAssignment::where('csa_id', $csa->id)
             ->where('status', 'active')

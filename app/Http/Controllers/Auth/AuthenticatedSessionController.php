@@ -24,16 +24,13 @@ class AuthenticatedSessionController extends Controller
 
     {
         // Latest billing cycle
-    $currentCycle = BillingCycle::latest()->first();
+    $currentCycle = BillingCycle::where('status', 'active')->first();
 
-        $read = CustomerAccount::whereExists(function ($query) {
-                    $query->selectRaw(1)
-                        ->from('readings')
-                        ->whereColumn('readings.account_id', 'customer_accounts.id');
-                })->count();
+      
 
 
         $pending = 0;
+        $read = 0;
 
          if ($currentCycle) {
             $assignedZoneIds = CsaAssignment::where(

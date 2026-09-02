@@ -39,7 +39,7 @@ class PerformanceController extends Controller
             $view = 'district';
         }
 
-        $currentCycle = BillingCycle::latest()->first();
+        $currentCycle = BillingCycle::where('status', 'active')->first();
 
         /*
         |--------------------------------------------------------------------------
