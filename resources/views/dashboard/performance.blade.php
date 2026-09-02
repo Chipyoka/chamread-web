@@ -137,7 +137,7 @@
                        <x-charts.underperformers-list
                             title="Below Average By Readings"
                             :rows="$performanceData['data']['belowAverage']"
-                            :averageReadings="$performanceData['data']['averageReadings']"
+                            :averageCompletionRate="$performanceData['data']['averageCompletionRate']"
                         />
                     </div>
                 </div>

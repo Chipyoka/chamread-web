@@ -17,7 +17,7 @@
 @props([
     'title' => null,
     'rows' => [],
-    'averageReadings' => 0,
+    'averageCompletionRate' => 0,
     'unitLabel' => 'readings',
 ])
 
@@ -52,9 +52,10 @@
                             </span>
                         @else
                             <p class="text-sm font-bold text-amber-500">{{ $row->total_readings }} Readings</p>
-                            <p class="text-xxs text-gray-400">
-                                {{ (int) (round((100 - $row->percent_of_average) / 20) * 20) }}% below avg
-                            </p>
+                        <p class="text-xxs text-gray-400">
+                            {{ number_format($row->completion_rate, 1) }}% complete 
+                            <span class="text-red-500">({{ number_format($row->gap, 1) }}% behind average)</span>
+                        </p>
                         @endif
                     </div>
 
@@ -64,6 +65,6 @@
     @endif
 
       <p class="text-xs text-gray-400 mt-4">
-        Cycle average: <span class="font-semibold text-gray-500">{{ $averageReadings }}</span> {{ $unitLabel }}
+        Cycle average: <span class="font-semibold text-gray-500">{{ $averageCompletionRate }}%</span>
       </p>
 </div>
