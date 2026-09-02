@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Exports\MonthlyTemplateExport;
+use App\Exports\MeterReadingsExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 
@@ -162,5 +163,21 @@ return redirect()
 
             return back()->with('error', 'Failed to download template: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Export the monthly template as an Excel file.
+     */
+    public function exportExcel( BillingCycle $billingCycle)
+    {
+        
+        
+        if ($billingCycle->status !== 'closed') {
+            return back()->with('error', 'Failed. Cycle is not closed.');
+        }
+
+        $export = new MeterReadingsExport($billingCycle->id);
+        
+        return Excel::download($export, 'meter_readings_' . date('Y-m-d_His') . '.xlsx');
     }
 }

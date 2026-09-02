@@ -276,6 +276,9 @@ use Illuminate\Support\Facades\Route;
                 Route::get('/download/{billingCycle}', [MonthlyTemplateController::class, 'download'])
                     ->name('download');
 
+                Route::get('/export/{billingCycle}', [MonthlyTemplateController::class, 'exportExcel'])
+                    ->name('export');
+
             });
 
     });

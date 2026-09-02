@@ -89,6 +89,7 @@ class MeterReadingsExport extends StringValueBinder implements
         return [
             'ACCOUNT_NUMBER',
             'CUSTOMER_NAME',
+            'METER_NUMBER',
             'PHONE',
             'ADDRESS',
             'ZONE',
@@ -96,8 +97,6 @@ class MeterReadingsExport extends StringValueBinder implements
             'PREVIOUS_READING',
             'CURRENT_READING',
             'CONSUMPTION',
-            'STATUS',
-            'METER_STATUS',
             'METER_READING_CODE',
             'COMMENT',
             'READING_TIME',
@@ -115,10 +114,14 @@ class MeterReadingsExport extends StringValueBinder implements
     public function map($reading): array
     {
         $consumption = ($reading->current_reading ?? 0) - ($reading->previous_reading ?? 0);
+        $mrc = $reading->code?->code && $reading->code?->name
+            ? $reading->code->code . ' ' . $reading->code->name
+            : '';
 
         return [
             $reading->account->account_number ?? '',
             $reading->account->customer_name ?? '',
+            $reading->account->meter_number ?? '',
             $reading->account->phone ?? '',
             $reading->account->address ?? '',
             $reading->account->zone->name ?? '',
@@ -126,9 +129,7 @@ class MeterReadingsExport extends StringValueBinder implements
             $reading->previous_reading ?? 0,
             $reading->current_reading ?? 0,
             $consumption ?? 0,
-            ucfirst($reading->status),
-            $reading->meter_status ?? '',
-            $reading->code->code  ?? '',
+            $mrc ?? '',
             $reading->comment ?? '',
             $reading->reading_time ? $reading->reading_time : '',
             $reading->csa->name ?? '',

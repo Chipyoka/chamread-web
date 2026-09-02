@@ -173,7 +173,7 @@
             </div>
             <div class="my-4 border-t pt-2 border-gray-100 text-gray-500  flex items-center">
                 <i data-lucide="info" class="mr-2 w-3 h-3"></i>
-                <p class="text-xxs ">Download a reading file of a specific cycle.</p>
+                <p class="text-xxs ">Export a reading file of a specific cycle.</p>
 
             </div>
 
@@ -218,12 +218,12 @@
 
 
                             <a
-                                href="{{ route('management.monthly-template.download',$cycle) }}"
+                                href="{{ route('management.monthly-template.export',$cycle) }}"
                                 class="
                                     text-xs
-                                    bg-blue-50
+                                    bg-primary
                                     flex items-center
-                                    text-primary
+                                    text-blue-50
                                     font-medium
                                     
                                     p-2
@@ -231,7 +231,10 @@
                                 "
                             >
                             <i data-lucide="download" class="w-4 h-4 mr-2"></i>
-                                Download
+                                Export Readings
+                                  <span class="ml-1.5 px-1.5 py-0.5 bg-white/20 rounded-sm text-[10px]">
+                                      {{ $cycle->readings->count() ?? '0' }}
+                                  </span>
                             </a>
 
 
