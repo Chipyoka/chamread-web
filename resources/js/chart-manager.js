@@ -12,6 +12,8 @@
  *  - defers initialization until the canvas actually has non-zero
  *    width/height (fixes charts inside hidden tabs/accordions/etc.)
  *  - watches the DOM for canvases added after initial page load
+ *  - resolves declarative gradient markers into real CanvasGradients
+ *    (since gradients need a live 2D context and can't be pure JSON)
  */
 
 import Chart from 'chart.js/auto';
@@ -35,6 +37,50 @@ function destroyIfExists(canvas) {
 function hasSize(el) {
     const rect = el.getBoundingClientRect();
     return rect.width > 0 && rect.height > 0;
+}
+
+/**
+ * Resolve `{ "__gradient__": { "from": "...", "to": "...", "direction": "vertical" | "horizontal" } }`
+ * markers anywhere in the config tree into real CanvasGradient objects.
+ *
+ * Declarative usage in a Blade component's data-chart-config JSON:
+ *   'backgroundColor' => ['__gradient__' => ['from' => 'rgba(37,99,235,0.35)', 'to' => 'rgba(37,99,235,0)']]
+ *
+ * Direction defaults to 'vertical' (top-to-bottom), which is what a
+ * standard "line chart with fill" gradient wants. 'horizontal' is
+ * supported for anything that needs a left-to-right gradient later.
+ *
+ * Sized against the canvas's current pixel dimensions at build time -
+ * this does not re-run on resize, which is an acceptable trade-off for
+ * dashboard charts that don't get dragged/resized live.
+ */
+function resolveGradients(ctx, canvas, node) {
+    if (Array.isArray(node)) {
+        node.forEach((item) => resolveGradients(ctx, canvas, item));
+        return;
+    }
+
+    if (!node || typeof node !== 'object') return;
+
+    Object.keys(node).forEach((key) => {
+        const value = node[key];
+
+        if (value && typeof value === 'object' && value.__gradient__) {
+            const { from, to, direction = 'vertical' } = value.__gradient__;
+
+            const gradient = direction === 'horizontal'
+                ? ctx.createLinearGradient(0, 0, canvas.width, 0)
+                : ctx.createLinearGradient(0, 0, 0, canvas.height);
+
+            gradient.addColorStop(0, from);
+            gradient.addColorStop(1, to);
+
+            node[key] = gradient;
+            return;
+        }
+
+        resolveGradients(ctx, canvas, value);
+    });
 }
 
 function buildChart(canvas) {
@@ -73,6 +119,10 @@ function buildChart(canvas) {
         console.error(`[chart-manager] Could not get 2D context for canvas #${canvas.id}`);
         return;
     }
+
+    // Turn any { "__gradient__": {...} } markers into real CanvasGradients
+    // now that we have a live ctx + sized canvas to build them against.
+    resolveGradients(ctx, canvas, config.data);
 
     const chart = new Chart(ctx, { type, ...config });
 

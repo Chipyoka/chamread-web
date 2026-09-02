@@ -50,10 +50,12 @@ class PerformanceController extends Controller
             'currentCycle' => $currentCycle,
             'view' => $view,
             'data' => $view === 'district' ? $this->emptyDistrictData() : $this->emptyCsaData(),
+            'activity' => ['labels' => [], 'data' => []],
         ];
 
         if ($currentCycle) {
             $recentUploads = $this->recentUploads($currentCycle);
+            $performanceData['activity'] = $this->uploadActivity($currentCycle);
 
             if ($view === 'district') {
                 $assignedZoneIds = CsaAssignment::where(
@@ -75,127 +77,165 @@ class PerformanceController extends Controller
     | District Metrics
     |--------------------------------------------------------------------------
     */
-private function districtPerformance(BillingCycle $currentCycle, Collection $assignedZoneIds, Collection $recentUploads): array
-{
-    /*
-    |--------------------------------------------------------------------------
-    | Top 5 Districts By Readings
-    |--------------------------------------------------------------------------
-    */
-    $topByReadings = Reading::join('customer_accounts', 'customer_accounts.id', '=', 'readings.account_id')
-        ->join('zones', 'zones.id', '=', 'customer_accounts.zone_id')
-        ->where('readings.billing_cycle_id', $currentCycle->id)
-        ->select('zones.district', DB::raw('COUNT(*) as total_readings'))
-        ->groupBy('zones.district')
-        ->orderByDesc('total_readings')
-        ->take(5)
-        ->get();
+    private function districtPerformance(BillingCycle $currentCycle, Collection $assignedZoneIds, Collection $recentUploads): array
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | Top 5 Districts By Readings
+        |--------------------------------------------------------------------------
+        */
+        $topByReadings = Reading::join('customer_accounts', 'customer_accounts.id', '=', 'readings.account_id')
+            ->join('zones', 'zones.id', '=', 'customer_accounts.zone_id')
+            ->where('readings.billing_cycle_id', $currentCycle->id)
+            ->select('zones.district', DB::raw('COUNT(*) as total_readings'))
+            ->groupBy('zones.district')
+            ->orderByDesc('total_readings')
+            ->take(5)
+            ->get();
 
-    /*
-    |--------------------------------------------------------------------------
-    | Near Completion (Assigned vs Read)
-    |--------------------------------------------------------------------------
-    */
-    $assignedByDistrict = CustomerAccount::join('zones', 'zones.id', '=', 'customer_accounts.zone_id')
-        ->whereIn('customer_accounts.zone_id', $assignedZoneIds)
-        ->select('zones.district', DB::raw('COUNT(*) as total_assigned'))
-        ->groupBy('zones.district')
-        ->pluck('total_assigned', 'zones.district');
+        /*
+        |--------------------------------------------------------------------------
+        | Near Completion (Assigned vs Read)
+        |--------------------------------------------------------------------------
+        */
+        $assignedByDistrict = CustomerAccount::join('zones', 'zones.id', '=', 'customer_accounts.zone_id')
+            ->whereIn('customer_accounts.zone_id', $assignedZoneIds)
+            ->select('zones.district', DB::raw('COUNT(*) as total_assigned'))
+            ->groupBy('zones.district')
+            ->pluck('total_assigned', 'zones.district');
 
-    $readByDistrict = CustomerAccount::join('zones', 'zones.id', '=', 'customer_accounts.zone_id')
-        ->whereIn('customer_accounts.zone_id', $assignedZoneIds)
-        ->whereExists(function ($query) {
-            $query->selectRaw(1)
-                ->from('readings')
-                ->whereColumn('readings.account_id', 'customer_accounts.id');
-        })
-        ->select('zones.district', DB::raw('COUNT(*) as total_read'))
-        ->groupBy('zones.district')
-        ->pluck('total_read', 'zones.district');
+        $readByDistrict = CustomerAccount::join('zones', 'zones.id', '=', 'customer_accounts.zone_id')
+            ->whereIn('customer_accounts.zone_id', $assignedZoneIds)
+            ->whereExists(function ($query) {
+                $query->selectRaw(1)
+                    ->from('readings')
+                    ->whereColumn('readings.account_id', 'customer_accounts.id');
+            })
+            ->select('zones.district', DB::raw('COUNT(*) as total_read'))
+            ->groupBy('zones.district')
+            ->pluck('total_read', 'zones.district');
 
-    $nearCompletion = $assignedByDistrict->map(function ($assigned, $district) use ($readByDistrict) {
-        $read = $readByDistrict[$district] ?? 0;
+        $nearCompletion = $assignedByDistrict->map(function ($assigned, $district) use ($readByDistrict) {
+            $read = $readByDistrict[$district] ?? 0;
 
-        return (object) [
-            'district' => $district,
-            'assigned' => $assigned,
-            'read' => $read,
-            'completion_rate' => $assigned > 0 ? round(($read / $assigned) * 100, 2) : 0,
+            return (object) [
+                'district' => $district,
+                'assigned' => $assigned,
+                'read' => $read,
+                'completion_rate' => $assigned > 0 ? round(($read / $assigned) * 100, 2) : 0,
+            ];
+        })->sortByDesc('completion_rate')->values();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Most Technical Issues
+        |--------------------------------------------------------------------------
+        */
+        $mostTechnical = Reading::join('customer_accounts', 'customer_accounts.id', '=', 'readings.account_id')
+            ->join('zones', 'zones.id', '=', 'customer_accounts.zone_id')
+            ->where('readings.billing_cycle_id', $currentCycle->id)
+            ->whereIn('readings.this_month_code', $this->technicalCodes)
+            ->select('zones.district', DB::raw('COUNT(*) as total_technical'))
+            ->groupBy('zones.district')
+            ->orderByDesc('total_technical')
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Most Flagged (Accounts + Readings)
+        |--------------------------------------------------------------------------
+        */
+        $flaggedAccountsByDistrict = CustomerAccount::join('zones', 'zones.id', '=', 'customer_accounts.zone_id')
+            ->whereIn('customer_accounts.zone_id', $assignedZoneIds)
+            ->whereHas('flags', fn ($q) => $q->active())
+            ->select('zones.district', DB::raw('COUNT(DISTINCT customer_accounts.id) as flagged_accounts'))
+            ->groupBy('zones.district')
+            ->pluck('flagged_accounts', 'zones.district');
+
+        $flaggedReadingsByDistrict = Reading::join('customer_accounts', 'customer_accounts.id', '=', 'readings.account_id')
+            ->join('zones', 'zones.id', '=', 'customer_accounts.zone_id')
+            ->where('readings.billing_cycle_id', $currentCycle->id)
+            ->whereHas('flags', fn ($q) => $q->active())
+            ->select('zones.district', DB::raw('COUNT(DISTINCT readings.id) as flagged_readings'))
+            ->groupBy('zones.district')
+            ->pluck('flagged_readings', 'zones.district');
+
+        $mostFlagged = $flaggedAccountsByDistrict->keys()
+            ->merge($flaggedReadingsByDistrict->keys())
+            ->unique()
+            ->map(fn ($district) => (object) [
+                'district' => $district,
+                'flagged_accounts' => $flaggedAccountsByDistrict[$district] ?? 0,
+                'flagged_readings' => $flaggedReadingsByDistrict[$district] ?? 0,
+            ])
+            ->sortByDesc(fn ($row) => $row->flagged_accounts + $row->flagged_readings)
+            ->values();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Field Issues (via reporter -> activeAssignment -> zone -> district)
+        |--------------------------------------------------------------------------
+        */
+        $fieldIssues = CustomerAccountIssue::with('reporter.activeAssignment.zone')
+            ->where('created_at', '>=', $currentCycle->start_date)
+            ->get();
+
+        $fieldIssuesByDistrict = $fieldIssues
+            ->groupBy(fn ($issue) => $issue->reporter?->activeAssignment?->zone?->district ?? 'Unknown')
+            ->map(fn ($group, $district) => (object) [
+                'district' => $district,
+                'total_issues' => $group->count(),
+            ])
+            ->sortByDesc('total_issues')
+            ->values();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Below Average By Readings (Underperforming Districts)
+        |--------------------------------------------------------------------------
+        | Uses left joins so districts with ZERO readings still show up -
+        | the other queries above only see districts that already have at
+        | least one reading, which would hide the worst offenders entirely.
+        */
+        $districtReadingCounts = Zone::whereIn('zones.id', $assignedZoneIds)
+            ->leftJoin('customer_accounts', 'customer_accounts.zone_id', '=', 'zones.id')
+            ->leftJoin('readings', function ($join) use ($currentCycle) {
+                $join->on('readings.account_id', '=', 'customer_accounts.id')
+                    ->where('readings.billing_cycle_id', $currentCycle->id);
+            })
+            ->select('zones.district', DB::raw('COUNT(readings.id) as total_readings'))
+            ->groupBy('zones.district')
+            ->get();
+
+        $districtAverageReadings = round($districtReadingCounts->avg('total_readings') ?? 0, 2);
+
+        $belowAverageDistricts = $districtReadingCounts
+            ->filter(fn ($row) => $row->total_readings < $districtAverageReadings)
+            ->sortBy('total_readings')
+            ->take(10)
+            ->values()
+            ->map(function ($row, $index) use ($districtAverageReadings) {
+                $row->name = $row->district;
+                $row->rank = $index + 1;
+                $row->gap = round($districtAverageReadings - $row->total_readings, 2);
+                $row->percent_of_average = $districtAverageReadings > 0
+                    ? round(($row->total_readings / $districtAverageReadings) * 100)
+                    : 0;
+
+                return $row;
+            });
+
+        return [
+            'topByReadings' => $topByReadings,
+            'nearCompletion' => $nearCompletion,
+            'mostTechnical' => $mostTechnical,
+            'mostFlagged' => $mostFlagged,
+            'recentUploads' => $recentUploads,
+            'fieldIssues' => $fieldIssuesByDistrict,
+            'belowAverage' => $belowAverageDistricts,
+            'averageReadings' => $districtAverageReadings,
         ];
-    })->sortByDesc('completion_rate')->values();
-
-    /*
-    |--------------------------------------------------------------------------
-    | Most Technical Issues
-    |--------------------------------------------------------------------------
-    */
-    $mostTechnical = Reading::join('customer_accounts', 'customer_accounts.id', '=', 'readings.account_id')
-        ->join('zones', 'zones.id', '=', 'customer_accounts.zone_id')
-        ->where('readings.billing_cycle_id', $currentCycle->id)
-        ->whereIn('readings.this_month_code', $this->technicalCodes)
-        ->select('zones.district', DB::raw('COUNT(*) as total_technical'))
-        ->groupBy('zones.district')
-        ->orderByDesc('total_technical')
-        ->get();
-
-    /*
-    |--------------------------------------------------------------------------
-    | Most Flagged (Accounts + Readings)
-    |--------------------------------------------------------------------------
-    */
-    $flaggedAccountsByDistrict = CustomerAccount::join('zones', 'zones.id', '=', 'customer_accounts.zone_id')
-        ->whereIn('customer_accounts.zone_id', $assignedZoneIds)
-        ->whereHas('flags', fn ($q) => $q->active())
-        ->select('zones.district', DB::raw('COUNT(DISTINCT customer_accounts.id) as flagged_accounts'))
-        ->groupBy('zones.district')
-        ->pluck('flagged_accounts', 'zones.district');
-
-    $flaggedReadingsByDistrict = Reading::join('customer_accounts', 'customer_accounts.id', '=', 'readings.account_id')
-        ->join('zones', 'zones.id', '=', 'customer_accounts.zone_id')
-        ->where('readings.billing_cycle_id', $currentCycle->id)
-        ->whereHas('flags', fn ($q) => $q->active())
-        ->select('zones.district', DB::raw('COUNT(DISTINCT readings.id) as flagged_readings'))
-        ->groupBy('zones.district')
-        ->pluck('flagged_readings', 'zones.district');
-
-    $mostFlagged = $flaggedAccountsByDistrict->keys()
-        ->merge($flaggedReadingsByDistrict->keys())
-        ->unique()
-        ->map(fn ($district) => (object) [
-            'district' => $district,
-            'flagged_accounts' => $flaggedAccountsByDistrict[$district] ?? 0,
-            'flagged_readings' => $flaggedReadingsByDistrict[$district] ?? 0,
-        ])
-        ->sortByDesc(fn ($row) => $row->flagged_accounts + $row->flagged_readings)
-        ->values();
-
-    /*
-    |--------------------------------------------------------------------------
-    | Field Issues (via reporter -> activeAssignment -> zone -> district)
-    |--------------------------------------------------------------------------
-    */
-    $fieldIssues = CustomerAccountIssue::with('reporter.activeAssignment.zone')
-        ->where('created_at', '>=', $currentCycle->start_date)
-        ->get();
-
-    $fieldIssuesByDistrict = $fieldIssues
-        ->groupBy(fn ($issue) => $issue->reporter?->activeAssignment?->zone?->district ?? 'Unknown')
-        ->map(fn ($group, $district) => (object) [
-            'district' => $district,
-            'total_issues' => $group->count(),
-        ])
-        ->sortByDesc('total_issues')
-        ->values();
-
-    return [
-        'topByReadings' => $topByReadings,
-        'nearCompletion' => $nearCompletion,
-        'mostTechnical' => $mostTechnical,
-        'mostFlagged' => $mostFlagged,
-        'recentUploads' => $recentUploads,
-        'fieldIssues' => $fieldIssuesByDistrict,
-    ];
-}
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -310,6 +350,42 @@ private function districtPerformance(BillingCycle $currentCycle, Collection $ass
             ->sortByDesc('total_issues')
             ->values();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Below Average By Readings (Underperforming CSAs)
+        |--------------------------------------------------------------------------
+        | Uses a left join so CSAs assigned this cycle with ZERO readings
+        | still show up, instead of only ranking CSAs who already read at
+        | least one account.
+        */
+        $csaReadingCounts = CsaAssignment::where('csa_assignments.billing_cycle_id', $currentCycle->id)
+            ->leftJoin('readings', function ($join) use ($currentCycle) {
+                $join->on('readings.csa_id', '=', 'csa_assignments.csa_id')
+                    ->where('readings.billing_cycle_id', $currentCycle->id);
+            })
+            ->select('csa_assignments.csa_id', DB::raw('COUNT(readings.id) as total_readings'))
+            ->groupBy('csa_assignments.csa_id')
+            ->get()
+            ->map(fn ($row) => $this->withCsaName($row));
+
+        $csaAverageReadings = round($csaReadingCounts->avg('total_readings') ?? 0, 2);
+
+        $belowAverageCsas = $csaReadingCounts
+            ->filter(fn ($row) => $row->total_readings < $csaAverageReadings)
+            ->sortBy('total_readings')
+            ->take(10)
+            ->values()
+            ->map(function ($row, $index) use ($csaAverageReadings) {
+                $row->name = $row->csa_name;
+                $row->rank = $index + 1;
+                $row->gap = round($csaAverageReadings - $row->total_readings, 2);
+                $row->percent_of_average = $csaAverageReadings > 0
+                    ? round(($row->total_readings / $csaAverageReadings) * 100)
+                    : 0;
+
+                return $row;
+            });
+
         return [
             'topByReadings' => $topByReadings,
             'nearCompletion' => $nearCompletion,
@@ -317,6 +393,8 @@ private function districtPerformance(BillingCycle $currentCycle, Collection $ass
             'mostFlagged' => $mostFlagged,
             'recentUploads' => $recentUploads,
             'fieldIssues' => $fieldIssues,
+            'belowAverage' => $belowAverageCsas,
+            'averageReadings' => $csaAverageReadings,
         ];
     }
 
@@ -348,6 +426,30 @@ private function districtPerformance(BillingCycle $currentCycle, Collection $ass
             });
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Upload Activity - readings synced per day, last 14 calendar days
+    | to date (rolling window, independent of the district/CSA view and
+    | of the current cycle's own start/end dates).
+    |--------------------------------------------------------------------------
+    */
+    private function uploadActivity(BillingCycle $currentCycle): array
+    {
+        $days = collect(range(13, 0))->map(fn ($i) => now()->subDays($i)->toDateString());
+
+        $counts = Reading::where('billing_cycle_id', $currentCycle->id)
+            ->whereNotNull('synced_at')
+            ->whereDate('synced_at', '>=', now()->subDays(13)->startOfDay())
+            ->select(DB::raw('DATE(synced_at) as upload_date'), DB::raw('COUNT(*) as total'))
+            ->groupBy('upload_date')
+            ->pluck('total', 'upload_date');
+
+        return [
+            'labels' => $days->map(fn ($d) => \Carbon\Carbon::parse($d)->format('d M'))->values()->toArray(),
+            'data' => $days->map(fn ($d) => $counts[$d] ?? 0)->values()->toArray(),
+        ];
+    }
+
     /**
      * Attach a csa_name to any row/object that carries a csa_id,
      * mirroring the manual User::find() lookup pattern already used
@@ -370,6 +472,8 @@ private function districtPerformance(BillingCycle $currentCycle, Collection $ass
             'mostFlagged' => collect(),
             'recentUploads' => collect(),
             'fieldIssues' => collect(),
+            'belowAverage' => collect(),
+            'averageReadings' => 0,
         ];
     }
 
@@ -382,6 +486,8 @@ private function districtPerformance(BillingCycle $currentCycle, Collection $ass
             'mostFlagged' => collect(),
             'recentUploads' => collect(),
             'fieldIssues' => collect(),
+            'belowAverage' => collect(),
+            'averageReadings' => 0,
         ];
     }
 }

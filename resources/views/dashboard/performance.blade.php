@@ -60,7 +60,11 @@
                     </div>
                 </div>
 
+                <!-- ------------------------------------- -->
                 <!-- Top 5 by Readings -->
+                <p class="text-gray-400 text-xs uppercase my-2">
+                    Readings
+                </p>
                 <div class="bg-white border rounded-md border-gray-200 px-6 py-4">
                     <p class="text-gray-400 text-xs uppercase my-2">
                         Top 5 {{ ucfirst($view) }}{{ $view === 'district' ? 's' : '' }} by Readings
@@ -90,42 +94,59 @@
                             />
                         @endif
                     </div>
-                </div>
 
-                <!-- Near Completion -->
-                <div class="bg-white border rounded-md border-gray-200 px-6 py-4">
-                    <p class="text-gray-400 text-xs uppercase my-2">
-                        Near Completion - {{ ucfirst($view) }}{{ $view === 'district' ? 's' : '' }}
-                    </p>
-                    <div>
-                        @if($data['nearCompletion']->isEmpty())
-                            <div class="flex flex-col gap-4 items-center justify-center border border-gray-100 rounded-sm bg-gray-50/70 min-h-60">
-                                <i data-lucide="chart-no-axes-column" class="w-8 h-8 text-gray-300"></i>
-                                <p class="text-gray-400 text-xs">No data available yet</p>
-                            </div>
-                        @else
-                            @php
-                                $labels = $data['nearCompletion']->map(function($item) use ($view) {
-                                    return $view === 'district' ? $item->district : $item->csa_name;
-                                })->values();
-                                $percentages = $data['nearCompletion']->map(function($item) {
-                                    return $item->completion_rate;
-                                })->values();
-                            @endphp
-                            <x-charts.bar-chart
-                                :labels="$labels->toArray()"
-                                :dataset="$percentages->toArray()"
-                                dataset-label="Completion Rate"
-                                tooltip-label="Completion Rate (%)"
-                                show-percentage="true"
-                                tooltip-label="Completion Rate (%)"
-                                backgroundColor="rgb(74 222 128)"
-                                monochromatic="true"
-                            />
-                        @endif
+                    <!-- Near Completion -->
+                    <div class="mt-6">
+                        <p class="text-gray-400 text-xs uppercase my-2">
+                            Near Completion - {{ ucfirst($view) }}{{ $view === 'district' ? 's' : '' }}
+                        </p>
+                        <div>
+                            @if($data['nearCompletion']->isEmpty())
+                                <div class="flex flex-col gap-4 items-center justify-center border border-gray-100 rounded-sm bg-gray-50/70 min-h-60">
+                                    <i data-lucide="chart-no-axes-column" class="w-8 h-8 text-gray-300"></i>
+                                    <p class="text-gray-400 text-xs">No data available yet</p>
+                                </div>
+                            @else
+                                @php
+                                    $labels = $data['nearCompletion']->map(function($item) use ($view) {
+                                        return $view === 'district' ? $item->district : $item->csa_name;
+                                    })->values();
+                                    $percentages = $data['nearCompletion']->map(function($item) {
+                                        return $item->completion_rate;
+                                    })->values();
+                                @endphp
+                                <x-charts.bar-chart
+                                    :labels="$labels->toArray()"
+                                    :dataset="$percentages->toArray()"
+                                    dataset-label="Completion Rate"
+                                    tooltip-label="Completion Rate (%)"
+                                    show-percentage="true"
+                                    tooltip-label="Completion Rate (%)"
+                                    backgroundColor="rgb(74 222 128)"
+                                    monochromatic="true"
+                                />
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Below Average -->
+                    <div class="mt-6">
+                        <p class="text-gray-400 text-xs uppercase my-2">
+                            Below Average - {{ ucfirst($view) }}{{ $view === 'district' ? 's' : '' }}
+                        </p>
+                       <x-charts.underperformers-list
+                            title="Below Average By Readings"
+                            :rows="$performanceData['data']['belowAverage']"
+                            :averageReadings="$performanceData['data']['averageReadings']"
+                        />
                     </div>
                 </div>
 
+                <!-- ------------------------------------- -->
+            
+                <p class="text-gray-400 text-xs uppercase my-2">
+                    Cases and Issues
+                </p>
                 <!-- Most Technical Issues -->
                 <div class="bg-white border rounded-md border-gray-200 px-6 py-4">
                     <p class="text-gray-400 text-xs uppercase my-2">
@@ -154,111 +175,128 @@
                             />
                         @endif
                     </div>
-                </div>
-
-                <!-- Most Flagged (Grouped Bar Chart) -->
-                <div class="bg-white border rounded-md border-gray-200 px-6 py-4">
-                    <p class="text-gray-400 text-xs uppercase my-2">
-                        Most Flagged
-                    </p>
-                    <div>
-                        @if($data['mostFlagged']->isEmpty())
-                            <div class="flex flex-col gap-4 items-center justify-center border border-gray-100 rounded-sm bg-gray-50/70 min-h-60">
-                                <i data-lucide="chart-no-axes-column" class="w-8 h-8 text-gray-300"></i>
-                                <p class="text-gray-400 text-xs">No data available yet</p>
-                            </div>
-                        @else
-                            @php
-                                $labels = $data['mostFlagged']->map(function($item) use ($view) {
-                                    return $view === 'district' ? $item->district : $item->csa_name;
-                                })->values();
-                                $flaggedAccounts = $data['mostFlagged']->map(function($item) {
-                                    return $item->flagged_accounts;
-                                })->values();
-                                $flaggedReadings = $data['mostFlagged']->map(function($item) {
-                                    return $item->flagged_readings;
-                                })->values();
-                            @endphp
-                            <div class="relative bg-gray-50/70 rounded-sm h-60 py-2">
-                                <canvas
-                                    data-chart-type="bar"
-                                    data-chart-config="{{ json_encode([
-                                        'data' => [
-                                            'labels' => $labels->toArray(),
-                                            'datasets' => [
-                                                [
-                                                    'label' => 'Flagged Accounts',
-                                                    'data' => $flaggedAccounts->toArray(),
-                                                    'borderWidth' => 0,
-                                                    'backgroundColor' => 'rgb(245 158 11 / 0.7)',
-                                                ],
-                                                [
-                                                    'label' => 'Flagged Readings',
-                                                    'data' => $flaggedReadings->toArray(),
-                                                    'borderWidth' => 0,
-                                                    'backgroundColor' => 'rgb(25 139 206 / 0.6)',
-                                                ],
-                                            ],
-                                        ],
-                                        'options' => [
-                                            'responsive' => true,
-                                            'maintainAspectRatio' => false,
-                                            'plugins' => [
-                                                'legend' => ['position' => 'bottom'],
-                                            ],
-                                            'scales' => [
-                                                'x' => [
-                                                    'beginAtZero' => true,
-                                                    'grid' => ['display' => false, 'drawBorder' => false, 'z' => -1],
-                                                    'border' => ['display' => false],
-                                                ],
-                                                'y' => [
-                                                    'beginAtZero' => true,
-                                                    'grid' => ['display' => false, 'drawBorder' => false, 'z' => -1],
-                                                    'border' => ['display' => false],
+                    <!-- Most Flagged (Grouped Bar Chart) -->
+                    <div class="mt-6">
+                        <p class="text-gray-400 text-xs uppercase my-2">
+                            Most Flagged
+                        </p>
+                        <div>
+                            @if($data['mostFlagged']->isEmpty())
+                                <div class="flex flex-col gap-4 items-center justify-center border border-gray-100 rounded-sm bg-gray-50/70 min-h-60">
+                                    <i data-lucide="chart-no-axes-column" class="w-8 h-8 text-gray-300"></i>
+                                    <p class="text-gray-400 text-xs">No data available yet</p>
+                                </div>
+                            @else
+                                @php
+                                    $labels = $data['mostFlagged']->map(function($item) use ($view) {
+                                        return $view === 'district' ? $item->district : $item->csa_name;
+                                    })->values();
+                                    $flaggedAccounts = $data['mostFlagged']->map(function($item) {
+                                        return $item->flagged_accounts;
+                                    })->values();
+                                    $flaggedReadings = $data['mostFlagged']->map(function($item) {
+                                        return $item->flagged_readings;
+                                    })->values();
+                                @endphp
+                                <div class="relative bg-gray-50/70 rounded-sm h-60 py-2">
+                                    <canvas
+                                        data-chart-type="bar"
+                                        data-chart-config="{{ json_encode([
+                                            'data' => [
+                                                'labels' => $labels->toArray(),
+                                                'datasets' => [
+                                                    [
+                                                        'label' => 'Flagged Accounts',
+                                                        'data' => $flaggedAccounts->toArray(),
+                                                        'borderWidth' => 0,
+                                                        'backgroundColor' => 'rgb(245 158 11 / 0.7)',
+                                                    ],
+                                                    [
+                                                        'label' => 'Flagged Readings',
+                                                        'data' => $flaggedReadings->toArray(),
+                                                        'borderWidth' => 0,
+                                                        'backgroundColor' => 'rgb(25 139 206 / 0.6)',
+                                                    ],
                                                 ],
                                             ],
-                                        ],
-                                    ]) }}"
-                                ></canvas>
-                            </div>
-                        @endif
+                                            'options' => [
+                                                'responsive' => true,
+                                                'maintainAspectRatio' => false,
+                                                'plugins' => [
+                                                    'legend' => ['position' => 'bottom'],
+                                                ],
+                                                'scales' => [
+                                                    'x' => [
+                                                        'beginAtZero' => true,
+                                                        'grid' => ['display' => false, 'drawBorder' => false, 'z' => -1],
+                                                        'border' => ['display' => false],
+                                                    ],
+                                                    'y' => [
+                                                        'beginAtZero' => true,
+                                                        'grid' => ['display' => false, 'drawBorder' => false, 'z' => -1],
+                                                        'border' => ['display' => false],
+                                                    ],
+                                                ],
+                                            ],
+                                        ]) }}"
+                                    ></canvas>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+    
+                    <!-- Field Issues -->
+                    <div class="mt-6">
+                        <p class="text-gray-400 text-xs uppercase my-2">
+                            Field Issues Reported
+                        </p>
+                        <div>
+                            @if($data['fieldIssues']->isEmpty())
+                                <div class="flex flex-col gap-4 items-center justify-center border border-gray-100 rounded-sm bg-gray-50/70 min-h-60">
+                                    <i data-lucide="chart-no-axes-column" class="w-8 h-8 text-gray-300"></i>
+                                    <p class="text-gray-400 text-xs">No data available yet</p>
+                                </div>
+                            @else
+                                @php
+                                    $labels = $data['fieldIssues']->map(function($item) use ($view) {
+                                        return $view === 'district' ? $item->district : $item->csa_name;
+                                    })->values();
+                                    $counts = $data['fieldIssues']->map(function($item) {
+                                        return $item->total_issues;
+                                    })->values();
+                                @endphp
+                                <x-charts.bar-chart
+                                    title="Field Issues"
+                                    dataset-label="Issues Reported"
+                                    :labels="$labels->toArray()"
+                                    :dataset="$counts->toArray()"
+                                    tooltip-label="Total Issues"
+                                />
+                            @endif
+                        </div>
                     </div>
                 </div>
 
-                <!-- Field Issues -->
-                <div class="bg-white border rounded-md border-gray-200 px-6 py-4">
-                    <p class="text-gray-400 text-xs uppercase my-2">
-                        Field Issues Reported
-                    </p>
-                    <div>
-                        @if($data['fieldIssues']->isEmpty())
-                            <div class="flex flex-col gap-4 items-center justify-center border border-gray-100 rounded-sm bg-gray-50/70 min-h-60">
-                                <i data-lucide="chart-no-axes-column" class="w-8 h-8 text-gray-300"></i>
-                                <p class="text-gray-400 text-xs">No data available yet</p>
-                            </div>
-                        @else
-                            @php
-                                $labels = $data['fieldIssues']->map(function($item) use ($view) {
-                                    return $view === 'district' ? $item->district : $item->csa_name;
-                                })->values();
-                                $counts = $data['fieldIssues']->map(function($item) {
-                                    return $item->total_issues;
-                                })->values();
-                            @endphp
-                            <x-charts.bar-chart
-                                title="Field Issues"
-                                dataset-label="Issues Reported"
-                                :labels="$labels->toArray()"
-                                :dataset="$counts->toArray()"
-                                tooltip-label="Total Issues"
-                            />
-                        @endif
-                    </div>
-                </div>
-
+                <!-- ------------------------------------- -->
                 <!-- Recent Uploads Table -->
+                <p class="text-gray-400 text-xs uppercase my-2">upload Activity</p>
                 <div class="bg-white border rounded-md border-gray-200 px-6 py-4">
+
+                  <!-- Upload activity -->
+                    <div class="my-6">
+                        <p class="text-gray-400 text-xs uppercase my-2">
+                            Last 14 Days
+                        </p>
+                        <div>
+                     
+                               <x-charts.activity-line-chart
+                                    title="Readings Uploaded (Last 14 Days)"
+                                    :labels="$performanceData['activity']['labels']"
+                                    :dataset="$performanceData['activity']['data']"
+                                />
+                        </div>
+                    </div>
+
                     <p class="text-gray-400 text-xs uppercase my-2">Recent Uploads</p>
                     <div>
                         @if($data['recentUploads']->isEmpty())
@@ -299,6 +337,8 @@
                             </div>
                         @endif
                     </div>
+
+                    
                 </div>
 
             </div>
