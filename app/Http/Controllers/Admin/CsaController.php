@@ -13,6 +13,7 @@ use App\Models\BillingCycle;
 use App\Models\CsaAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 use App\Services\AuditLogService;
 
@@ -579,6 +580,89 @@ class CsaController extends Controller
 
         return view('readings.csa.accounts', compact('accounts', 'csa', 'totalAssigned', 'totalPending', 'totalRead'));
     }
+
+
+    public function downloadPending(User $csa)
+{
+    $this->ensureCSA($csa);
+
+    $currentCycle = BillingCycle::where('status', 'active')->first();
+    abort_unless($currentCycle, 404, 'No active billing cycle.');
+
+    $assignment = CsaAssignment::where('csa_id', $csa->id)
+        ->where('status', 'active')
+        ->first();
+
+    abort_unless($assignment, 404, 'No active assignment for this CSA.');
+
+    $target = $assignment->target ?? 0;
+
+    // Same fixed set of assigned account IDs as assignedAccounts()
+    $accountIds = CustomerAccount::where('zone_id', $assignment->zone_id)
+        ->orderBy('id')
+        ->take($target)
+        ->pluck('id');
+
+    $filename = Str::slug($csa->name, '_') . '_' . now()->format('Ymd_His') . '.csv';
+
+    $headers = [
+        'Content-Type'        => 'text/csv',
+        'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        'Pragma'              => 'no-cache',
+        'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+        'Expires'             => '0',
+    ];
+
+    $columns = [
+        'ACCOUNT_NUMBER',
+        'CUSTOMER_NAME',
+        'ADDRESS',
+        'PHONE',
+        'METER_NUMBER',
+        'CUSTOMER_CATEGORY',
+        'ZONE',
+    ];
+
+    $callback = function () use ($accountIds, $currentCycle, $columns) {
+        $handle = fopen('php://output', 'w');
+
+        // BOM so Excel opens UTF-8 correctly (names/addresses may have special chars)
+        fwrite($handle, "\xEF\xBB\xBF");
+
+        fputcsv($handle, $columns);
+
+        CustomerAccount::query()
+            ->whereIn('customer_accounts.id', $accountIds)
+            ->leftJoin('readings', function ($join) use ($currentCycle) {
+                $join->on('readings.account_id', '=', 'customer_accounts.id')
+                    ->where('readings.billing_cycle_id', '=', $currentCycle->id);
+            })
+            ->select('customer_accounts.*')
+            ->selectRaw("COALESCE(readings.status, 'NOT_READ') as read_status")
+            ->where(function ($q) {
+                $q->whereNull('readings.status')
+                    ->orWhere('readings.status', 'NOT_READ');
+            })
+            ->orderBy('customer_accounts.id')
+            ->chunkById(500, function ($accounts) use ($handle) {
+                foreach ($accounts as $account) {
+                    fputcsv($handle, [
+                        $account->account_number,
+                        $account->customer_name,
+                        $account->address,
+                        $account->phone,
+                        $account->meter_number,
+                        $account->customer_category,
+                        $account->zone->name ?? 'N/A',
+                    ]);
+                }
+            }, 'customer_accounts.id', 'id');
+
+        fclose($handle);
+    };
+
+    return response()->stream($callback, 200, $headers);
+}
 
     /**
      * Ensure user is CSA

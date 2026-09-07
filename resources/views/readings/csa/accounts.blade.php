@@ -84,6 +84,17 @@
                     </div>
                 </div>
             </div>
+            <div class="flex justify-end mt-4">
+                <x-micro-button
+                    
+                    href="{{ route('readings.csas.accounts.pending.download', $csa) }}"
+                    icon="download"
+                    color="amber"
+                    size="sm"
+                >
+                    Download Pending Accounts
+                </x-micro-button>
+            </div>
         </div>
 
         <!-- Table -->

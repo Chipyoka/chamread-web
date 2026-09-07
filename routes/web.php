@@ -106,6 +106,7 @@ use Illuminate\Support\Facades\Route;
 
             Route::get('/{csa}/readings', [CsaController::class, 'csaReadings'])->name('readings');
             Route::get('/{csa}/accounts', [CsaController::class, 'assignedAccounts'])->name('accounts');
+            Route::get('/{csa}/accounts/pending/download', [CsaController::class, 'downloadPending'])->name('accounts.pending.download');
         });
 
 
