@@ -21,7 +21,7 @@
                 </p>
             </div>
 
-            @if(in_array(Auth::user()->role, ['ADMIN', 'IT']))
+            @if(in_array(Auth::user()->role, ['ADMIN', 'IT', 'COMMERCIAL']))
                 @if($issues->total() > 0)
                     <a
                         href="{{ route('readings.issues.export', request()->query()) }}"

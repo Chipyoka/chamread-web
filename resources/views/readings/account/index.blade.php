@@ -20,7 +20,7 @@
                 </p>
             </div>
 
-            @if(in_array(Auth::user()->role, ['ADMIN', 'IT']))
+            @if(in_array(Auth::user()->role, ['ADMIN', 'IT', 'COMMERCIAL']))
                 @if($accounts->total() > 0)
                     <a
                         href="{{ route('readings.accounts.export.excel', request()->query()) }}"

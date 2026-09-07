@@ -22,10 +22,10 @@
             </div>
 
           
-            @if(in_array(Auth::user()->role, ['ADMIN', 'IT']))
-            @php
-                $r =  method_exists($readings, 'total') ? $readings->total() : $readings->count();
-            @endphp
+            @if(in_array(Auth::user()->role, ['ADMIN', 'IT', 'COMMERCIAL']))
+                @php
+                    $r =  method_exists($readings, 'total') ? $readings->total() : $readings->count();
+                @endphp
                 @if($r > 0)
                     <a
                         href="{{ route('readings.meter-readings.export.excel', request()->query()) }}"
@@ -46,6 +46,7 @@
                     </span>
                 @endif
             @endif
+           
         </div>
 
         <!-- Table -->
