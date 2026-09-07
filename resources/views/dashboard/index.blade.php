@@ -68,10 +68,25 @@
                 <div class="min-h-60 bg-white border rounded-md border-gray-200  px-6 py-4 ">
                     <p class="text-gray-400 text-xs uppercase mt-2">Current billing cycle</p>
                     <div class="flex items-center justify-between my-4">
-                    <h2 class="text-xl font-semibold">{{ $currentCycle->name ?? 'Not Set' }}</h2>
+                    <div class="flex gap-2 items-center">
 
+                        <h2 class="text-xl font-semibold">{{ $currentCycle->name ?? 'Not Set' }}
+                        </h2>
+                        @if($currentCycle)
 
-                    @if(in_array(Auth::user()->role, ['ADMIN', 'IT']) || Auth::user()->role === 'SUPERVISOR')
+                        <div
+                               class="ml-2 px-2 py-1 rounded-sm text-xs font-semibold
+                               @if($currentCycle->status === 'active') bg-green-100 text-green-600
+                               @else bg-yellow-100 text-yellow-600 animate-pulse
+                               @endif
+                               "
+                           >
+                               {{ $currentCycle->status ?? ' ' }}
+                           </div>
+                        @endif
+                    </div>
+
+                    @if(in_array(Auth::user()->role, ['ADMIN', 'IT']) || Auth::user()->role === 'COMMERCIAL')
                         <!-- Edit -->
                         <x-micro-button
                             variant="edit"
