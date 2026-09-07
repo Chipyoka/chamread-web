@@ -13,6 +13,24 @@
 
     
                     <x-micro-button
+                       color="blue"
+                       icon="list-todo"
+                       size="md"
+                       href="{{ route('readings.csas.readings', $csa) }}"
+
+                   >
+                       View Readings
+                   </x-micro-button>
+
+                    <x-micro-button
+                       color="slate"
+                       icon="file-text"
+                       size="md"
+                       href="{{ route('readings.csas.accounts', $csa) }}"
+                   >
+                       View Accounts
+                   </x-micro-button>
+                    <x-micro-button
                        color="purple"
                        type="button"
                        icon="map-pin"
@@ -107,6 +125,62 @@
         <!-- CSA Assignments -->
         <div class="bg-white border border-gray-200 rounded-md p-6 space-y-4">
             <h3 class="text-gray-400 text-xs uppercase my-2">Assignments</h3>
+
+           
+            <!-- METRIC CARDS -->
+            <div class=" grid grid-cols-4 gap-x-4 gap-y-8">
+
+                <!-- card total assigned accounts within current cycle-->
+                <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-primary rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
+                    <div class="">
+                        <h2 class="text-3xl font-bold text-primary">{{ $target  ?? 0}}</h2>
+                        <p class="text-gray-500 text-xs uppercase mt-2">Accounts Assigned</p>
+                    </div>
+                    <div class="flex items-center justify-center p-4 bg-blue-100/70 rounded-full">
+                        <i data-lucide="list" class="w-7 h-7 text-primary"></i>
+                    </div>
+                </div>
+
+                <!-- card total read -->
+                <div 
+                    class="hover-sweep  flex items-center justify-between bg-gray-50/70 border-t-8 border-green-500 rounded-sm px-4 py-4 hover:shadow-md transition-all duration-300 ease-in-out ">
+                    <div class="">
+                        <h2 class="text-3xl font-bold text-green-500">{{ $totalRead ?? 0 }}</h2>
+                        <p class="text-gray-500 text-xs uppercase mt-2">Marked Read</p>
+                    </div>
+                    <div class="flex items-center justify-center p-4 bg-green-100/70 rounded-full">
+                        <i data-lucide="circle-check" class="w-7 h-7 text-green-500"></i>
+                    </div>
+                </div>
+
+                <!-- card pending -->
+                <div        
+                    class="hover-sweep flex items-center justify-between  bg-gray-50/70 border-t-8 border-amber-400 rounded-sm px-4 py-4  hover:shadow-md transition-all duration-300 ease-in-out ">
+                    <div class="">
+                        <h2 class="text-3xl font-bold text-amber-400">{{ $totalPending ?? 0 }}</h2>
+                        <p class="text-gray-500 text-xs uppercase mt-2">Pending</p>
+                    </div>
+                    <div class="flex items-center justify-center p-4 bg-amber-100/70 rounded-full">
+                        <i data-lucide="clock" class="w-7 h-7 text-amber-400"></i>
+                    </div>
+                </div>
+
+                <!-- card percentage -->
+                 @php
+                    $total = $totalRead + $totalPending;
+                    $completionRate = $total > 0 ? round(($totalRead / $total) * 100, 2) : 0;
+                @endphp
+                <div        
+                    class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-slate-400 rounded-sm px-4 py-4  hover:shadow-md transition-all duration-300 ease-in-out ">
+                    <div class="">
+                        <h2 class="text-3xl font-bold text-slate-400">{{ $completionRate }}%</h2>
+                        <p class="text-gray-500 text-xs uppercase mt-2">Completion Rate</p>
+                    </div>
+                    <div class="flex items-center justify-center p-4 bg-slate-100/70 rounded-full">
+                        <i data-lucide="circle-percent" class="w-7 h-7 text-slate-400"></i>
+                    </div>
+                </div>
+            </div>
 
             @if($assignments->count() > 0)
                 <table class="min-w-full divide-y divide-gray-100">

@@ -183,8 +183,13 @@ class CsaController extends Controller
         $assignments = CsaAssignment::where('csa_id', $csa->id)
             ->latest()
             ->paginate(15);
+        // total assigned accounts for this CSA
+        $target =$csa->activeAssignment?->target ?? 0;
+        $totalRead = $csa->readings()->where('status', 'read')->count();
+        $totalPending = $target - $totalRead;
 
-        return view('readings.csa.show', compact('csa', 'assignments', 'zones', 'cycles', 'devices'));
+
+        return view('readings.csa.show', compact('csa', 'assignments', 'zones', 'cycles', 'devices', 'target', 'totalRead', 'totalPending'));
     }
 
     /**
