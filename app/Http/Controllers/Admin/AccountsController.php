@@ -15,8 +15,9 @@ use Illuminate\Support\Facades\Hash;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Exports\CustomerAccountsExport;
 use Maatwebsite\Excel\Facades\Excel;
-
+use Illuminate\Validation\Rule;
 use App\Services\AuditLogService;
+use Illuminate\Support\Str;
 
 class AccountsController extends Controller
 {
@@ -56,7 +57,10 @@ class AccountsController extends Controller
         // Get zones for the filter dropdown
         $zones = Zone::orderBy('name')->get();
 
-        return view('readings.account.index', compact('accounts', 'zones', 'accountsTotal'));
+        // billing cycles for the filter dropdown
+        $billingCycles = BillingCycle::orderByDesc('start_date')->get();
+
+        return view('readings.account.index', compact('accounts', 'zones', 'accountsTotal', 'billingCycles'));
     }
 
 
@@ -182,6 +186,223 @@ class AccountsController extends Controller
         $export = new CustomerAccountsExport($zoneId, $search, $category);
         
         return Excel::download($export, 'customer_accounts_' . date('Y-m-d_His') . '.xlsx');
+    }
+
+    /**
+     * Download filtered customer accounts as CSV.
+     */
+    public function downloadAccounts(Request $request)
+    {
+        $validated = $request->validate([
+            'billing_cycle_id' => ['required', 'exists:billing_cycles,id'],
+            'filter' => [
+                'required',
+                Rule::in([
+                    'not_assigned',
+                    'not_read',
+                    'phone_edited',
+                    'billing_area_edited',
+                    'meter_number_edited',
+                ]),
+            ],
+        ]);
+
+        $billingCycle = BillingCycle::findOrFail($validated['billing_cycle_id']);
+        $filter = $validated['filter'];
+
+        $query = CustomerAccount::query()
+            ->select('customer_accounts.*')
+            ->with('zone');
+
+        switch ($filter) {
+
+            case 'not_assigned':
+
+                $assignedZoneIds = CsaAssignment::where(
+                    'billing_cycle_id',
+                    $billingCycle->id
+                )->pluck('zone_id');
+
+                $query->whereNotIn('customer_accounts.zone_id', $assignedZoneIds);
+
+                break;
+
+            case 'not_read':
+
+                $query->whereNotExists(function ($q) use ($billingCycle) {
+                    $q->selectRaw(1)
+                        ->from('readings')
+                        ->whereColumn('readings.account_id', 'customer_accounts.id')
+                        ->where('readings.billing_cycle_id', $billingCycle->id);
+                });
+
+                break;
+
+            case 'phone_edited':
+
+                $query->whereNotNull('new_phone')
+                    ->where('new_phone', '<>', '');
+
+                break;
+
+            case 'billing_area_edited':
+
+                $query->whereNotNull('new_address')
+                    ->where('new_address', '<>', '');
+
+                break;
+
+            case 'meter_number_edited':
+
+                $query->whereNotNull('new_meter_number')
+                    ->where('new_meter_number', '<>', '');
+
+                break;
+        }
+
+        if (!(clone $query)->exists()) {
+            return back()->with('warning', 'No accounts found.');
+        }
+
+        $filename = "{$filter}_" . "{$billingCycle->name}_" . now()->format('Ymd_His') . '.csv';
+
+        $headers = [
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Pragma'              => 'no-cache',
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires'             => '0',
+        ];
+
+        return response()->stream(function () use ($query, $filter) {
+
+            $handle = fopen('php://output', 'w');
+
+            // UTF-8 BOM for Excel
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            switch ($filter) {
+
+                case 'phone_edited':
+                    fputcsv($handle, [
+                        'ACCOUNT_NUMBER',
+                        'CUSTOMER_NAME',
+                        'CURRENT_PHONE',
+                        'NEW_PHONE',
+                        'ZONE',
+                    ]);
+                    break;
+
+                case 'billing_area_edited':
+                    fputcsv($handle, [
+                        'ACCOUNT_NUMBER',
+                        'CUSTOMER_NAME',
+                        'CURRENT_BILLING_AREA',
+                        'NEW_BILLING_AREA',
+                        'ZONE',
+                    ]);
+                    break;
+
+                case 'meter_number_edited':
+                    fputcsv($handle, [
+                        'ACCOUNT_NUMBER',
+                        'CUSTOMER_NAME',
+                        'CURRENT_METER_NUMBER',
+                        'NEW_METER_NUMBER',
+                        'ZONE',
+                    ]);
+                    break;
+
+                default:
+                    fputcsv($handle, [
+                        'ACCOUNT_NUMBER',
+                        'CUSTOMER_NAME',
+                        'ADDRESS',
+                        'PHONE',
+                        'METER_NUMBER',
+                        'CUSTOMER_CATEGORY',
+                        'ZONE',
+                    ]);
+                    break;
+            }
+
+            $query
+                ->orderBy('customer_accounts.id')
+                ->chunkById(
+                    500,
+                    function ($accounts) use ($handle, $filter) {
+
+                        foreach ($accounts as $account) {
+
+                            switch ($filter) {
+
+                                case 'phone_edited':
+
+                                    fputcsv($handle, [
+                                        $this->excelText($account->account_number),
+                                        $account->customer_name,
+                                        $this->excelText($account->phone),
+                                        $this->excelText($account->new_phone),
+                                        $account->zone->name ?? 'N/A',
+                                    ]);
+
+                                    break;
+
+                                case 'billing_area_edited':
+
+                                    fputcsv($handle, [
+                                        $this->excelText($account->account_number),
+                                        $account->customer_name,
+                                        $account->address,
+                                        $account->new_address,
+                                        $account->zone->name ?? 'N/A',
+                                    ]);
+
+                                    break;
+
+                                case 'meter_number_edited':
+
+                                    fputcsv($handle, [
+                                        $this->excelText($account->account_number),
+                                        $account->customer_name,
+                                        $this->excelText($account->meter_number),
+                                        $this->excelText($account->new_meter_number),
+                                        $account->zone->name ?? 'N/A',
+                                    ]);
+
+                                    break;
+
+                                default:
+
+                                    fputcsv($handle, [
+                                        $this->excelText($account->account_number),
+                                        $account->customer_name,
+                                        $account->address,
+                                        $this->excelText($account->phone),
+                                        $this->excelText($account->meter_number),
+                                        $account->customer_category,
+                                        $account->zone->name ?? 'N/A',
+                                    ]);
+
+                                    break;
+                            }
+                        }
+                    },
+                    'customer_accounts.id',
+                    'id'
+                );
+
+            fclose($handle);
+
+        }, 200, $headers);
+    }
+
+    /**
+     * Helper function to ensure Excel treats the value as text.
+     */
+    private function excelText($value)
+    {
+        return is_null($value) ? '' : '="' . $value . '"';
     }
 
  

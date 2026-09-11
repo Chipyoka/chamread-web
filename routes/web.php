@@ -133,6 +133,7 @@ use Illuminate\Support\Facades\Route;
             
             Route::get('/{account}/export', [AccountsController::class, 'export'])->name('export');
             Route::get('/accounts/export/bulk', [AccountsController::class, 'exportExcel'])->name('export.excel');
+            Route::post('/accounts/export/filtered', [AccountsController::class, 'downloadAccounts'])->name('export.filtered');
            
         });
 

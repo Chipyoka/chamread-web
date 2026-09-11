@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="p-6 space-y-6">
+    <div class="p-6 space-y-6" x-data="">
         <x-slot:breadcrumb>
             <x-breadcrumb :items="[
                 [
@@ -22,16 +22,26 @@
 
             @if(in_array(Auth::user()->role, ['ADMIN', 'IT', 'COMMERCIAL']))
                 @if($accounts->total() > 0)
-                    <a
-                        href="{{ route('readings.accounts.export.excel', request()->query()) }}"
-                        class="inline-flex items-center px-3 py-2.5 bg-primary text-white text-xs font-medium rounded-md hover:bg-primary/90 transition"
-                    >
-                        <i data-lucide="file-up" class="w-4 h-4 mr-2"></i>
-                        Export Excel
-                        <span class="ml-1.5 px-1.5 py-0.5 bg-white/20 rounded-sm text-[10px]">
-                            {{ $accounts->total() }}
-                        </span>
-                    </a>
+                    <div>
+
+                        <a
+                            href="{{ route('readings.accounts.export.excel', request()->query()) }}"
+                            class="inline-flex items-center px-3 py-2.5 bg-primary text-white text-xs font-medium rounded-md hover:bg-primary/90 transition"
+                        >
+                            <i data-lucide="file-up" class="w-4 h-4 mr-2"></i>
+                            Export Excel
+                            <span class="ml-1.5 px-1.5 py-0.5 bg-white/20 rounded-sm text-[10px]">
+                                {{ $accounts->total() }}
+                            </span>
+                        </a>
+                        <button
+                                x-on:click="$dispatch('open-modal', 'export-more')"
+                                class="inline-flex items-center px-4 py-2.5 bg-slate-200 text-slate-600 text-sm font-medium rounded-md hover:bg-primary/90 transition"
+                            >
+                            <i data-lucide="sliders-horizontal" class="w-4 h-4 mr-2"></i>
+                                Options
+                        </button>
+                    </div>
                 @else
                     <span
                         class="inline-flex items-center px-3 py-2.5 bg-gray-300 text-gray-500 text-xs font-medium rounded-md cursor-not-allowed opacity-60"
@@ -225,4 +235,77 @@
 
         </div>
     </div>
+
+
+     <!-- upload file modal -->
+    <x-modal name="export-more" max-width="md" :closable="false">
+        <div class="p-6">
+            <h2 class="text-lg font-semibold text-gray-900"> Accounts Export Options</h2>
+
+            <div class="">
+    
+                <form 
+                    method="POST"
+                    action="{{ route('readings.accounts.export.filtered') }}"
+                    enctype="multipart/form-data"
+                    class="space-y-5"
+                >
+                    @csrf
+    
+                    <!--  Billing Cycle  -->
+                    <div>
+                        <label for="billing_cycle_id" class="block text-sm font-medium text-gray-700">Select Cycle</label>
+    
+                        <select
+                            name="billing_cycle_id"
+                            class="mt-1 block w-full border py-2 border-gray-300 rounded-sm shadow-sm focus:border-primary focus:ring-primary sm:text-sm @error('billing_cycle_id') border-red-500 @enderror"
+                            required
+                        >
+                            <option value="">
+                                Select billing cycle
+                            </option>
+                            @foreach($billingCycles as $cycle)
+                                <option value="{{ $cycle->id }}">
+                                    {{ $cycle->name ?? 'Cycle '.$cycle->id }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Filter -->
+                    <div>
+                        <label for="filter" class="block text-sm font-medium text-gray-700">Select option</label>
+    
+                        <select
+                            name="filter"
+                            class="mt-1 block w-full border py-2 border-gray-300 rounded-sm shadow-sm focus:border-primary focus:ring-primary sm:text-sm @error('filter') border-red-500 @enderror"
+                            required
+                        >
+                            <option value="">
+                                Select filter option
+                            </option>
+                            <option value="not_assigned"> Not Assigned</option>
+                            <option value="not_read"> Not Read</option>
+                            <option value="phone_edited"> Phone edited</option>
+                            <option value="billing_area_edited"> Billing Area edited</option>
+                            <option value="meter_number_edited"> Meter Number edited</option>
+                        </select>
+                    </div>
+    
+                    
+    
+                    <!-- {{-- Submit --}} -->
+                    <div>
+                        <button
+                            type="submit"
+                            class="inline-flex items-center px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-primary/90 transition"
+                        >
+                            Export Accounts
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </x-modal>
+
 </x-app-layout>
