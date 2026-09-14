@@ -47,43 +47,53 @@ class CsaController extends Controller
         $withReadings = 0;
         $withoutReadings = 0;
 
-        if ($currentCycle) {
-            // Counts (only for the current billing cycle)
-            $withReadings = User::where('role', 'CSA')
-                ->whereHas('activeAssignment', function ($q) use ($currentCycle) {
-                    $q->where('billing_cycle_id', $currentCycle->id);
-                })
-                ->whereHas('readings', function ($q) {
-                    $q->where('status', 'read');
-                })
-                ->count();
+      if ($currentCycle) {
 
-            $withoutReadings = User::where('role', 'CSA')
-                ->whereHas('activeAssignment', function ($q) use ($currentCycle) {
-                    $q->where('billing_cycle_id', $currentCycle->id);
-                })
-                ->whereDoesntHave('readings', function ($q) {
-                    $q->where('status', 'read');
-                })
-                ->count();
+        // Counts for the current billing cycle only
 
-            // Status filter (only applies when a current billing cycle exists)
-            if ($request->filled('status')) {
-                $query->whereHas('activeAssignment', function ($q) use ($currentCycle) {
-                    $q->where('billing_cycle_id', $currentCycle->id);
+        $withReadings = User::where('role', 'CSA')
+            ->whereHas('activeAssignment', function ($q) use ($currentCycle) {
+                $q->where('billing_cycle_id', $currentCycle->id);
+            })
+            ->whereHas('readings', function ($q) use ($currentCycle) {
+                $q->where('billing_cycle_id', $currentCycle->id)
+                    ->where('status', 'read');
+            })
+            ->count();
+
+        $withoutReadings = User::where('role', 'CSA')
+            ->whereHas('activeAssignment', function ($q) use ($currentCycle) {
+                $q->where('billing_cycle_id', $currentCycle->id);
+            })
+            ->whereDoesntHave('readings', function ($q) use ($currentCycle) {
+                $q->where('billing_cycle_id', $currentCycle->id)
+                    ->where('status', 'read');
+            })
+            ->count();
+
+        // Status filter - current billing cycle only
+        if ($request->filled('status')) {
+
+            $query->whereHas('activeAssignment', function ($q) use ($currentCycle) {
+                $q->where('billing_cycle_id', $currentCycle->id);
+            });
+
+            if ($request->status === 'withReadings') {
+
+                $query->whereHas('readings', function ($q) use ($currentCycle) {
+                    $q->where('billing_cycle_id', $currentCycle->id)
+                        ->where('status', 'read');
                 });
 
-                if ($request->status === 'withReadings') {
-                    $query->whereHas('readings', function ($q) {
-                        $q->where('status', 'read');
-                    });
-                } elseif ($request->status === 'withoutReadings') {
-                    $query->whereDoesntHave('readings', function ($q) {
-                        $q->where('status', 'read');
-                    });
-                }
+            } elseif ($request->status === 'withoutReadings') {
+
+                $query->whereDoesntHave('readings', function ($q) use ($currentCycle) {
+                    $q->where('billing_cycle_id', $currentCycle->id)
+                        ->where('status', 'read');
+                });
             }
         }
+    }
 
         // Zone filter
         if ($request->filled('zone')) {
@@ -169,7 +179,7 @@ class CsaController extends Controller
         //     ->with(['zone', 'dma', 'billingCycle'])
         //     ->latest()
         //     ->get();
-
+$currentCycle = BillingCycle::where('status', 'active')->first();
          $devices = Device::whereNotIn(
                 'id',
                 User::whereNotNull('device_id')->pluck('device_id')
@@ -186,7 +196,7 @@ class CsaController extends Controller
             ->paginate(15);
         // total assigned accounts for this CSA
         $target =$csa->activeAssignment?->target ?? 0;
-        $totalRead = $csa->readings()->where('status', 'read')->count();
+        $totalRead = $csa->readings()->where('status', 'read')->where('billing_cycle_id', $currentCycle->id)->count();
         $totalPending = $target - $totalRead;
 
 

@@ -137,7 +137,7 @@
                                
                                 <x-charts.reading-donut-chart
                                     :read="$accountsRead"
-                                    :pending="$totalAssignedAccounts"
+                                    :pending="$pending"
                                 />
 
                                 <div class="w-1/3">

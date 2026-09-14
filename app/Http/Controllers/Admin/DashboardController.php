@@ -70,11 +70,7 @@ class DashboardController extends Controller
          $flaggedReadings = collect();
 
 
-        $read = CustomerAccount::whereExists(function ($query) {
-                $query->selectRaw(1)
-                    ->from('readings')
-                    ->whereColumn('readings.account_id', 'customer_accounts.id');
-            })->count();
+        $read = 0;
 
         /*
         |--------------------------------------------------------------------------
@@ -93,26 +89,35 @@ class DashboardController extends Controller
         ];
 
 
-            if ($currentCycle) {
-                $assignedZoneIds = CsaAssignment::where(
-                    'billing_cycle_id',
-                    $currentCycle->id
-                )->pluck('zone_id');
+        if ($currentCycle) {
+            $assignedZoneIds = CsaAssignment::where(
+                'billing_cycle_id',
+                $currentCycle->id
+            )->pluck('zone_id');
 
-                // Total accounts in assigned zones
-                $total = CustomerAccount::whereIn('zone_id', $assignedZoneIds)->count();
-                
-                // Accounts WITH readings (completed)
-                $read = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
-                    ->whereExists(function ($query) {
-                        $query->selectRaw(1)
-                            ->from('readings')
-                            ->whereColumn('readings.account_id', 'customer_accounts.id');
-                    })->count();
-                
-                // Accounts WITHOUT readings (pending)
-                $pending = $total - $read;
-            }
+            // Total accounts in assigned zones
+            $total = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
+                ->count();
+
+            // Accounts WITH readings for the CURRENT billing cycle
+            $read = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
+                ->whereExists(function ($query) use ($currentCycle) {
+                    $query->selectRaw(1)
+                        ->from('readings')
+                        ->whereColumn(
+                            'readings.account_id',
+                            'customer_accounts.id'
+                        )
+                        ->where(
+                            'readings.billing_cycle_id',
+                            $currentCycle->id
+                        );
+                })
+                ->count();
+
+            // Accounts WITHOUT readings for the CURRENT billing cycle
+            $pending = $total - $read;
+        }
 
 
         if ($currentCycle) {
@@ -328,17 +333,26 @@ class DashboardController extends Controller
             )->pluck('zone_id');
 
             // Total accounts in assigned zones
-            $total = CustomerAccount::whereIn('zone_id', $assignedZoneIds)->count();
-            
-            // Accounts WITH readings (completed)
+            $total = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
+                ->count();
+
+            // Accounts WITH readings for the CURRENT billing cycle
             $read = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
-                ->whereExists(function ($query) {
+                ->whereExists(function ($query) use ($currentCycle) {
                     $query->selectRaw(1)
                         ->from('readings')
-                        ->whereColumn('readings.account_id', 'customer_accounts.id');
-                })->count();
-            
-            // Accounts WITHOUT readings (pending)
+                        ->whereColumn(
+                            'readings.account_id',
+                            'customer_accounts.id'
+                        )
+                        ->where(
+                            'readings.billing_cycle_id',
+                            $currentCycle->id
+                        );
+                })
+                ->count();
+
+            // Accounts WITHOUT readings for the CURRENT billing cycle
             $pending = $total - $read;
 
             $accountReadList = CustomerAccount::with('assignedCsa')->whereIn('zone_id', $assignedZoneIds)->whereExists(function ($query) {

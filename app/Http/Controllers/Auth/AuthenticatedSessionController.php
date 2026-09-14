@@ -23,36 +23,41 @@ class AuthenticatedSessionController extends Controller
     public function create(): View
 
     {
-        // Latest billing cycle
-    $currentCycle = BillingCycle::where('status', 'active')->first();
-
-      
-
+        // Current billing cycle
+        $currentCycle = BillingCycle::where('status', 'active')->first();
 
         $pending = 0;
         $read = 0;
 
-         if ($currentCycle) {
+        if ($currentCycle) {
             $assignedZoneIds = CsaAssignment::where(
                 'billing_cycle_id',
                 $currentCycle->id
             )->pluck('zone_id');
 
             // Total accounts in assigned zones
-            $total = CustomerAccount::whereIn('zone_id', $assignedZoneIds)->count();
-            
-            // Accounts WITH readings (completed)
+            $total = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
+                ->count();
+
+            // Accounts WITH readings for the CURRENT billing cycle
             $read = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
-                ->whereExists(function ($query) {
+                ->whereExists(function ($query) use ($currentCycle) {
                     $query->selectRaw(1)
                         ->from('readings')
-                        ->whereColumn('readings.account_id', 'customer_accounts.id');
-                })->count();
-            
-            // Accounts WITHOUT readings (pending)
+                        ->whereColumn(
+                            'readings.account_id',
+                            'customer_accounts.id'
+                        )
+                        ->where(
+                            'readings.billing_cycle_id',
+                            $currentCycle->id
+                        );
+                })
+                ->count();
+
+            // Accounts WITHOUT readings for the CURRENT billing cycle
             $pending = $total - $read;
         }
-
 
         return view('auth.login', compact(
             'currentCycle',
