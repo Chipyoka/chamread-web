@@ -179,7 +179,7 @@ class AccountsController extends Controller
         $oldPhone = $account->phone;
 
         $account->update([
-            'phone' => $request->phone_number,
+            'new_phone' => $request->phone_number,
         ]);
 
         Log::info('Customer phone updated successfully', [

@@ -934,4 +934,160 @@ class ReadingsController extends Controller
             'data' => $data,
         ]);
     }
+
+
+    
+
+    /**
+     * Single reading sync endpoint (multipart/form-data).
+     *
+     * Replaces batchStore()'s base64-in-JSON approach: the app now sends one
+     * reading per request, with the photo (when present) as a real multipart
+     * file instead of a base64 string. This drops the ~33% base64 size
+     * overhead, avoids holding the image twice in memory on both ends
+     * (encoded string + decoded bytes), and means a network drop only costs
+     * one reading instead of a whole batch of five.
+     *
+     * Route: POST /readings/sync
+     *
+     * batchStore() can stay in place unchanged during rollout — point the
+     * app at this endpoint via a feature flag / config value, confirm it
+     * behaves in the field, then retire batchStore() once nothing calls it.
+     */
+    public function syncReading(Request $request)
+    {
+        $currentCycle = BillingCycle::where('status', 'active')->latest()->first();
+
+        if ($currentCycle && $currentCycle->can_upload === false) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Upload is locked',
+            ], 423);
+        }
+
+        $validated = $request->validate([
+            'account_id'         => 'required|exists:customer_accounts,id',
+            'account_number'     => 'required|string|max:255',
+            'billing_cycle_id'   => 'required|exists:billing_cycles,id',
+            'current_reading'    => 'nullable|numeric',
+            'status'             => 'required|in:read,not_read',
+            'meter_reading_code' => 'required|exists:meter_reading_codes,id',
+            'comment'            => 'nullable|string|max:255',
+            'latitude'           => 'nullable|numeric',
+            'longitude'          => 'nullable|numeric',
+            'reading_time'       => 'required|date',
+            'photo'              => 'nullable|image|max:8192', // 8MB ceiling
+        ]);
+
+        $readingTime = $this->resolveReadingTime($validated['reading_time']);
+
+        // ------------------------------------------------------------------
+        // Duplicate check — same rule as batchStore(), returned as a normal
+        // 200 response (not an exception) so the client treats it as
+        // "already synced" rather than something worth retrying.
+        // ------------------------------------------------------------------
+        $existingReading = Reading::where('account_id', $validated['account_id'])
+            ->where('billing_cycle_id', $validated['billing_cycle_id'])
+            ->first();
+
+        if ($existingReading) {
+            Log::warning('Duplicate reading attempt blocked', [
+                'account_id' => $validated['account_id'],
+                'billing_cycle_id' => $validated['billing_cycle_id'],
+                'existing_reading_id' => $existingReading->id,
+                'csa_id' => auth()->id(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error_code' => 'DUPLICATE_READING',
+                'message' => 'A reading for this account already exists in the current cycle.',
+                'reading_id' => $existingReading->id,
+            ]);
+        }
+
+        $lastReading = Reading::where('account_id', $validated['account_id'])
+            ->where('billing_cycle_id', '<', $validated['billing_cycle_id'])
+            ->whereNotNull('current_reading')
+            ->orderByDesc('billing_cycle_id')
+            ->first();
+
+        $previousReading = $lastReading ? $lastReading->current_reading : $validated['current_reading'];
+
+        $photoPath = null;
+
+        DB::beginTransaction();
+
+        try {
+            if ($request->hasFile('photo')) {
+                $hash = strtoupper(Str::random(6));
+                $extension = $request->file('photo')->getClientOriginalExtension() ?: 'jpg';
+
+                $filename = sprintf(
+                    '%s_%s_%s.%s',
+                    $validated['account_number'],
+                    $readingTime->format('Ymd_His'),
+                    $hash,
+                    $extension
+                );
+
+                // Laravel streams the uploaded file straight to disk here —
+                // no base64 decode step, no holding the full image as a string.
+                $photoPath = $request->file('photo')->storeAs('readings', $filename, 'public');
+            }
+
+            $reading = Reading::create([
+                'account_id' => $validated['account_id'],
+                'csa_id' => auth()->id(),
+                'billing_cycle_id' => $validated['billing_cycle_id'],
+                'reading_date' => now()->toDateString(),
+                'previous_reading' => $previousReading,
+                'current_reading' => $validated['current_reading'],
+                'meter_status' => null,
+                'this_month_code' => $validated['meter_reading_code'] ?? null,
+                'status' => $validated['status'],
+                'meter_reading_code' => $validated['meter_reading_code'] ?? null,
+                'comment' => $validated['comment'] ?? null,
+                'consumption' => $validated['current_reading'] && $previousReading
+                    ? $validated['current_reading'] - $previousReading
+                    : null,
+                'photo_path' => $photoPath,
+                'latitude' => $validated['latitude'] ?? null,
+                'longitude' => $validated['longitude'] ?? null,
+                'reading_time' => $readingTime,
+                'synced_at' => now(),
+            ]);
+
+            DB::commit();
+
+            Log::info('Reading synced successfully', [
+                'reading_id' => $reading->id,
+                'account_number' => $validated['account_number'],
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'reading_id' => $reading->id,
+                'message' => 'Reading synced successfully',
+            ]);
+        } catch (Throwable $e) {
+            DB::rollBack();
+
+            if ($photoPath && Storage::disk('public')->exists($photoPath)) {
+                Storage::disk('public')->delete($photoPath);
+                Log::warning('Orphaned photo deleted', ['photo_path' => $photoPath]);
+            }
+
+            Log::error('Reading sync failed', [
+                'account_number' => $validated['account_number'] ?? null,
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => app()->environment('production') ? 'Failed to sync reading' : $e->getMessage(),
+            ], 500);
+        }
+    }
 }
