@@ -355,12 +355,12 @@ class CsaController extends Controller
             ->with('warning', 'Zone already taken.');
         }
 
-        $existingUser = User::where('device_id', $data['device_id'])->first();
+        // $existingUser = User::where('device_id', $data['device_id'])->first();
 
-        if ($existingUser) {
-           return redirect()->back()
-            ->with('warning', 'Device already taken.');
-        }
+        // if ($existingUser) {
+        //    return redirect()->back()
+        //     ->with('warning', 'Device already taken.');
+        // }
 
         // Attempt to find existing assignment for the CSA + zone + cycle + type
         $existing = CsaAssignment::where([
@@ -370,6 +370,16 @@ class CsaController extends Controller
         ])->first();
 
         $before = $existing ? $existing->toArray() : null;
+
+        // Deactivate any previous active assignment for this CSA + zone
+        CsaAssignment::where('csa_id', $csa->id)
+            ->where('zone_id', $data['zone_id'])
+            ->where('status', 'active')
+            ->where('billing_cycle_id', '!=', $data['billing_cycle_id'])
+            ->update([
+                'status' => 'inactive',
+                'end_at' => now(),
+            ]);
 
         // Upsert the assignment
         $assignment = CsaAssignment::updateOrCreate(
@@ -388,9 +398,9 @@ class CsaController extends Controller
             ]
         );
 
-        User::where('id', $csa->id)->update([
-            'device_id' => $data['device_id'],
-        ]);
+        // User::where('id', $csa->id)->update([
+        //     'device_id' => $data['device_id'],
+        // ]);
 
         $assignment->refresh();
         $after = $assignment->toArray();

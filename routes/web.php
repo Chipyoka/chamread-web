@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\BalanceSyncController;
 use App\Http\Controllers\Admin\PerformanceController;
 use App\Http\Controllers\Admin\AccountsController;
 use App\Http\Controllers\Admin\AnalyticsController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\Admin\ZoneController;
 use App\Http\Controllers\Admin\FlagController;
 use App\Http\Controllers\Admin\CustomerAccountIssueController;
 use App\Http\Controllers\AppDownloadController;
+
 
 
 
@@ -380,6 +382,19 @@ use Illuminate\Support\Facades\Route;
             Route::put('/rules/{flagRule}', [FlagController::class, 'updateRule'])->name('rule.update');
             Route::delete('/rules/{flagRule}', [FlagController::class, 'destroyRule'])->name('rule.destroy');
 
+        });
+
+
+        /**
+         * =====================================================
+         *  BALANCE SYNC MANAGEMENT
+         * =====================================================
+         */
+        
+        Route::prefix('balance-sync')->name('balance-sync.')->group(function () {
+            Route::post('/trigger', [BalanceSyncController::class, 'trigger'])->name('trigger');
+            Route::get('/', [BalanceSyncController::class, 'index'])->name('index');
+            Route::get('/{run}', [BalanceSyncController::class, 'show'])->name('show');
         });
 
 

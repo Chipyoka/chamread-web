@@ -34,5 +34,10 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    
+    'balance_api' => [
+    'url' => env('BALANCE_API_URL'),
+    'timeout' => env('BALANCE_API_TIMEOUT', 8),
+],
 
 ];

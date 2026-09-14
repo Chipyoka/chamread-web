@@ -12,7 +12,8 @@ use App\Services\FlagService;
 use App\Services\RuleEvaluator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
-
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
 use App\Models\SystemNotification;
 
 class AppServiceProvider extends ServiceProvider
@@ -45,7 +46,12 @@ class AppServiceProvider extends ServiceProvider
         CustomerAccount::observe(CustomerAccountObserver::class);
         User::observe(UserObserver::class);
 
-        
-    });
+        });
+
+        // Rate limiting for balance API requests
+   
+        RateLimiter::for('balance-api', function () {
+            return Limit::perMinute(50); // ~1.2s/request average
+        });
     }
 }

@@ -24,7 +24,13 @@ class CustomerAccount extends Model
         'phone',
         'customer_category',
         'zone_id',
-        'status'
+        'status',
+        'new_phone',
+        'new_meter_number',
+        'new_address',
+        'account_status',
+        'balance',
+        'checked_at',
     ];
 
     // casts

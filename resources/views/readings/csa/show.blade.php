@@ -223,7 +223,7 @@
        <!-- Create assign modal -->
         <x-modal name="create-cycle" max-width="lg" :closable="false">
             <div class="p-6">
-                <h2 class="text-lg font-semibold text-gray-900">Assign Device and Zone to CSA</h2>
+                <h2 class="text-lg font-semibold text-gray-900">Assign Device and Zone to CSA ({{ $csa->activeAssignment->zone->name ?? '-' }})</h2>
                  <!-- Assignment Form -->
                 <form action="{{ route('readings.csas.assign.store', $csa) }}" method="POST" class="space-y-4">
                     @csrf
@@ -257,7 +257,7 @@
                     <!-- Devices -->
                     <div>
                         <x-input-label for="device_id" :value="__('Device')" />
-                        <select id="device_id" name="device_id" class="mt-1 block w-full border-gray-300 shadow-sm focus:ring focus:ring-primary focus:ring-opacity-50" required>
+                        <select id="device_id" name="device_id" class="mt-1 block w-full border-gray-300 shadow-sm focus:ring focus:ring-primary focus:ring-opacity-50">
                             <option value="">-- Select Device--</option>
                             @foreach($devices as $device)
                                 <option value="{{ $device->id }}">{{ $device->name }} {{ $device->model }} - {{ $device->serial_number }}</option>

@@ -66,6 +66,12 @@ class CyclesController extends Controller
 
         $billingCycle = BillingCycle::create($validated);
 
+        // Audit log
+        $this->auditLog->log('CREATE', 'Billing cycle created', [
+            'billing_cycle_id' => $billingCycle->id,
+            'payload' => $validated,
+        ]);
+
         return redirect()->back()
             ->with('success', 'Billing cycle created successfully.');
     }
@@ -103,6 +109,12 @@ class CyclesController extends Controller
 
         $billingCycle->update($validated);
 
+        // Audit log
+        $this->auditLog->log('UPDATE', 'Billing cycle updated', [
+            'billing_cycle_id' => $billingCycle->id,
+            'payload' => $validated,
+        ]);
+
         return redirect()
             ->back()
             ->with('success', 'Billing cycle updated successfully.');
@@ -114,6 +126,11 @@ class CyclesController extends Controller
     public function destroy(BillingCycle $billingCycle)
     {
         $billingCycle->delete();
+
+        // Audit log
+        $this->auditLog->log('DELETE', 'Billing cycle deleted', [
+            'billing_cycle_id' => $billingCycle->id,
+        ]);
 
         return redirect()
             ->route('management.cycles.index')
@@ -134,6 +151,12 @@ class CyclesController extends Controller
             'can_download' => !$billingCycle->can_download
         ]);
 
+        // Audit log
+        $this->auditLog->log('UPDATE', 'Billing cycle updated', [
+            'billing_cycle_id' => $billingCycle->id,
+            'payload' => ['can_download' => !$billingCycle->can_download],
+        ]);
+
         return back()->with('success', 'Download permission updated.');
     }
 
@@ -149,6 +172,12 @@ class CyclesController extends Controller
 
         $billingCycle->update([
             'can_upload' => !$billingCycle->can_upload
+        ]);
+
+        // Audit log
+        $this->auditLog->log('UPDATE', 'Billing cycle updated', [
+            'billing_cycle_id' => $billingCycle->id,
+            'payload' => ['can_upload' => !$billingCycle->can_upload],
         ]);
 
         return back()->with('success', 'Upload permission updated.');
@@ -167,6 +196,12 @@ class CyclesController extends Controller
             'deadline' => $request->new_deadline
         ]);
 
+        // Audit log
+        $this->auditLog->log('UPDATE', 'Billing cycle updated', [
+            'billing_cycle_id' => $billingCycle->id,
+            'payload' => ['deadline' => $request->new_deadline],
+        ]);
+
         return back()->with('success', 'Deadline extended successfully.');
     }
 
@@ -181,6 +216,12 @@ class CyclesController extends Controller
 
         $billingCycle->update([
             'status' => $request->status
+        ]);
+
+        // Audit log
+        $this->auditLog->log('UPDATE', 'Billing cycle updated', [
+            'billing_cycle_id' => $billingCycle->id,
+            'payload' => ['status' => $request->status],
         ]);
 
         return back()->with('success', 'Status updated successfully.');
@@ -198,6 +239,12 @@ class CyclesController extends Controller
 
         $billingCycle->update([
             $request->field => $request->value
+        ]);
+
+        // Audit log
+        $this->auditLog->log('UPDATE', 'Billing cycle updated', [
+            'billing_cycle_id' => $billingCycle->id,
+            'payload' => [$request->field => $request->value],
         ]);
 
         return response()->json([
