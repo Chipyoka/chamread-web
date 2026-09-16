@@ -979,6 +979,22 @@ class ReadingsController extends Controller
             'photo'              => 'nullable|image|max:8192', // 8MB ceiling
         ]);
 
+        // block upload to wrong cycle or inactive cycle
+        if( $validated['billing_cycle_id'] !== $currentCycle->id) {
+            
+            Log::warning('Reading sync blocked: wrong billing cycle', [
+                'account_id' => $validated['account_id'],
+                'billing_cycle_id' => $validated['billing_cycle_id'],
+                'current_cycle_id' => $currentCycle->id,
+                'csa_id' => auth()->id(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Wrong billing cycle',
+            ], 400);
+        }
+
         $readingTime = $this->resolveReadingTime($validated['reading_time']);
 
         // ------------------------------------------------------------------
