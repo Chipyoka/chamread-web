@@ -980,8 +980,8 @@ class ReadingsController extends Controller
         ]);
 
         // block upload to wrong cycle or inactive cycle
-        if( $validated['billing_cycle_id'] !== $currentCycle->id) {
-            
+       if ((int) $validated['billing_cycle_id'] !== $currentCycle->id) {
+
             Log::warning('Reading sync blocked: wrong billing cycle', [
                 'account_id' => $validated['account_id'],
                 'billing_cycle_id' => $validated['billing_cycle_id'],
