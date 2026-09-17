@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AccountsController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CustomerAccountIssueController;
+use App\Http\Controllers\Api\ReadingHistoryController;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
 
@@ -57,6 +58,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
             Route::get('/reasons', [ReadingsController::class, 'reasons'])->name('reasons');
             Route::get('/rereads', [ReadingsController::class, 'pendingRereads'])->name('rereads');
+
+             Route::get('/reading-history', [ReadingHistoryController::class, 'index'])->name('reading-history');
         });
 
         /*
