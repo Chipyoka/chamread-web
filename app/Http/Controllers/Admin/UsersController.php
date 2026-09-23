@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Device;
+use App\Models\District;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
@@ -12,6 +13,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class UsersController extends Controller
 {
@@ -46,8 +48,9 @@ class UsersController extends Controller
         ->pluck('role');
         $statuses = User::select('status')->distinct()->pluck('status');
         $devices = Device::where('status', 'active')->orderBy('name')->get(['id', 'name']);
+        $districts = District::where('status', 'active')->orderBy('name')->get(['id', 'name', 'short_code']);
 
-        return view('system.users.index', compact('users', 'roles', 'statuses', 'devices'));
+        return view('system.users.index', compact('users', 'roles', 'statuses', 'devices', 'districts'));
     }
 
     /**
@@ -55,30 +58,58 @@ class UsersController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'username' => ['required', 'string', 'max:255', 'unique:users'],
-            'role' => ['required', 'string', Rule::in(['CSA','SUPERVISOR','ADMIN', 'COMMERCIAL', 'MD', 'FINANCE', 'HR', 'TECHNICAL','IT', 'OTHER'])],
-            'status' => ['required', 'string', Rule::in(['ACTIVE','SUSPENDED','INACTIVE'])],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'device_id' => ['nullable', 'exists:devices,id'],
+        $validated = $request->validate([
+            'name'               => ['required', 'string', 'max:255'],
+            'email'              => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'username'           => ['required', 'string', 'max:255', 'unique:users'],
+            'role'               => ['required', 'string', Rule::in(['CSA','SUPERVISOR','ADMIN','COMMERCIAL','MD','FINANCE','HR','TECHNICAL','IT','OTHER'])],
+            'status'             => ['required', 'string', Rule::in(['ACTIVE','SUSPENDED','INACTIVE'])],
+            'password'           => ['required', 'confirmed', Rules\Password::defaults()],
+            'district_id'        => ['nullable', 'exists:districts,id'],
+            'district_position'  => ['nullable', 'string', Rule::in(['dm','cso','cra','wqo','wos','ds','other'])],
         ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'username' => $request->username,
-            'role' => $request->role,
-            'status' => $request->status,
-            'password' => Hash::make($request->password),
-            'device_id' => $request->device_id,
-            'photo_url' => $request->photo_url ?? null,
-        ]);
+        // If a district is provided, a position must accompany it.
+        if (!empty($validated['district_id']) && empty($validated['district_position'])) {
+            return redirect()->back()
+            ->with('error', 'Role is required');
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $user = User::create([
+                'name'      => $validated['name'],
+                'email'     => $validated['email'],
+                'username'  => $validated['username'],
+                'role'      => $validated['role'],
+                'status'    => $validated['status'],
+                'password'  => Hash::make($validated['password']),
+                'photo_url' => $request->photo_url ?? null,
+            ]);
+
+            // Conditional assignment
+            if (!empty($validated['district_id'])) {
+                $user->districts()->attach($validated['district_id'], [
+                    'role'        => $validated['district_position'],
+                    'status'      => 'active',
+                    'assigned_at' => now(),
+                ]);
+            }
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Failed to create user: ' . $e->getMessage());
+        }
 
         return redirect()
             ->back()
-            ->with('success', "User {$user->name} created successfully.");
+            ->with('success', "User created successfully.");
     }
 
     /**

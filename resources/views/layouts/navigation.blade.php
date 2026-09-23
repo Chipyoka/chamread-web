@@ -81,9 +81,9 @@
                     </div>
                     
             <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
+            <div class="hidden sm:flex sm:items-center sm:ms-6 cursor-default">
                         
-                <div class="flex items-center justify-center">
+                <div class="flex items-center justify-center ">
                     @php
                         $user = Auth::user();
                     @endphp
@@ -101,6 +101,16 @@
                             {{ ucfirst(strtolower($user->role)) }}
                         </span>
                 </div>
+                @if($user->district)
+                <div
+                    title="{{ $user->district->name ?? '-' }}"
+                 class=" px-2.5 py-1.5 rounded-sm text-xxs uppercase font-medium bg-slate-100 text-slate-800">
+                    {{ $user->district->short_code ?? "-" }}
+                </div>
+                <div class=" px-2.5 py-1.5 rounded-sm text-xxs uppercase font-medium bg-amber-100 text-amber-800">
+                    {{ $user->district?->pivot->role ?? "-" }}
+                </div>
+                @endif
                 
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">

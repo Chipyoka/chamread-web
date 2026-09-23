@@ -201,6 +201,7 @@
                                                     'email_verified_at' => $user->email_verified_at ? $user->email_verified_at->format('M d, Y h:i A') : null,
                                                     'last_login_at' => $user->last_login_at ? $user->last_login_at->format('M d, Y h:i A') : null,
                                                     'device_name' => $user->device ? $user->device->name : null,
+                                                    'district' => $user->district ? $user->district->name : null,
                                                 ])))"
                                                 class="inline-flex items-center px-2.5 py-1.5 rounded-sm text-xs font-medium transition
                                                 bg-blue-50 text-blue-600 hover:bg-blue-100">
@@ -265,165 +266,196 @@
             <div class="p-6">
                 <h2 class="text-lg font-semibold text-gray-900">Add New User</h2>
                 <p class="text-sm text-gray-500 mt-1">Create a new system user account</p>
-                
-                <form method="POST" action="{{ route('systems.users.store') }}" class="mt-6 space-y-4">
-                    @csrf
-
-                    <!-- Name -->
-                    <div>
-                        <label for="create_name" class="block text-sm font-medium text-gray-700">Full Name</label>
-                        <input 
-                            type="text" 
-                            name="name" 
-                            id="create_name" 
-                            value="{{ old('name') }}"
-                            required
-                            class="mt-1 block w-full rounded-sm border-gray-200 systems.users focus:border-primary focus:ring-primary sm:text-sm @error('name') border-red-500 @enderror"
-                        >
-                        @error('name')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Username & Email (2 columns) -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="overflow-y-auto max-h-[60vh] mt-4 mb-2 thin-scrollbar">
+                  
+                    <form method="POST" action="{{ route('systems.users.store') }}" class="mt-6 space-y-4">
+                        @csrf
+    
+                        <!-- Name -->
                         <div>
-                            <label for="create_username" class="block text-sm font-medium text-gray-700">Username</label>
+                            <label for="create_name" class="block text-sm font-medium text-gray-700">Full Name</label>
                             <input 
                                 type="text" 
-                                name="username" 
-                                id="create_username" 
-                                value="{{ old('username') }}"
+                                name="name" 
+                                id="create_name" 
+                                value="{{ old('name') }}"
                                 required
-                                class="mt-1 block w-full rounded-sm border-gray-200 systems.users focus:border-primary focus:ring-primary sm:text-sm @error('username') border-red-500 @enderror"
+                                class="mt-1 block w-full rounded-sm border-gray-200 systems.users focus:border-primary focus:ring-primary sm:text-sm @error('name') border-red-500 @enderror"
                             >
-                            @error('username')
+                            @error('name')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
-
-                        <div>
-                            <label for="create_email" class="block text-sm font-medium text-gray-700">Email</label>
-                            <input 
-                                type="email" 
-                                name="email" 
-                                id="create_email" 
-                                value="{{ old('email') }}"
-                                required
-                                class="mt-1 block w-full rounded-sm border-gray-200 systems.users focus:border-primary focus:ring-primary sm:text-sm @error('email') border-red-500 @enderror"
-                            >
-                            @error('email')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+    
+                        <!-- Username & Email (2 columns) -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="create_username" class="block text-sm font-medium text-gray-700">Username</label>
+                                <input 
+                                    type="text" 
+                                    name="username" 
+                                    id="create_username" 
+                                    value="{{ old('username') }}"
+                                    required
+                                    class="mt-1 block w-full rounded-sm border-gray-200 systems.users focus:border-primary focus:ring-primary sm:text-sm @error('username') border-red-500 @enderror"
+                                >
+                                @error('username')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+    
+                            <div>
+                                <label for="create_email" class="block text-sm font-medium text-gray-700">Email</label>
+                                <input 
+                                    type="email" 
+                                    name="email" 
+                                    id="create_email" 
+                                    value="{{ old('email') }}"
+                                    required
+                                    class="mt-1 block w-full rounded-sm border-gray-200 systems.users focus:border-primary focus:ring-primary sm:text-sm @error('email') border-red-500 @enderror"
+                                >
+                                @error('email')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- Role & Status (2 columns) -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="create_role" class="block text-sm font-medium text-gray-700">Role</label>
-                            <select 
-                                name="role" 
-                                id="create_role" 
-                                required
-                                class="mt-1 block w-full rounded-sm border-gray-200 systems.users focus:border-primary focus:ring-primary sm:text-sm @error('role') border-red-500 @enderror"
-                            >
-                                <option value="">Select Role</option>
-                                <option value="ADMIN" {{ old('role') == 'ADMIN' ? 'selected' : '' }}>Admin</option>
-                                <option value="IT" {{ old('role') == 'IT' ? 'selected' : '' }}>IT</option>
-                                <option value="SUPERVISOR" {{ old('role') == 'SUPERVISOR' ? 'selected' : '' }}>Supervisor</option>
-                                <option value="MD" {{ old('role') == 'MD' ? 'selected' : '' }}>Managing Director</option>
-                                <option value="FINANCE" {{ old('role') == 'FINANCE' ? 'selected' : '' }}>Finance</option>
-                                <option value="COMMERCIAL" {{ old('role') == 'COMMERCIAL' ? 'selected' : '' }}>Commercial</option>
-                                <option value="HR" {{ old('role') == 'HR' ? 'selected' : '' }}>Human Resources</option>
-                                <option value="TECHNICAL" {{ old('role') == 'TECHNICAL' ? 'selected' : '' }}>Technical</option>
-                                <option value="OTHER" {{ old('role') == 'OTHER' ? 'selected' : '' }}>Other</option>
-                            </select>
-                            @error('role')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+    
+                        <!-- Role & Status (2 columns) -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="create_role" class="block text-sm font-medium text-gray-700">Role</label>
+                                <select 
+                                    name="role" 
+                                    id="create_role" 
+                                    required
+                                    class="mt-1 block w-full rounded-sm border-gray-200 systems.users focus:border-primary focus:ring-primary sm:text-sm @error('role') border-red-500 @enderror"
+                                >
+                                    <option value="">Select Role</option>
+                                    <option value="ADMIN" {{ old('role') == 'ADMIN' ? 'selected' : '' }}>Admin</option>
+                                    <option value="IT" {{ old('role') == 'IT' ? 'selected' : '' }}>IT</option>
+                                    <option value="SUPERVISOR" {{ old('role') == 'SUPERVISOR' ? 'selected' : '' }}>Supervisor</option>
+                                    <option value="MD" {{ old('role') == 'MD' ? 'selected' : '' }}>Managing Director</option>
+                                    <option value="FINANCE" {{ old('role') == 'FINANCE' ? 'selected' : '' }}>Finance</option>
+                                    <option value="COMMERCIAL" {{ old('role') == 'COMMERCIAL' ? 'selected' : '' }}>Commercial</option>
+                                    <option value="HR" {{ old('role') == 'HR' ? 'selected' : '' }}>Human Resources</option>
+                                    <option value="TECHNICAL" {{ old('role') == 'TECHNICAL' ? 'selected' : '' }}>Technical</option>
+                                    <option value="OTHER" {{ old('role') == 'OTHER' ? 'selected' : '' }}>Other</option>
+                                </select>
+                                @error('role')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+    
+                            <div>
+                                <label for="create_status" class="block text-sm font-medium text-gray-700">Status</label>
+                                <select 
+                                    name="status" 
+                                    id="create_status" 
+                                    required
+                                    class="mt-1 block w-full rounded-sm border-gray-200 systems.users focus:border-primary focus:ring-primary sm:text-sm @error('status') border-red-500 @enderror"
+                                >
+                                    <option value="ACTIVE" {{ old('status') == 'ACTIVE' ? 'selected' : '' }}>Active</option>
+                                    <option value="SUSPENDED" {{ old('status') == 'SUSPENDED' ? 'selected' : '' }}>Suspended</option>
+                                    <option value="INACTIVE" {{ old('status') == 'INACTIVE' ? 'selected' : '' }}>Inactive</option>
+                                </select>
+                                @error('status')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
-
-                        <div>
-                            <label for="create_status" class="block text-sm font-medium text-gray-700">Status</label>
-                            <select 
-                                name="status" 
-                                id="create_status" 
-                                required
-                                class="mt-1 block w-full rounded-sm border-gray-200 systems.users focus:border-primary focus:ring-primary sm:text-sm @error('status') border-red-500 @enderror"
-                            >
-                                <option value="ACTIVE" {{ old('status') == 'ACTIVE' ? 'selected' : '' }}>Active</option>
-                                <option value="SUSPENDED" {{ old('status') == 'SUSPENDED' ? 'selected' : '' }}>Suspended</option>
-                                <option value="INACTIVE" {{ old('status') == 'INACTIVE' ? 'selected' : '' }}>Inactive</option>
-                            </select>
-                            @error('status')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+    
+                        <!-- Password -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="create_password" class="block text-sm font-medium text-gray-700">Password</label>
+                                <input 
+                                    type="password" 
+                                    name="password" 
+                                    id="create_password" 
+                                    required
+                                    class="mt-1 block w-full rounded-sm border-gray-200 systems.users focus:border-primary focus:ring-primary sm:text-sm @error('password') border-red-500 @enderror"
+                                >
+                                @error('password')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+    
+                            <div>
+                                <label for="create_password_confirmation" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                                <input 
+                                    type="password" 
+                                    name="password_confirmation" 
+                                    id="create_password_confirmation" 
+                                    required
+                                    class="mt-1 block w-full rounded-sm border-gray-200 systems.users focus:border-primary focus:ring-primary sm:text-sm"
+                                >
+                            </div>
                         </div>
-                    </div>
+    
+                        <!-- district & position -->
+                        <div class=" border-t border-gray-100 mt-2 pt-2">
+                            <p class="text-xxs mb-3 text-gray-500">District assigment is optional</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                    <!-- Password -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="create_password" class="block text-sm font-medium text-gray-700">Password</label>
-                            <input 
-                                type="password" 
-                                name="password" 
-                                id="create_password" 
-                                required
-                                class="mt-1 block w-full rounded-sm border-gray-200 systems.users focus:border-primary focus:ring-primary sm:text-sm @error('password') border-red-500 @enderror"
-                            >
-                            @error('password')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                                
+                                <div>
+                                    <label for="create_district_id" class="block text-sm font-medium text-gray-700">District</label>
+                                    <select 
+                                        name="district_id" 
+                                        id="create_district_id" 
+                                        class="mt-1 block w-full rounded-sm border-gray-200 systems.users focus:border-primary focus:ring-primary sm:text-sm @error('district_id') border-red-500 @enderror"
+                                    >
+                                        <option value="">No District Assigned</option>
+                                        @foreach($districts as $district)
+                                            <option value="{{ $district->id }}" {{ old('district_id') == $district->id ? 'selected' : '' }}>
+                                                    {{ $district->short_code }} - {{ $district->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('district_id')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+            
+                                <!-- District Position -->
+                                <div>
+                                    <label for="create_district_position" class="block text-sm font-medium text-gray-700">Position</label>
+                                    <select 
+                                        name="district_position" 
+                                        id="create_district_position" 
+                                        class="mt-1 block w-full rounded-sm border-gray-200 systems.users focus:border-primary focus:ring-primary sm:text-sm @error('district_id') border-red-500 @enderror"
+                                    >
+                                        <option value="">Select Position</option>
+                                        <option value="dm">DM</option>
+                                        <option value="cso">CSO</option>
+                                        <option value="cra">CRA</option>
+                                        <option value="wqo">WQO</option>
+                                        <option value="wos">WOS</option>
+                                        <option value="ds">DS</option>
+            
+                                    </select>
+                                    @error('district_id')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
                         </div>
-
-                        <div>
-                            <label for="create_password_confirmation" class="block text-sm font-medium text-gray-700">Confirm Password</label>
-                            <input 
-                                type="password" 
-                                name="password_confirmation" 
-                                id="create_password_confirmation" 
-                                required
-                                class="mt-1 block w-full rounded-sm border-gray-200 systems.users focus:border-primary focus:ring-primary sm:text-sm"
-                            >
+    
+                        <!-- Submit -->
+                        <div class="pt-2 flex justify-end space-x-3">
+                            <button type="button" 
+                                x-on:click="$dispatch('close-modal', 'create-user')"
+                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-sm hover:bg-gray-200 transition">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                class="px-6 py-2 bg-primary text-white text-sm font-medium rounded-sm systems.users hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                                <i data-lucide="user-plus" class="w-4 h-4 inline mr-2"></i>
+                                Create User
+                            </button>
                         </div>
-                    </div>
-
-                    <!-- Device -->
-                    <div>
-                        <label for="create_device_id" class="block text-sm font-medium text-gray-700">Assign Device (Optional)</label>
-                        <select 
-                            name="device_id" 
-                            id="create_device_id" 
-                            class="mt-1 block w-full rounded-sm border-gray-200 systems.users focus:border-primary focus:ring-primary sm:text-sm @error('device_id') border-red-500 @enderror"
-                        >
-                            <option value="">No Device Assigned</option>
-                            @foreach($devices as $device)
-                                <option value="{{ $device->id }}" {{ old('device_id') == $device->id ? 'selected' : '' }}>
-                                    {{ $device->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('device_id')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Submit -->
-                    <div class="pt-2 flex justify-end space-x-3">
-                        <button type="button" 
-                            x-on:click="$dispatch('close-modal', 'create-user')"
-                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-sm hover:bg-gray-200 transition">
-                            Cancel
-                        </button>
-                        <button type="submit"
-                            class="px-6 py-2 bg-primary text-white text-sm font-medium rounded-sm systems.users hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
-                            <i data-lucide="user-plus" class="w-4 h-4 inline mr-2"></i>
-                            Create User
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </x-modal>
 
@@ -454,6 +486,14 @@
                                     <span class="text-xs text-gray-500" x-text="viewUser.role"></span>
                                     <span class="text-gray-300">|</span>
                                     <span class="text-xs text-gray-500" x-text="viewUser.created_at"></span>
+                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                            :class="{
+                                                'bg-green-100 text-green-800': viewUser.status === 'ACTIVE',
+                                                'bg-yellow-100 text-yellow-800': viewUser.status === 'SUSPENDED',
+                                                'bg-red-100 text-red-800': viewUser.status === 'INACTIVE'
+                                            }"
+                                            x-text="viewUser.status"
+                                        ></span>
                                     
                                 </div>
                             </div>
@@ -491,34 +531,18 @@
                                     </div>
                                 </div>
 
-                                <!-- device -->
+                                <!-- district -->
                                 <div class="bg-gray-50 px-4 py-2 border border-gray-100">
-                                    <label class="block text-xxs font-medium text-gray-400 uppercase tracking-wide">Device Assignment</label>
+                                    <label class="block text-xxs font-medium text-gray-400 uppercase tracking-wide">District</label>
                                     <div class="mt-1">
-                                        <template x-if="viewUser.device_name">
+                                        <template x-if="viewUser.district">
                                             <span class="text-sm text-gray-900 flex items-center space-x-2">
-                                                <i data-lucide="smartphone" class="w-4 h-4 text-gray-400"></i>
-                                                <span x-text="viewUser.device_name"></span>
+                                                <span x-text="viewUser.district"></span>
                                             </span>
                                         </template>
-                                        <template x-if="!viewUser.device_name">
-                                            <span class="text-sm text-gray-400">No device assigned</span>
+                                        <template x-if="!viewUser.district">
+                                            <span class="text-sm text-gray-400">No district assigned</span>
                                         </template>
-                                    </div>
-                                </div>
-
-                                <!-- account status -->
-                                <div class="bg-gray-50 px-4 py-2 border border-gray-100"">
-                                    <label class="block text-xxs font-medium text-gray-400 uppercase tracking-wide">Account Status</label>
-                                    <div class="mt-1">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                                            :class="{
-                                                'bg-green-100 text-green-800': viewUser.status === 'ACTIVE',
-                                                'bg-yellow-100 text-yellow-800': viewUser.status === 'SUSPENDED',
-                                                'bg-red-100 text-red-800': viewUser.status === 'INACTIVE'
-                                            }"
-                                            x-text="viewUser.status"
-                                        ></span>
                                     </div>
                                 </div>
 

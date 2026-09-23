@@ -34,17 +34,110 @@ class DashboardController extends Controller
         $this->auditLog = $auditLog;
     }
 
-
-
+    /*
+    |--------------------------------------------------------------------------
+    | District Scoping Helpers
+    |--------------------------------------------------------------------------
+    |
+    | A SUPERVISOR is restricted to a single district (auth()->user()->district).
+    | A district can contain multiple zones (zones.district = district->name,
+    | compared case-insensitively). Every other resource is scoped down to that
+    | set of zone IDs:
+    |   - CustomerAccount has a direct zone_id column.
+    |   - CsaAssignment has a direct zone_id column.
+    |   - Reading, ReadingResolve, ReadingReread do not have a district/zone
+    |     column of their own, so they are scoped via their relationship back
+    |     to CustomerAccount (reading->account->zone_id).
+    |   - CustomerAccountIssue has no account relation at all (an issue can be
+    |     filed against an account we have no record of yet). It is instead
+    |     scoped via reported_by -> the CSA (user) who submitted it, using
+    |     $csaIds (CSAs assigned within the district) rather than $zoneIds.
+    |   - Dma is assumed to carry a zone_id column (DMA = District Metering
+    |     Area, sitting under a zone). CONFIRM this column name against the
+    |     actual Dma model/migration before relying on this in production.
+    |   - Flaggable is polymorphic (flaggable_type/flaggable_id) and is scoped
+    |     by resolving which CustomerAccount/Reading ids fall inside the
+    |     district and matching against those. This assumes flaggable_type
+    |     stores the default Eloquent morph class strings
+    |     (App\Models\CustomerAccount / App\Models\Reading) — confirm if you
+    |     use morph map aliases.
+    |
+    | Non-SUPERVISOR roles (e.g. ADMIN) get no scoping at all — every helper
+    | below returns null in that case, and every query below is written to
+    | skip its whereIn/whereHas clause when the scope is null.
+    |
+    */
 
     /**
-     * Overview
+     * Zone IDs the current user is allowed to see.
+     * null = unrestricted (non-supervisor / no district set).
      */
+    private function scopedZoneIds(): ?array
+    {
+        $user = auth()->user();
+
+        if (!$user || $user->role !== 'SUPERVISOR' || !$user->district) {
+            return null;
+        }
+
+        $districtName = strtolower($user->district->name);
+
+        return Zone::whereRaw('LOWER(district) = ?', [$districtName])
+            ->pluck('id')
+            ->toArray();
+    }
+
+    /**
+     * CSA (user) IDs who have ever been assigned to a zone in $zoneIds.
+     * null in => null out (unrestricted).
+     */
+    private function scopedCsaIds(?array $zoneIds): ?array
+    {
+        if ($zoneIds === null) {
+            return null;
+        }
+
+        return CsaAssignment::whereIn('zone_id', $zoneIds)
+            ->distinct()
+            ->pluck('csa_id')
+            ->toArray();
+    }
+
+    /**
+     * Apply account-level district scoping to any query builder that has
+     * (or can reach, via whereHas) a customer_accounts.zone_id column.
+     */
+    private function applyAccountZoneScope($query, ?array $zoneIds, string $accountColumn = 'zone_id')
+    {
+        if ($zoneIds === null) {
+            return $query;
+        }
+
+        return $query->whereIn($accountColumn, $zoneIds);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Overview
+    |--------------------------------------------------------------------------
+    */
     public function index()
     {
-        $totalCsas = User::where('role', 'CSA')->count();
-        $totalZones = Zone::count();
-        $totalDmas = Dma::count();
+        $zoneIds = $this->scopedZoneIds();
+        $csaIds = $this->scopedCsaIds($zoneIds);
+
+        $totalCsas = User::where('role', 'CSA')
+            ->when($csaIds !== null, fn($q) => $q->whereIn('id', $csaIds))
+            ->count();
+
+        $totalZones = Zone::when($zoneIds !== null, fn($q) => $q->whereIn('id', $zoneIds))
+            ->count();
+
+        // NOTE: assumes Dma has a zone_id column — confirm against the Dma model/migration.
+        $totalDmas = Dma::when($zoneIds !== null, fn($q) => $q->whereIn('zone_id', $zoneIds))
+            ->count();
+
+        // Billing cycles are global (not district-specific), so no scoping here.
         $totalBillingCycles = BillingCycle::count();
 
         // Latest billing cycle
@@ -67,7 +160,7 @@ class DashboardController extends Controller
         $readings = [];
         $reportedIssues = 0;
         $totalFlagged = 0;
-         $flaggedReadings = collect();
+        $flaggedReadings = collect();
 
 
         $read = 0;
@@ -93,7 +186,9 @@ class DashboardController extends Controller
             $assignedZoneIds = CsaAssignment::where(
                 'billing_cycle_id',
                 $currentCycle->id
-            )->pluck('zone_id');
+            )
+                ->when($zoneIds !== null, fn($q) => $q->whereIn('zone_id', $zoneIds))
+                ->pluck('zone_id');
 
             // Total accounts in assigned zones
             $total = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
@@ -122,31 +217,42 @@ class DashboardController extends Controller
 
         if ($currentCycle) {
 
-         $totalTechnicalCases = Reading::where(
-                    'billing_cycle_id',
-                    $currentCycle->id
-                )
+            $totalTechnicalCases = Reading::where(
+                'billing_cycle_id',
+                $currentCycle->id
+            )
                 ->whereIn('this_month_code', $technicalCodes)
+                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                    $q->whereHas('account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                })
                 ->count();
 
-            
+
             // Total assigned CSA records
             $assignedCsas = CsaAssignment::where(
                 'billing_cycle_id',
                 $currentCycle->id
-            )->count();
+            )
+                ->when($zoneIds !== null, fn($q) => $q->whereIn('zone_id', $zoneIds))
+                ->count();
 
             // Total readings in cycle
             $totalReadings = Reading::where(
                 'billing_cycle_id',
                 $currentCycle->id
-            )->count();
+            )
+                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                    $q->whereHas('account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                })
+                ->count();
 
             // Completion rate
             $assignedZoneIds = CsaAssignment::where(
                 'billing_cycle_id',
                 $currentCycle->id
-            )->pluck('zone_id');
+            )
+                ->when($zoneIds !== null, fn($q) => $q->whereIn('zone_id', $zoneIds))
+                ->pluck('zone_id');
 
             $totalAssignedAccounts = CustomerAccount::whereIn(
                 'zone_id',
@@ -157,16 +263,27 @@ class DashboardController extends Controller
                 ? round(($totalReadings / $totalAssignedAccounts) * 100, 2)
                 : 0;
 
-                
+
+            // CustomerAccountIssue has no account relation (issues can be filed
+            // against accounts we have no record of yet), so it is scoped via
+            // reported_by -> the CSA who submitted it, using $csaIds instead of
+            // $zoneIds/whereHas('account', ...).
             $reportedIssues = CustomerAccountIssue::whereDate(
-                'created_at','>=', $currentCycle->start_date
-            )->count();
+                'created_at',
+                '>=',
+                $currentCycle->start_date
+            )
+                ->when($csaIds !== null, fn($q) => $q->whereIn('reported_by', $csaIds))
+                ->count();
             /*
             |--------------------------------------------------------------------------
             | Top CSAs
             |--------------------------------------------------------------------------
             */
-        $topCsas = Reading::where('billing_cycle_id', $currentCycle->id)
+            $topCsas = Reading::where('billing_cycle_id', $currentCycle->id)
+                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                    $q->whereHas('account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                })
                 ->select('csa_id', DB::raw('COUNT(*) as total_readings'))
                 ->groupBy('csa_id')
                 ->orderByDesc('total_readings')
@@ -188,10 +305,16 @@ class DashboardController extends Controller
             */
             $accountsRead = Reading::where('billing_cycle_id', $currentCycle->id)
                 ->where('status', 'READ')
+                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                    $q->whereHas('account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                })
                 ->count();
 
             $accountsNotRead = Reading::where('billing_cycle_id', $currentCycle->id)
                 ->where('status', 'NOT_READ')
+                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                    $q->whereHas('account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                })
                 ->count();
 
             /*
@@ -213,43 +336,76 @@ class DashboardController extends Controller
                 ->whereNotNull('current_reading')
                 ->whereRaw('ABS(current_reading - previous_reading) < 0.001')
                 ->where('billing_cycle_id', $currentCycle->id)
+                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                    $q->whereHas('account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                })
                 ->count();
 
 
 
-              // total flagged
-                $totalFlagged = Flaggable::active()->distinct('flaggable_id')->count();
+            // total flagged (scoped to accounts/readings that fall inside the district)
+            $totalFlagged = Flaggable::active()
+                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                    $q->where(function ($outer) use ($zoneIds) {
+                        $outer->where(function ($accountFlags) use ($zoneIds) {
+                            $accountFlags->where('flaggable_type', CustomerAccount::class)
+                                ->whereIn('flaggable_id', function ($sub) use ($zoneIds) {
+                                    $sub->select('id')
+                                        ->from('customer_accounts')
+                                        ->whereIn('zone_id', $zoneIds);
+                                });
+                        })->orWhere(function ($readingFlags) use ($zoneIds) {
+                            $readingFlags->where('flaggable_type', Reading::class)
+                                ->whereIn('flaggable_id', function ($sub) use ($zoneIds) {
+                                    $sub->select('readings.id')
+                                        ->from('readings')
+                                        ->join('customer_accounts', 'customer_accounts.id', '=', 'readings.account_id')
+                                        ->whereIn('customer_accounts.zone_id', $zoneIds);
+                                });
+                        });
+                    });
+                })
+                ->distinct('flaggable_id')
+                ->count();
         }
 
-        
 
-        if($currentCycle) {
+
+        if ($currentCycle) {
             $readings = Reading::with([
-            'pendingReread',
-            ])->where('billing_cycle_id', $currentCycle->id)->paginate(10);
-        
+                'pendingReread',
+            ])
+                ->where('billing_cycle_id', $currentCycle->id)
+                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                    $q->whereHas('account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                })
+                ->paginate(10);
 
-        // Readings that have at least one flag
-        $flaggedReadings = Reading::whereHas('flags')
-            ->with(['flags'])  // eager load flags 
-            ->latest()
-            ->limit(50)
-            ->get();
 
+            // Readings that have at least one flag
+            $flaggedReadings = Reading::whereHas('flags')
+                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                    $q->whereHas('account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                })
+                ->with(['flags'])  // eager load flags
+                ->latest()
+                ->limit(50)
+                ->get();
         }
         // Accounts that have at least one flag
         $flaggedAccounts = CustomerAccount::whereHas('flags')
+            ->when($zoneIds !== null, fn($q) => $q->whereIn('zone_id', $zoneIds))
             ->with('flags')  // eager load flags
             ->latest()
             ->limit(50)
             ->get();
 
-       
-
-        $totalAccountsLoaded = CustomerAccount::count();
 
 
-       
+        $totalAccountsLoaded = CustomerAccount::when($zoneIds !== null, fn($q) => $q->whereIn('zone_id', $zoneIds))
+            ->count();
+
+
 
         return view('dashboard.index', compact(
             'totalCsas',
@@ -282,9 +438,20 @@ class DashboardController extends Controller
      */
     public function supervisor()
     {
-        $totalCsas = User::where('role', 'CSA')->count();
-        $totalZones = Zone::count();
-        $totalDmas = Dma::count();
+        $zoneIds = $this->scopedZoneIds();
+        $csaIds = $this->scopedCsaIds($zoneIds);
+
+        $totalCsas = User::where('role', 'CSA')
+            ->when($csaIds !== null, fn($q) => $q->whereIn('id', $csaIds))
+            ->count();
+
+        $totalZones = Zone::when($zoneIds !== null, fn($q) => $q->whereIn('id', $zoneIds))
+            ->count();
+
+        // NOTE: assumes Dma has a zone_id column — confirm against the Dma model/migration.
+        $totalDmas = Dma::when($zoneIds !== null, fn($q) => $q->whereIn('zone_id', $zoneIds))
+            ->count();
+
         $totalBillingCycles = BillingCycle::count();
 
         // Latest billing cycle
@@ -311,12 +478,7 @@ class DashboardController extends Controller
         $totalReReadCompleted = 0;
         $totalReReadPending = 0;
         $accountReadList = [];
-        
 
-
-    
-
-    
 
         /*
         |--------------------------------------------------------------------------
@@ -330,7 +492,9 @@ class DashboardController extends Controller
             $assignedZoneIds = CsaAssignment::where(
                 'billing_cycle_id',
                 $currentCycle->id
-            )->pluck('zone_id');
+            )
+                ->when($zoneIds !== null, fn($q) => $q->whereIn('zone_id', $zoneIds))
+                ->pluck('zone_id');
 
             // Total accounts in assigned zones
             $total = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
@@ -355,29 +519,41 @@ class DashboardController extends Controller
             // Accounts WITHOUT readings for the CURRENT billing cycle
             $pending = $total - $read;
 
-            $accountReadList = CustomerAccount::with('assignedCsa')->whereIn('zone_id', $assignedZoneIds)->whereExists(function ($query) {
-                $query->selectRaw(1)
-                    ->from('readings')
-                    ->whereColumn('readings.account_id', 'customer_accounts.id');
-            })->paginate(50);
-
-            $accountPendingList = CustomerAccount::with('assignedCsa')->whereIn('zone_id', $assignedZoneIds)->whereNotExists(function ($query) {
+            $accountReadList = CustomerAccount::with('assignedCsa')
+                ->whereIn('zone_id', $assignedZoneIds)
+                ->whereExists(function ($query) {
                     $query->selectRaw(1)
                         ->from('readings')
                         ->whereColumn('readings.account_id', 'customer_accounts.id');
-                })->paginate(50);
-      
+                })
+                ->paginate(50);
+
+            $accountPendingList = CustomerAccount::with('assignedCsa')
+                ->whereIn('zone_id', $assignedZoneIds)
+                ->whereNotExists(function ($query) {
+                    $query->selectRaw(1)
+                        ->from('readings')
+                        ->whereColumn('readings.account_id', 'customer_accounts.id');
+                })
+                ->paginate(50);
+
             // Total readings in cycle
             $totalReadings = Reading::where(
                 'billing_cycle_id',
                 $currentCycle->id
-            )->count();
+            )
+                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                    $q->whereHas('account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                })
+                ->count();
 
             // Completion rate
             $assignedZoneIds = CsaAssignment::where(
                 'billing_cycle_id',
                 $currentCycle->id
-            )->pluck('zone_id');
+            )
+                ->when($zoneIds !== null, fn($q) => $q->whereIn('zone_id', $zoneIds))
+                ->pluck('zone_id');
 
             $totalAssignedAccounts = CustomerAccount::whereIn(
                 'zone_id',
@@ -390,6 +566,9 @@ class DashboardController extends Controller
 
             $accountsRead = Reading::where('billing_cycle_id', $currentCycle->id)
                 ->where('status', 'READ')
+                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                    $q->whereHas('account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                })
                 ->count();
 
 
@@ -397,26 +576,39 @@ class DashboardController extends Controller
             $totalReRead = ReadingReread::where('billing_cycle_id', $currentCycle->id)
                 ->where('status', 'completed')
                 ->where('updated_at', '>=', now()->subDay())
+                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                    $q->whereHas('reading.account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                })
                 ->count();
 
             $totalReReadPending = ReadingReread::where('billing_cycle_id', $currentCycle->id)
                 ->where('status', 'pending')
+                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                    $q->whereHas('reading.account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                })
                 ->count();
 
             $totalReReadCompleted = ReadingReread::where('billing_cycle_id', $currentCycle->id)
                 ->where('status', 'completed')
+                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                    $q->whereHas('reading.account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                })
                 ->count();
-         
+
         }
 
-        if($currentCycle) {
+        if ($currentCycle) {
             $readings = Reading::with([
-            'pendingReread',
-            ])->where('billing_cycle_id', $currentCycle->id)->paginate(10);
+                'pendingReread',
+            ])
+                ->where('billing_cycle_id', $currentCycle->id)
+                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                    $q->whereHas('account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                })
+                ->paginate(10);
         }
 
 
-      
 
         return view('dashboard.supervisor', [
             'overviewData' => [
@@ -450,6 +642,8 @@ class DashboardController extends Controller
      */
     public function technical()
     {
+        $zoneIds = $this->scopedZoneIds();
+
         $currentCycle = BillingCycle::where('status', 'active')->first();
 
         /*
@@ -492,13 +686,16 @@ class DashboardController extends Controller
             */
 
             $technicalReadings = Reading::with([
-                    'account',
-                    'zone',
-                    'latestResolve',
-                ])
+                'account',
+                'zone',
+                'latestResolve',
+            ])
                 ->where('billing_cycle_id', $currentCycle->id)
                 ->whereIn('this_month_code', $technicalCodes)
                 ->whereDoesntHave('resolves')
+                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                    $q->whereHas('account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                })
                 ->latest()
                 ->paginate(10);
 
@@ -511,10 +708,13 @@ class DashboardController extends Controller
             */
 
             $totalTechnicalCases = Reading::where(
-                    'billing_cycle_id',
-                    $currentCycle->id
-                )
+                'billing_cycle_id',
+                $currentCycle->id
+            )
                 ->whereIn('this_month_code', $technicalCodes)
+                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                    $q->whereHas('account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                })
                 ->count();
 
 
@@ -526,15 +726,19 @@ class DashboardController extends Controller
             */
 
             $resolvedCases = ReadingResolve::where(
-                    'billing_cycle_id',
-                    $currentCycle->id
-                )
-                ->whereHas('reading', function ($query) use ($technicalCodes) {
+                'billing_cycle_id',
+                $currentCycle->id
+            )
+                ->whereHas('reading', function ($query) use ($technicalCodes, $zoneIds) {
 
                     $query->whereIn(
                         'this_month_code',
                         $technicalCodes
                     );
+
+                    if ($zoneIds !== null) {
+                        $query->whereHas('account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                    }
 
                 })
                 ->count();
@@ -549,10 +753,13 @@ class DashboardController extends Controller
 
 
             $resolvedToday = ReadingResolve::where(
-                    'billing_cycle_id',
-                    $currentCycle->id
-                )
+                'billing_cycle_id',
+                $currentCycle->id
+            )
                 ->where('created_at', '>=', now()->subDay())
+                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                    $q->whereHas('reading.account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                })
                 ->count();
 
 
@@ -573,13 +780,16 @@ class DashboardController extends Controller
             */
 
             $technicalDistribution = Reading::where(
-                    'billing_cycle_id',
-                    $currentCycle->id
-                )
+                'billing_cycle_id',
+                $currentCycle->id
+            )
                 ->whereIn(
                     'this_month_code',
                     $technicalCodes
                 )
+                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                    $q->whereHas('account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                })
                 ->select(
                     'this_month_code',
                     DB::raw('COUNT(*) as total_cases')
@@ -684,6 +894,9 @@ class DashboardController extends Controller
             ]);
         }
 
+        $zoneIds = $this->scopedZoneIds();
+        $csaIds = $this->scopedCsaIds($zoneIds);
+
         /**
          * CUSTOMER ACCOUNTS
          * Adjust searchable fields as per schema (account_number, name, meter_no, etc.)
@@ -692,6 +905,7 @@ class DashboardController extends Controller
             ->where('account_number', 'like', "%{$query}%")
             ->orWhere('customer_name', 'like', "%{$query}%")
             ->orWhere('meter_number', 'like', "%{$query}%")
+            ->when($zoneIds !== null, fn($q) => $q->whereIn('zone_id', $zoneIds))
             ->limit(10)
             ->get()
             ->map(function ($account) {
@@ -710,9 +924,10 @@ class DashboardController extends Controller
             ->where('role', 'CSA')
             ->where(function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
-                ->orWhere('email', 'like', "%{$query}%")
-                ->orWhere('username', 'like', "%{$query}%");
+                    ->orWhere('email', 'like', "%{$query}%")
+                    ->orWhere('username', 'like', "%{$query}%");
             })
+            ->when($csaIds !== null, fn($q) => $q->whereIn('id', $csaIds))
             ->limit(10)
             ->get()
             ->map(function ($user) {

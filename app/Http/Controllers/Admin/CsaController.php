@@ -14,6 +14,7 @@ use App\Models\CsaAssignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 use App\Services\AuditLogService;
 
@@ -26,12 +27,71 @@ class CsaController extends Controller
         $this->auditLog = $auditLog;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | District Scoping Helpers
+    |--------------------------------------------------------------------------
+    |
+    | Same convention as the other Admin controllers: a SUPERVISOR is
+    | restricted to the zone(s) under auth()->user()->district (case-
+    | insensitive match against zones.district). Every other role gets
+    | null => unrestricted.
+    |
+    | A CSA (User) has no zone/district of its own — it is only ever tied to
+    | a zone through a CsaAssignment. "This CSA is in my district" therefore
+    | means "this CSA has (or has ever had) a CsaAssignment in one of my
+    | district's zones" — the same $csaIds convention already used in
+    | DashboardController. Single-CSA actions run that check through
+    | ensureCSA(), which now also 404s (not 403) when the CSA is out of
+    | scope, matching the existing role check below it: a supervisor
+    | shouldn't be able to tell "wrong district" from "doesn't exist".
+    |
+    */
+
+    /**
+     * Zone IDs the current user is allowed to see.
+     * null = unrestricted (non-supervisor / no district set).
+     */
+    private function scopedZoneIds(): ?array
+    {
+        $user = auth()->user();
+
+        if (!$user || $user->role !== 'SUPERVISOR' || !$user->district) {
+            return null;
+        }
+
+        $districtName = strtolower($user->district->name);
+
+        return Zone::whereRaw('LOWER(district) = ?', [$districtName])
+            ->pluck('id')
+            ->toArray();
+    }
+
+    /**
+     * CSA (user) IDs who have ever been assigned to a zone in $zoneIds.
+     * null in => null out (unrestricted).
+     */
+    private function scopedCsaIds(?array $zoneIds): ?array
+    {
+        if ($zoneIds === null) {
+            return null;
+        }
+
+        return CsaAssignment::whereIn('zone_id', $zoneIds)
+            ->distinct()
+            ->pluck('csa_id')
+            ->toArray();
+    }
+
 
     /**
      * List all CSAs
      */
     public function index(Request $request)
     {
+        $zoneIds = $this->scopedZoneIds();
+        $csaIds = $this->scopedCsaIds($zoneIds);
+
         $currentCycle = BillingCycle::where('status', 'active')->first();
 
         $query = User::where('role', 'CSA')
@@ -41,7 +101,12 @@ class CsaController extends Controller
                     $q->where('status', 'read');
                 }
             ])
-            ->orderByDesc('readings_count');
+            ->orderByDesc('readings_count')
+            // Mandatory district scope — a supervisor only ever sees CSAs
+            // currently assigned to a zone in their district.
+            ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                $q->whereHas('activeAssignment', fn($aq) => $aq->whereIn('zone_id', $zoneIds));
+            });
 
         // Default values when there is no active billing cycle
         $withReadings = 0;
@@ -59,6 +124,7 @@ class CsaController extends Controller
                 $q->where('billing_cycle_id', $currentCycle->id)
                     ->where('status', 'read');
             })
+            ->when($csaIds !== null, fn($q) => $q->whereIn('id', $csaIds))
             ->count();
 
         $withoutReadings = User::where('role', 'CSA')
@@ -69,6 +135,7 @@ class CsaController extends Controller
                 $q->where('billing_cycle_id', $currentCycle->id)
                     ->where('status', 'read');
             })
+            ->when($csaIds !== null, fn($q) => $q->whereIn('id', $csaIds))
             ->count();
 
         // Status filter - current billing cycle only
@@ -95,7 +162,9 @@ class CsaController extends Controller
         }
     }
 
-        // Zone filter
+        // Zone filter (combined with the mandatory scope above, so a
+        // supervisor requesting a zone outside their district simply gets
+        // zero results rather than leaking another district's CSAs).
         if ($request->filled('zone')) {
             $query->whereHas('activeAssignment', function ($q) use ($request) {
                 $q->where('zone_id', $request->zone);
@@ -109,10 +178,12 @@ class CsaController extends Controller
 
         $csas = $query->paginate(10)->withQueryString();
 
-        // Total CSA count (not scoped)
-        $csasTotal = User::where('role', 'CSA')->count();
+        // Total CSA count — scoped to the district when restricted.
+        $csasTotal = User::where('role', 'CSA')
+            ->when($csaIds !== null, fn($q) => $q->whereIn('id', $csaIds))
+            ->count();
 
-        $zones = Zone::all();
+        $zones = Zone::when($zoneIds !== null, fn($q) => $q->whereIn('id', $zoneIds))->get();
 
         return view('readings.csa.index', compact(
             'csas',
@@ -128,7 +199,9 @@ class CsaController extends Controller
      */
     public function create()
     {
-        $zones = Zone::all();
+        $zoneIds = $this->scopedZoneIds();
+
+        $zones = Zone::when($zoneIds !== null, fn($q) => $q->whereIn('id', $zoneIds))->get();
 
         return view('readings.csa.create', compact('zones'));
     }
@@ -138,6 +211,10 @@ class CsaController extends Controller
      */
     public function store(Request $request)
     {
+        // NOTE: creating a CSA here does not assign them to a zone (that
+        // happens separately via assign()/storeAssignment(), which already
+        // enforces district scope below) — so there is nothing to scope in
+        // this method itself.
         $data = $request->validate([
             'name' => 'required|string|max:100',
             'username' => 'required|string|max:100|unique:users,username',
@@ -173,7 +250,10 @@ class CsaController extends Controller
      */
     public function show(User $csa)
     {
-        $this->ensureCSA($csa);
+        $zoneIds = $this->scopedZoneIds();
+        $csaIds = $this->scopedCsaIds($zoneIds);
+
+        $this->ensureCSA($csa, $csaIds);
 
         // $assignments = $csa->assignments()
         //     ->with(['zone', 'dma', 'billingCycle'])
@@ -187,6 +267,7 @@ $currentCycle = BillingCycle::where('status', 'active')->first();
 
          $zones = Zone::withCount('customerAccounts')
             ->has('customerAccounts')
+            ->when($zoneIds !== null, fn($q) => $q->whereIn('id', $zoneIds))
             ->get();
             
         $cycles = BillingCycle::latest()->get();
@@ -208,9 +289,12 @@ $currentCycle = BillingCycle::where('status', 'active')->first();
      */
     public function edit(User $csa)
     {
-        $this->ensureCSA($csa);
+        $zoneIds = $this->scopedZoneIds();
+        $csaIds = $this->scopedCsaIds($zoneIds);
 
-        $zones = Zone::all();
+        $this->ensureCSA($csa, $csaIds);
+
+        $zones = Zone::when($zoneIds !== null, fn($q) => $q->whereIn('id', $zoneIds))->get();
 
         return view('readings.csa.edit', compact('csa', 'zones'));
     }
@@ -220,7 +304,10 @@ $currentCycle = BillingCycle::where('status', 'active')->first();
      */
    public function update(Request $request, User $csa)
     {
-        $this->ensureCSA($csa);
+        $zoneIds = $this->scopedZoneIds();
+        $csaIds = $this->scopedCsaIds($zoneIds);
+
+        $this->ensureCSA($csa, $csaIds);
 
         $data = $request->validate([
             'name' => 'required|string|max:100',
@@ -228,7 +315,14 @@ $currentCycle = BillingCycle::where('status', 'active')->first();
             'email' => "nullable|email|unique:users,email,{$csa->id}",
             'status' => 'required|in:ACTIVE,SUSPENDED,INACTIVE',
             'password' => 'nullable|min:6',
-            'zone_id' => 'nullable|exists:zones,id',
+            'zone_id' => [
+                'nullable',
+                'exists:zones,id',
+                // If this ever reassigns the CSA's zone directly, a
+                // supervisor must not be able to move them outside their
+                // district by editing the request body.
+                $zoneIds !== null ? Rule::in($zoneIds) : 'nullable',
+            ],
         ]);
 
         // Capture original state (before update)
@@ -274,7 +368,10 @@ $currentCycle = BillingCycle::where('status', 'active')->first();
      */
     public function destroy(User $csa)
     {
-        $this->ensureCSA($csa);
+        $zoneIds = $this->scopedZoneIds();
+        $csaIds = $this->scopedCsaIds($zoneIds);
+
+        $this->ensureCSA($csa, $csaIds);
 
         // Optional: prevent delete if has readings
         if ($csa->readings()->exists()) {
@@ -306,10 +403,17 @@ $currentCycle = BillingCycle::where('status', 'active')->first();
      */
     public function assign(User $csa)
     {
-        $this->ensureCSA($csa);
+        $zoneIds = $this->scopedZoneIds();
+        $csaIds = $this->scopedCsaIds($zoneIds);
 
-        $zones = Zone::all();
-        $dmas = Dma::all();
+        $this->ensureCSA($csa, $csaIds);
+
+        $zones = Zone::when($zoneIds !== null, fn($q) => $q->whereIn('id', $zoneIds))->get();
+
+        // NOTE: assumes Dma has a zone_id column — confirm against the Dma
+        // model/migration (same assumption made in the other controllers).
+        $dmas = Dma::when($zoneIds !== null, fn($q) => $q->whereIn('zone_id', $zoneIds))->get();
+
         $cycles = BillingCycle::latest()->get();
 
         $assignments = $csa->assignments()
@@ -330,11 +434,22 @@ $currentCycle = BillingCycle::where('status', 'active')->first();
      */
     public function storeAssignment(Request $request, User $csa)
      {
-        $this->ensureCSA($csa);
+        $zoneIds = $this->scopedZoneIds();
+        $csaIds = $this->scopedCsaIds($zoneIds);
+
+        $this->ensureCSA($csa, $csaIds);
 
         // Validate input
         $data = $request->validate([
-            'zone_id' => 'required|exists:zones,id',
+            'zone_id' => [
+                'required',
+                'exists:zones,id',
+                // The zone dropdown in assign() is already scoped, but the
+                // request body is not trustworthy on its own — a supervisor
+                // must not be able to assign a CSA into another district's
+                // zone by editing the form before submitting.
+                $zoneIds !== null ? Rule::in($zoneIds) : 'nullable',
+            ],
             'billing_cycle_id' => 'required|exists:billing_cycles,id',
             'device_id' => 'nullable|exists:devices,id',
    
@@ -439,7 +554,10 @@ $currentCycle = BillingCycle::where('status', 'active')->first();
      */
     public function csaReadings(User $csa)
     {
-        $this->ensureCSA($csa);
+        $zoneIds = $this->scopedZoneIds();
+        $csaIds = $this->scopedCsaIds($zoneIds);
+
+        $this->ensureCSA($csa, $csaIds);
 
         // Current billing cycle
         $currentCycle = BillingCycle::where('status', 'active')->first();
@@ -529,7 +647,10 @@ $currentCycle = BillingCycle::where('status', 'active')->first();
 
     public function assignedAccounts(User $csa)
     {
-        $this->ensureCSA($csa);
+        $zoneIds = $this->scopedZoneIds();
+        $csaIds = $this->scopedCsaIds($zoneIds);
+
+        $this->ensureCSA($csa, $csaIds);
 
         $currentCycle = BillingCycle::where('status', 'active')->first();
 
@@ -538,6 +659,15 @@ $currentCycle = BillingCycle::where('status', 'active')->first();
             ->first();
 
         abort_unless($assignment, 404, 'No active assignment for this CSA.');
+
+        // Defense in depth: ensureCSA() above only confirms the CSA has ever
+        // been assigned somewhere in the district. Their *current* active
+        // assignment could in theory sit in a different (out-of-scope) zone
+        // if it was recently changed — check that specifically before
+        // handing back its account list.
+        if ($zoneIds !== null && !in_array($assignment->zone_id, $zoneIds, true)) {
+            abort(404);
+        }
 
         $target = $assignment->target ?? 0;
 
@@ -604,7 +734,10 @@ $currentCycle = BillingCycle::where('status', 'active')->first();
 
     public function downloadPending(User $csa)
     {
-        $this->ensureCSA($csa);
+        $zoneIds = $this->scopedZoneIds();
+        $csaIds = $this->scopedCsaIds($zoneIds);
+
+        $this->ensureCSA($csa, $csaIds);
 
         $currentCycle = BillingCycle::where('status', 'active')->first();
         abort_unless($currentCycle, 404, 'No active billing cycle.');
@@ -614,6 +747,11 @@ $currentCycle = BillingCycle::where('status', 'active')->first();
             ->first();
 
         abort_unless($assignment, 404, 'No active assignment for this CSA.');
+
+        // Defense in depth — see the same check in assignedAccounts().
+        if ($zoneIds !== null && !in_array($assignment->zone_id, $zoneIds, true)) {
+            abort(404);
+        }
 
         $target = $assignment->target ?? 0;
 
@@ -685,10 +823,17 @@ $currentCycle = BillingCycle::where('status', 'active')->first();
     }
 
     /**
-     * Ensure user is CSA
+     * Ensure user is CSA (and, when the current user is a district-scoped
+     * SUPERVISOR, that this CSA belongs to their district). Both failures
+     * 404 rather than 403 so a supervisor can't distinguish "wrong role"
+     * from "wrong district" from "doesn't exist".
      */
-    private function ensureCSA(User $user): void
+    private function ensureCSA(User $user, ?array $csaIds = null): void
     {
         abort_if($user->role !== 'CSA', 404);
+
+        if ($csaIds !== null && !in_array($user->id, $csaIds, true)) {
+            abort(404);
+        }
     }
 }

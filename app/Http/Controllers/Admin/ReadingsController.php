@@ -29,24 +29,87 @@ class ReadingsController extends Controller
         $this->auditLog = $auditLog;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | District Scoping Helpers
+    |--------------------------------------------------------------------------
+    |
+    | Same convention as DashboardController: a SUPERVISOR is restricted to
+    | the zone(s) under auth()->user()->district (case-insensitive match
+    | against zones.district). Every other role gets null => unrestricted.
+    |
+    | This controller deals with individual Reading records users can act on
+    | directly via route-model binding (show/export/reread/resolve), so on
+    | top of filtering lists we also gate those single-record actions with
+    | isReadingInScope() to stop a supervisor acting on a reading outside
+    | their district just by guessing/typing its ID/URL.
+    |
+    */
+
+    /**
+     * Zone IDs the current user is allowed to see.
+     * null = unrestricted (non-supervisor / no district set).
+     */
+    private function scopedZoneIds(): ?array
+    {
+        $user = auth()->user();
+
+        if (!$user || $user->role !== 'SUPERVISOR' || !$user->district) {
+            return null;
+        }
+
+        $districtName = strtolower($user->district->name);
+
+        return Zone::whereRaw('LOWER(district) = ?', [$districtName])
+            ->pluck('id')
+            ->toArray();
+    }
+
+    /**
+     * Whether a given Reading falls inside the current user's scope.
+     * Always true when unrestricted (null scope).
+     */
+    private function isReadingInScope(Reading $reading, ?array $zoneIds): bool
+    {
+        if ($zoneIds === null) {
+            return true;
+        }
+
+        // Reading has no zone_id of its own; it is resolved via its account.
+        return $reading->account && in_array($reading->account->zone_id, $zoneIds, true);
+    }
+
 
     /**
      * Load initial page
      */
-   public function index(Request $request)
+    public function index(Request $request)
     {
+        $zoneIds = $this->scopedZoneIds();
+
         $currentCycle = BillingCycle::where('status', 'active')->first();
-        
+
         if (!$currentCycle) {
             return view('readings.reading.index', [
                 'readings' => collect(),
-                'zones' => Zone::orderBy('name')->get(),
+                'zones' => Zone::when($zoneIds !== null, fn($q) => $q->whereIn('id', $zoneIds))
+                    ->orderBy('name')
+                    ->get(),
                 'districts' => collect(),
             ]);
         }
 
         $query = Reading::with(['account', 'account.zone', 'csa', 'billingCycle'])
             ->where('billing_cycle_id', $currentCycle->id);
+
+        // Mandatory district scope — applied regardless of any filters below,
+        // so a supervisor can never see readings outside their district
+        // (including by tampering with the zone/district query params).
+        if ($zoneIds !== null) {
+            $query->whereHas('account', function ($accountQuery) use ($zoneIds) {
+                $accountQuery->whereIn('zone_id', $zoneIds);
+            });
+        }
 
         // Apply duration filter
         if ($request->duration === 'today') {
@@ -56,7 +119,7 @@ class ReadingsController extends Controller
         }
 
         // Apply search filter by account number
-       if ($request->filled('search')) {
+        if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
                 $q->whereHas('account', function ($accountQuery) use ($request) {
                     $accountQuery->where('account_number', 'like', '%' . $request->search . '%');
@@ -66,14 +129,17 @@ class ReadingsController extends Controller
             });
         }
 
-        // Apply zone filter
+        // Apply zone filter (combined with the mandatory scope above, so a
+        // supervisor requesting a zone outside their district simply gets
+        // zero results rather than leaking another district's readings).
         if ($request->filled('zone')) {
             $query->whereHas('account', function ($q) use ($request) {
                 $q->where('zone_id', $request->zone);
             });
         }
 
-        // Apply district filter (from zone relation)
+        // Apply district filter (from zone relation) — likewise combined
+        // with the mandatory scope above.
         if ($request->filled('district')) {
             $query->whereHas('account.zone', function ($q) use ($request) {
                 $q->where('district', $request->district);
@@ -82,19 +148,24 @@ class ReadingsController extends Controller
 
         $readings = $query->orderBy('reading_time', 'desc')->paginate(15)->withQueryString();
 
-        // Get zones for filter dropdown
-        $zones = Zone::orderBy('name')->get();
+        // Get zones for filter dropdown — scoped, so a supervisor is never
+        // even offered zones outside their district.
+        $zones = Zone::when($zoneIds !== null, fn($q) => $q->whereIn('id', $zoneIds))
+            ->orderBy('name')
+            ->get();
 
-        // Get districts from zones for filter dropdown
+        // Get districts from zones for filter dropdown — likewise scoped
+        // (a supervisor will only ever see their own district here).
         $districts = Zone::whereNotNull('district')
+            ->when($zoneIds !== null, fn($q) => $q->whereIn('id', $zoneIds))
             ->distinct()
             ->pluck('district')
             ->sort()
             ->values();
 
         return view('readings.reading.index', compact(
-            'readings', 
-            'zones', 
+            'readings',
+            'zones',
             'districts',
             'currentCycle'
         ));
@@ -104,9 +175,15 @@ class ReadingsController extends Controller
     /**
      * show reading with associated account
      */
-    public function show(Reading $reading){
-    
-        return view('readings.reading.show', compact('reading',));
+    public function show(Reading $reading)
+    {
+        $zoneIds = $this->scopedZoneIds();
+
+        if (! $this->isReadingInScope($reading, $zoneIds)) {
+            abort(403, 'This reading is outside your assigned district.');
+        }
+
+        return view('readings.reading.show', compact('reading'));
     }
 
     /**
@@ -114,6 +191,12 @@ class ReadingsController extends Controller
      */
     public function export(Reading $reading)
     {
+        $zoneIds = $this->scopedZoneIds();
+
+        if (! $this->isReadingInScope($reading, $zoneIds)) {
+            abort(403, 'This reading is outside your assigned district.');
+        }
+
         $consumption = (($reading->current_reading ?? 0) - ($reading->previous_reading ?? 0));
 
         $pdf = Pdf::loadView('readings.reading.pdf', [
@@ -141,12 +224,18 @@ class ReadingsController extends Controller
         return $pdf->download($fileName);
     }
 
-     /**
-     * Request re-reading 
+    /**
+     * Request re-reading
      */
 
     public function requestReread(Request $request, Reading $reading)
     {
+        $zoneIds = $this->scopedZoneIds();
+
+        if (! $this->isReadingInScope($reading, $zoneIds)) {
+            abort(403, 'This reading is outside your assigned district.');
+        }
+
         $validated = $request->validate([
             'reason' => ['required', 'string', 'min:10', 'max:1000'],
         ]);
@@ -180,6 +269,12 @@ class ReadingsController extends Controller
 
     public function completeReread(Reading $reading)
     {
+        $zoneIds = $this->scopedZoneIds();
+
+        if (! $this->isReadingInScope($reading, $zoneIds)) {
+            abort(403, 'This reading is outside your assigned district.');
+        }
+
         $reread = $reading->rereads()
             ->where('status', 'pending')
             ->latest()
@@ -201,13 +296,19 @@ class ReadingsController extends Controller
             'Re-read marked as completed.'
         );
     }
- 
+
 
 
 
     public function resolveReading(Request $request, Reading $reading)
     {
         $user = auth()->user();
+        $zoneIds = $this->scopedZoneIds();
+
+        if (! $this->isReadingInScope($reading, $zoneIds)) {
+            abort(403, 'This reading is outside your assigned district.');
+        }
+
         /*
         |--------------------------------------------------------------------------
         | Prevent duplicate resolution
@@ -286,10 +387,12 @@ class ReadingsController extends Controller
     }
 
 
-     public function exportExcel(Request $request)
+    public function exportExcel(Request $request)
     {
+        $zoneIds = $this->scopedZoneIds();
+
         $currentCycle = BillingCycle::where('status', 'active')->first();
-        
+
         if (!$currentCycle) {
             return back()->with('error', 'No active billing cycle found.');
         }
@@ -299,8 +402,28 @@ class ReadingsController extends Controller
         $zoneId = $request->filled('zone') ? $request->zone : null;
         $district = $request->filled('district') ? $request->district : null;
 
+        // NOTE: MeterReadingsExport currently takes a single $zoneId / $district
+        // value, not an array of scoped zone IDs — this refactor works within
+        // that existing signature rather than changing the export class.
+        if ($zoneIds !== null) {
+            // Supervisor: the district they are allowed to export is fixed —
+            // ignore whatever district value came in on the request and force
+            // their own, so they can't export another district by editing the
+            // query string.
+            $district = strtolower(auth()->user()->district->name);
+
+            // If a specific zone was requested, only honor it when that zone
+            // actually belongs to the supervisor's district. Otherwise drop
+            // the zone filter and fall back to "every zone in my district"
+            // (handled by $district above), rather than silently returning
+            // another district's zone or erroring out.
+            if ($zoneId !== null && !in_array((int) $zoneId, $zoneIds, true)) {
+                $zoneId = null;
+            }
+        }
+
         $export = new MeterReadingsExport($currentCycle->id, $duration, $search, $zoneId, $district);
-        
+
         return Excel::download($export, 'meter_readings_' . date('Y-m-d_His') . '.xlsx');
     }
 }

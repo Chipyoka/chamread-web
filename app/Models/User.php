@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 #[Fillable([
     'name',
@@ -115,5 +116,42 @@ class User extends Authenticatable
             ReadingReread::class,
             'supervisor_id'
         );
+    }
+
+
+  
+
+    public function districts(): BelongsToMany
+    {
+        return $this->belongsToMany(District::class, 'district_user')
+                    ->withPivot(['role', 'status', 'assigned_at', 'revoked_at', 'notes'])
+                    ->withTimestamps();
+    }
+
+    /**
+     * The active district assignment (District model with ->pivot), or null.
+     */
+    public function activeDistrictAssignment(): ?District
+    {
+        return $this->districts()
+                    ->wherePivot('status', 'active')
+                    ->wherePivotNull('revoked_at')
+                    ->first();
+    }
+
+    /**
+     * Accessor: $user->district  →  District model or null.
+     */
+    public function getDistrictAttribute(): ?District
+    {
+        return $this->activeDistrictAssignment();
+    }
+
+    /**
+     * Accessor: $user->district_name  →  string or null.
+     */
+    public function getDistrictNameAttribute(): ?string
+    {
+        return $this->activeDistrictAssignment()?->name;
     }
 }

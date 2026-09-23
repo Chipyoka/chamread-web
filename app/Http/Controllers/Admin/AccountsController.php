@@ -28,16 +28,71 @@ class AccountsController extends Controller
         $this->auditLog = $auditLog;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | District Scoping Helpers
+    |--------------------------------------------------------------------------
+    |
+    | Same convention as DashboardController / ReadingsController: a
+    | SUPERVISOR is restricted to the zone(s) under auth()->user()->district
+    | (case-insensitive match against zones.district). Every other role gets
+    | null => unrestricted.
+    |
+    | CustomerAccount has zone_id directly, so scoping here is a plain
+    | whereIn('zone_id', $zoneIds) almost everywhere. Single-record actions
+    | (show/export) are additionally gated with isAccountInScope() so a
+    | supervisor can't reach another district's account just by typing its
+    | ID/URL.
+    |
+    */
+
+    /**
+     * Zone IDs the current user is allowed to see.
+     * null = unrestricted (non-supervisor / no district set).
+     */
+    private function scopedZoneIds(): ?array
+    {
+        $user = auth()->user();
+
+        if (!$user || $user->role !== 'SUPERVISOR' || !$user->district) {
+            return null;
+        }
+
+        $districtName = strtolower($user->district->name);
+
+        return Zone::whereRaw('LOWER(district) = ?', [$districtName])
+            ->pluck('id')
+            ->toArray();
+    }
+
+    /**
+     * Whether a given CustomerAccount falls inside the current user's scope.
+     * Always true when unrestricted (null scope).
+     */
+    private function isAccountInScope(CustomerAccount $account, ?array $zoneIds): bool
+    {
+        if ($zoneIds === null) {
+            return true;
+        }
+
+        return in_array($account->zone_id, $zoneIds, true);
+    }
+
 
     /**
      * Load initial page
      */
- 
+
     public function index(Request $request)
     {
-        $query = CustomerAccount::with('zone');
+        $zoneIds = $this->scopedZoneIds();
 
-        // Zone filter
+        $query = CustomerAccount::with('zone')
+            ->when($zoneIds !== null, fn($q) => $q->whereIn('zone_id', $zoneIds));
+
+        // Zone filter (combined with the mandatory scope above, so a
+        // supervisor requesting a zone outside their district simply gets
+        // zero results rather than leaking another district's accounts).
         if ($request->filled('zone')) {
             $query->where('zone_id', $request->zone);
         }
@@ -52,12 +107,17 @@ class AccountsController extends Controller
         }
 
         $accounts = $query->paginate(10)->withQueryString();
-        $accountsTotal = CustomerAccount::count();
-        
-        // Get zones for the filter dropdown
-        $zones = Zone::orderBy('name')->get();
 
-        // billing cycles for the filter dropdown
+        $accountsTotal = CustomerAccount::when($zoneIds !== null, fn($q) => $q->whereIn('zone_id', $zoneIds))
+            ->count();
+
+        // Get zones for the filter dropdown — scoped, so a supervisor is
+        // never even offered zones outside their district.
+        $zones = Zone::when($zoneIds !== null, fn($q) => $q->whereIn('id', $zoneIds))
+            ->orderBy('name')
+            ->get();
+
+        // billing cycles for the filter dropdown — global, not district-specific.
         $billingCycles = BillingCycle::orderByDesc('start_date')->get();
 
         return view('readings.account.index', compact('accounts', 'zones', 'accountsTotal', 'billingCycles'));
@@ -67,24 +127,41 @@ class AccountsController extends Controller
     /**
      * Show form to create new account
      */
-    public function create(){
-        $zones = Zone::all();
-        $dmas = Dma::all();
+    public function create()
+    {
+        $zoneIds = $this->scopedZoneIds();
 
-        return view('readings.account.create', compact('zones','dmas'));
+        $zones = Zone::when($zoneIds !== null, fn($q) => $q->whereIn('id', $zoneIds))->get();
+
+        // NOTE: assumes Dma has a zone_id column — confirm against the Dma
+        // model/migration (same assumption made in DashboardController).
+        $dmas = Dma::when($zoneIds !== null, fn($q) => $q->whereIn('zone_id', $zoneIds))->get();
+
+        return view('readings.account.create', compact('zones', 'dmas'));
     }
 
     /**
      * Store new account
      */
-    public function store(Request $request){
+    public function store(Request $request)
+    {
+        $zoneIds = $this->scopedZoneIds();
+
         $validated = $request->validate([
             'account_number' => 'required|unique:customer_accounts,account_number',
             'meter_number' => 'nullable|unique:customer_accounts,meter_number',
             'name' => 'required|string|max:255',
             'address' => 'nullable|string|max:500',
             'phone' => 'nullable|string|max:20',
-            'zone_id' => 'required|exists:zones,id',
+            'zone_id' => [
+                'required',
+                'exists:zones,id',
+                // A supervisor can only create accounts in a zone that
+                // belongs to their own district — the dropdown already
+                // restricts this in create(), but the request body is not
+                // trustworthy on its own, so it is enforced again here.
+                $zoneIds !== null ? Rule::in($zoneIds) : 'nullable',
+            ],
             'dma_id' => 'required|exists:dmas,id',
             'billing_area' => 'nullable|string|max:255'
         ]);
@@ -107,7 +184,14 @@ class AccountsController extends Controller
      * - We show consuption trend chart for last 6 readings (reading.previous_reading - reading.current_reading)
      * - We show past 6 readings
      */
-    public function show(CustomerAccount $account){
+    public function show(CustomerAccount $account)
+    {
+        $zoneIds = $this->scopedZoneIds();
+
+        if (! $this->isAccountInScope($account, $zoneIds)) {
+            abort(403, 'This account is outside your assigned district.');
+        }
+
         $readings = $account->readings()->latest()->take(6)->get();
 
         $assignment = CsaAssignment::where('zone_id', $account->zone_id)->first();
@@ -119,7 +203,7 @@ class AccountsController extends Controller
             ->first();
 
         // Prepare data for consumption trend chart
-        $chartData = $readings->reverse()->map(function($reading) {
+        $chartData = $readings->reverse()->map(function ($reading) {
             return [
                 'date' => $reading->created_at->format('M Y'),
                 'consumption' => $reading->current_reading - $reading->previous_reading
@@ -132,8 +216,14 @@ class AccountsController extends Controller
     /**
      * Generate a pdf as an export of the account details page
      */
-     public function export(CustomerAccount $account)
+    public function export(CustomerAccount $account)
     {
+        $zoneIds = $this->scopedZoneIds();
+
+        if (! $this->isAccountInScope($account, $zoneIds)) {
+            abort(403, 'This account is outside your assigned district.');
+        }
+
         $readings = $account->readings()->latest()->take(6)->get();
 
         $assignment = CsaAssignment::where('zone_id', $account->zone_id)->first();
@@ -174,17 +264,41 @@ class AccountsController extends Controller
         return $pdf->download($fileName);
     }
 
-     /**
+    /**
      * Export customer accounts to Excel.
      */
     public function exportExcel(Request $request)
     {
+        $zoneIds = $this->scopedZoneIds();
+
         $zoneId = $request->filled('zone') ? $request->zone : null;
         $search = $request->filled('search') ? $request->search : null;
         $category = $request->filled('category') ? $request->category : null;
 
+        // NOTE: CustomerAccountsExport currently accepts a single $zoneId,
+        // not an array — unlike MeterReadingsExport it has no $district
+        // parameter either. That means there is no way, as written, to hand
+        // it "every zone in my district" in one call. Until the export class
+        // is updated to accept an array of zone IDs (or a $district value,
+        // scoped the same way as elsewhere in this app), a supervisor is
+        // required to pick one specific in-scope zone rather than exporting
+        // "all" — exporting with no zone filter would otherwise leak every
+        // other district's accounts, since the export builds its own query.
+        if ($zoneIds !== null) {
+            if ($zoneId === null) {
+                return back()->with(
+                    'error',
+                    'Please select a zone in your district to export — exporting all zones is not available for your account.'
+                );
+            }
+
+            if (! in_array((int) $zoneId, $zoneIds, true)) {
+                abort(403, 'That zone is outside your assigned district.');
+            }
+        }
+
         $export = new CustomerAccountsExport($zoneId, $search, $category);
-        
+
         return Excel::download($export, 'customer_accounts_' . date('Y-m-d_His') . '.xlsx');
     }
 
@@ -193,6 +307,8 @@ class AccountsController extends Controller
      */
     public function downloadAccounts(Request $request)
     {
+        $zoneIds = $this->scopedZoneIds();
+
         $validated = $request->validate([
             'billing_cycle_id' => ['required', 'exists:billing_cycles,id'],
             'filter' => [
@@ -212,7 +328,11 @@ class AccountsController extends Controller
 
         $query = CustomerAccount::query()
             ->select('customer_accounts.*')
-            ->with('zone');
+            ->with('zone')
+            // Mandatory district scope — built directly into this query (no
+            // dependency on a downstream export class), so a supervisor can
+            // never download another district's accounts here.
+            ->when($zoneIds !== null, fn($q) => $q->whereIn('customer_accounts.zone_id', $zoneIds));
 
         switch ($filter) {
 
@@ -405,5 +525,5 @@ class AccountsController extends Controller
         return is_null($value) ? '' : '="' . $value . '"';
     }
 
- 
+
 }
