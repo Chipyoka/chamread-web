@@ -38,10 +38,11 @@ class Sidebar extends Component
                 'icon'  => 'layout-dashboard',
                 'roles' => ['SUPERVISOR', 'ADMIN', 'IT','COMMERCIAL'],
                 'children' => [
-                    ['name' => 'CSAs',     'route' => 'readings.csas.index',    'pattern' => 'readings.csas.*',    'icon' => 'users',     'roles' => ['SUPERVISOR', 'ADMIN', 'IT','COMMERCIAL']],
-                    ['name' => 'Accounts', 'route' => 'readings.accounts.index','pattern' => 'readings.accounts.*','icon' => 'file-text', 'roles' => ['SUPERVISOR', 'ADMIN', 'IT','COMMERCIAL']],
                     ['name' => 'Meter Readings', 'route' => 'readings.meter-readings.index',      'pattern' => 'readings.meter-readings.*',      'icon' => 'list-todo', 'roles' => ['SUPERVISOR', 'ADMIN', 'IT','COMMERCIAL']],
                     ['name' => 'Field Issues', 'route' => 'readings.issues.index',      'pattern' => 'readings.issues.*',      'icon' => 'octagon-alert', 'roles' => ['SUPERVISOR', 'ADMIN', 'IT','COMMERCIAL']],
+                    ['name' => 'Accounts', 'route' => 'readings.accounts.index','pattern' => 'readings.accounts.*','icon' => 'file-text', 'roles' => ['SUPERVISOR', 'ADMIN', 'IT','COMMERCIAL']],
+                    ['name' => 'CSAs',     'route' => 'readings.csas.index',    'pattern' => 'readings.csas.*',    'icon' => 'users',     'roles' => ['SUPERVISOR', 'ADMIN', 'IT','COMMERCIAL']],
+                    ['name' => 'Districts', 'route' => 'readings.districts.index','pattern' => 'readings.districts.*','icon' => 'house', 'roles' => ['ADMIN', 'IT','COMMERCIAL']],
                 ],
             ],
             [

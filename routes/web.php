@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\BalanceSyncController;
 use App\Http\Controllers\Admin\PerformanceController;
+use App\Http\Controllers\Admin\DistrictController;
 use App\Http\Controllers\Admin\AccountsController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\AdminController;
@@ -186,6 +187,34 @@ use Illuminate\Support\Facades\Route;
             Route::patch('/{customerAccountIssue}/status', 'updateStatus')
                 ->name('update-status');
         });
+
+
+       /**
+         * =====================================================
+         * DISTRICT MANAGEMENT ROUTES
+         * =====================================================
+         */
+
+        Route::prefix('districts')
+            ->name('districts.')
+            ->group(function () {
+                // List
+                Route::get('/', [DistrictController::class, 'index'])
+                    ->name('index');
+
+                // Single district dashboard
+                Route::get('/{district}', [DistrictController::class, 'show'])
+                    ->name('show');
+
+                // CSV exports — kept before the show route is fine too, but explicit
+                // sub-paths are unambiguous either way.
+                Route::prefix('{district}/export')->name('export.')->group(function () {
+                    Route::get('/pending',          [DistrictController::class, 'exportPending'])         ->name('pending');
+                    Route::get('/field-issues',     [DistrictController::class, 'exportFieldIssues'])     ->name('field-issues');
+                    Route::get('/flagged-accounts', [DistrictController::class, 'exportFlaggedAccounts']) ->name('flagged-accounts');
+                    Route::get('/flagged-readings', [DistrictController::class, 'exportFlaggedReadings']) ->name('flagged-readings');
+                });
+            });
 
     });
 

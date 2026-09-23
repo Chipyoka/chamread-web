@@ -96,7 +96,6 @@ class District extends Model
         return $this->belongsToMany(User::class, 'district_user')
                     ->withPivot([
                         'role',
-                        'is_primary',
                         'status',
                         'assigned_at',
                         'revoked_at',
