@@ -1,4 +1,4 @@
-<div class="min-h-[85dvh] max-h-dvh w-72 bg-white flex flex-col px-3 py-1 border-r border-gray-200">
+<div class="hidden min-h-[85dvh] max-h-dvh w-72 bg-white lg:flex flex-col px-3 py-1 border-r border-gray-200">
     <nav class="flex-1 mt-4 space-y-1 h-[65dvh] max-h-[75dvh] overflow-y-auto thin-scrollbar p-3 bg-gray-50 rounded-sm">
         @foreach ($groups as $group)
 

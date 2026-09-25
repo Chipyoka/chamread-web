@@ -12,8 +12,13 @@
             ]"/>
         </x-slot:breadcrumb>
 
+        
         <!-- content -->
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-4 text-gray-500 space-y-6">
+            <div class="lg:hidden bg-amber-50 text-amber-600 text-xs border border-amber-300 rounded-md mb-4 p-4">
+                Use a larger screen for more features.
+            </div>
+
 			@if($currentCycle)
 				@php
 					$endDate = \Carbon\Carbon::parse($currentCycle->end_date);
@@ -57,14 +62,15 @@
                     </div>
                 @endif
              </div>
+
             <!-- Total accounts loaded -->
             <div class="hover-sweep flex items-center justify-between bg-white border rounded-md border-gray-200  px-4 py-4 cursor-default">
                 <p class="text-gray-500 text-xs font-medium uppercase mt-2">Total Accounts Loaded</p>
-                <h2 class="text-3xl font-bold text-primary">{{ $totalAccountsLoaded ?? '00' }}</h2>
+                <h2 class="text-2xl md:text-3xl font-bold text-primary">{{ $totalAccountsLoaded ?? '00' }}</h2>
             </div>
 
             <!-- Top card row for CURRENT BILLING CYCLE + TOP 5 CSAs -->
-            <div class="grid grid-cols-2 gap-x-4 gap-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-8">
                 <div class="min-h-60 bg-white border rounded-md border-gray-200  px-6 py-4 ">
                     <p class="text-gray-400 text-xs uppercase mt-2">Current billing cycle</p>
                     <div class="flex items-center justify-between my-4">
@@ -75,7 +81,7 @@
                         @if($currentCycle)
 
                         <div
-                               class="ml-2 px-2 py-1 rounded-sm text-xs font-semibold
+                               class="hidden md:block ml-2 px-2 py-1 rounded-sm text-xs font-semibold
                                @if($currentCycle->status === 'active') bg-green-100 text-green-600
                                @else bg-yellow-100 text-yellow-600 animate-pulse
                                @endif
@@ -88,14 +94,16 @@
 
                     @if(in_array(Auth::user()->role, ['ADMIN', 'IT']) || Auth::user()->role === 'COMMERCIAL')
                         <!-- Edit -->
-                        <x-micro-button
-                            variant="edit"
-                            href="{{ route('management.cycles.index') }}"
-                            icon="edit"
-                            size="sm"
-                        >
-                            Update
-                        </x-micro-button>
+                         <div class="hidden lg:block">
+                             <x-micro-button
+                                 variant="edit"
+                                 href="{{ route('management.cycles.index') }}"
+                                 icon="edit"
+                                 size="sm"
+                             >
+                                 Update
+                             </x-micro-button>
+                         </div>
                     @endif
                     
                     </div>
@@ -113,7 +121,7 @@
                     <!-- card completetion-->
                     <div class="flex items-center justify-between bg-blue-50/40 border-t-8 border-blue-100/70 rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
                         <div class="">
-                            <h2 class="text-3xl font-bold text-primary">{{ $completionRate ?? '00'}}%</h2>
+                            <h2 class="text-2xl md:text-3xl font-bold text-primary">{{ $completionRate ?? '00'}}%</h2>
                             <p class="text-gray-500 text-xs uppercase mt-2">Completion rate (%)</p>
                         </div>
                         <div class="flex items-center justify-center p-4 bg-blue-50 rounded-full">
@@ -122,7 +130,7 @@
                     </div>
                 </div>
 
-                <!-- Top 5 CSAs -->
+                <!-- Reading progress -->
                 <div class="min-h-60 bg-white border rounded-md border-gray-200  px-6 py-4">
                     <p class="text-gray-400 text-xs uppercase my-2">Reading progress</p>
                     <div>
@@ -140,7 +148,7 @@
                                     :pending="$pending"
                                 />
 
-                                <div class="w-1/3">
+                                <div class="hidden lg:block md:w-1/3">
                                     <div class="mb-2 bg-white/40 border-gray-200 border rounded-md flex items-center justify-between py-1.5 px-3  text-sm">
                                         <p class="text-xxs text-gray-500">Readings</p>
                                         <p class="">{{$accountsRead ?? 0}}</p>
@@ -162,7 +170,7 @@
                 </div>
 
                 <!-- METRIC CARDS -->
-                <div class=" grid grid-cols-3 gap-x-4 gap-y-8">
+                <div class=" grid grid-cols-1  xl:grid-cols-3 gap-x-4 gap-y-8">
     
                     <!-- card total assigned accounts within current cycle-->
                     <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-primary rounded-sm px-4 py-4 cursor-default hover:shadow-md transition-all duration-300 ease-in-out ">
@@ -235,7 +243,19 @@
                     <!-- card issues -->
                     <div  
                     onclick="window.location.href='{{ route('readings.issues.index')}}'"
-                    class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-amber-400 rounded-sm px-4 py-4 cursor-pointer hover:shadow-md transition-all duration-300 ease-in-out ">
+                    class="hidden hover-sweep lg:flex items-center justify-between bg-gray-50/70 border-t-8 border-amber-400 rounded-sm px-4 py-4 cursor-pointer hover:shadow-md transition-all duration-300 ease-in-out ">
+                        <div class="">
+                            <h2 class="text-3xl font-bold text-amber-400">{{ $reportedIssues ?? 0 }}</h2>
+                            <p class="text-gray-500 text-xs uppercase mt-2">Account Issues Reported</p>
+                        </div>
+                        <div class="flex items-center justify-center p-4 bg-amber-100/70 rounded-full">
+                            <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-400"></i>
+                        </div>
+                    </div>
+
+                    <!-- card issues 2-->
+                    <div  
+                    class="hover-sweep lg:hidden flex items-center justify-between bg-gray-50/70 border-t-8 border-amber-400 rounded-sm px-4 py-4 cursor-pointer hover:shadow-md transition-all duration-300 ease-in-out ">
                         <div class="">
                             <h2 class="text-3xl font-bold text-amber-400">{{ $reportedIssues ?? 0 }}</h2>
                             <p class="text-gray-500 text-xs uppercase mt-2">Account Issues Reported</p>
@@ -394,6 +414,7 @@
                                         <!-- Actions -->
                                         <td class="px-6 py-4 text-right text-xs space-x-2 flex items-center justify-end ">
 
+                                      
                                             <!-- View -->
                                             <x-micro-button
                                                 href="{{ route('readings.meter-readings.show', $reading) }}"

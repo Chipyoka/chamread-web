@@ -55,7 +55,7 @@
             <div id="page-loader-bar"></div>
         </div>
 
-        <div class="hidden xl:block min-h-[80dvh] bg-slate-50">
+        <div class=" min-h-[80dvh] bg-slate-50">
             <div class="min-h-4 bg-primary"></div>
 
             @include('layouts.navigation')
@@ -79,20 +79,7 @@
             </main>
         </div>
 
-        <!-- Small Screen Notice -->
-        <div class="xl:hidden h-screen flex flex-col items-center justify-center space-y-4">
-            <div class="flex items-center justify-center gap-2 h-fit w-fit px-4 py-3 bg-amber-50 rounded-sm">
-                <i data-lucide="circle-alert" class="w-6 h-6 text-amber-600"></i>
 
-                <p class="text-amber-600">
-                    You need to use a larger screen.
-                </p>
-            </div>
-
-            <p class="text-xs text-center text-gray-400 max-w-[70%]">
-                Dashboard cannot be loaded using a smaller screen.
-            </p>
-        </div>
 
         <!-- Toast Notifications -->
         <x-toast />

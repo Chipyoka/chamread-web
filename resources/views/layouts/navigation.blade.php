@@ -25,60 +25,58 @@
                         }
                     @endphp
 
-                    <h4 class="ml-6 text-xl font-medium text-gray-500 capitalize">{{ $greeting }}, {{ explode('.', Auth::user()->username)[0] ?? 'Guest' }}</h4>
-
-                
-
-                    
-                   
+                    <h4 class="hidden lg:block ml-6 text-xl font-medium text-gray-500 capitalize">
+                        {{ $greeting }}, {{ explode('.', Auth::user()->username)[0] ?? 'Guest' }}
+                    </h4>                   
                 </div>
             </div>
-                <!-- Search bar -->
-                    <div class="w-[30rem]">
-                        <form action="{{ route('dashboard.search.results') }}" method="GET" class="w-full">
 
-                        <div class="
-                            w-full
-                            flex items-center justify-start gap-1
-                            pl-3 
-                            bg-white
-                            border border-gray-200
-                            rounded
-                            text-sm text-gray-700
-                            placeholder-gray-400
-                            transition duration-200 ease-in-out
-                            focus-within:border-primary
-                            focus-within:ring-2
-                            focus-within:ring-primary
-                            hover:border-gray-300
-                        ">
-                            <!-- Icon -->
-                            <div class="flex items-center pointer-events-none transition-colors duration-200">
-                                <i data-lucide="search" class="h-5 w-5 text-gray-400 group-focus-within:text-gray-600"></i>
-                            </div>
+            <!-- Search bar -->
+            <div class="hidden md:block lg:w-[26rem] xl:w-[30rem]">
+                <form action="{{ route('dashboard.search.results') }}" method="GET" class="w-full">
 
-                            <!-- Input -->
-                            <input
-                                type="search"
-                                name="search"
-                                id="search"
-                                placeholder="Search accounts, or people..."
-                                class="
-                                    w-full
-                                    pr-4 py-2.5
-                                    bg-transparent
-                                    border-none
-                                    outline-none
-                                    focus:ring-0
-                                    text-sm
-                                    text-gray-700
-                                    placeholder-gray-400
-                                "
-                                autocomplete="off"
-                            />
-                        </div>
-                        </form>
+                <div class="
+                    w-full
+                    flex items-center justify-start gap-1
+                    pl-3 
+                    bg-white
+                    border border-gray-200
+                    rounded
+                    text-sm text-gray-700
+                    placeholder-gray-400
+                    transition duration-200 ease-in-out
+                    focus-within:border-primary
+                    focus-within:ring-2
+                    focus-within:ring-primary
+                    hover:border-gray-300
+                ">
+                    <!-- Icon -->
+                    <div class="flex items-center pointer-events-none transition-colors duration-200">
+                        <i data-lucide="search" class="h-5 w-5 text-gray-400 group-focus-within:text-gray-600"></i>
                     </div>
+
+                    <!-- Input -->
+                    <input
+                        type="search"
+                        name="search"
+                        id="search"
+                        placeholder="Search accounts, or people..."
+                        class="
+                            w-full
+                            pr-4 py-2.5
+                            bg-transparent
+                            border-none
+                            outline-none
+                            focus:ring-0
+                            text-sm
+                            text-gray-700
+                            placeholder-gray-400
+                        "
+                        autocomplete="off"
+                    />
+                </div>
+                </form>
+            </div>
                     
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6 cursor-default">
