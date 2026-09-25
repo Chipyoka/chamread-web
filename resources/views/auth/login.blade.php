@@ -6,28 +6,24 @@
     </div>
 
     <!-- Login Form Container -->
-    <div class="hidden xl:block max-h-[90dvh] w-full">
+    <div class=" h-[92dvh] max-h-[92dvh] overflow-y-auto lg:max-h-[90dvh] w-full">
         <div class="px-6 py-4 bg-white/90 backdrop-blur-md rounded-sm shadow-lg w-6xl ">
             <div class="flex items-center justify-between mb-6 gap-6">
-
                 <img src="{{ asset('images/logo.png') }}" alt="logo" class="h-10">
                 <img src="{{ asset('images/app_logo.png') }}" alt="logo" class="h-8">
-
             </div>
 
-            <div class="flex gap-6 justify-between">
+            <div class=" flex flex-col lg:flex-row gap-6 justify-center lg:justify-between ">
 
                 <!-- Summary -->
-                <div class="border px-6 w-1/2 py-6 mb-4 rounded-md">
-                    <div class="flex justify-between gap-4 items-start ">
-                        
-                        
+                <div class="  border p-3 md:p-6 w-sm md:w-md lg:w-1/2 mb-4 rounded-md bg-white/40 ">
+                    <div class="flex flex-col md:flex-row justify-between gap-4 items-start ">
                         <div class="rounded-md border border-gray-200 px-4 py-3 w-full bg-white/40 ">
                             <p class="text-xxs uppercase tracking-wide text-gray-500">Current billing cycle</p>
                             <h1 class="text-2xl font-medium text-gray-500">{{ $currentCycle->name ?? "-"}}</h1>
                         </div>
      
-                        <div class="w-1/2">
+                        <div class="w-full lg:w-1/2">
                             <div class="mb-2 bg-white/40 border-gray-200 border rounded-md flex items-center justify-between py-1.5 px-3  text-sm">
                                 <p class="text-xxs text-gray-500">Readings</p>
                                 <p class="">{{$read ?? 0}}</p>
@@ -40,27 +36,24 @@
                     </div>
 
                     <div class="flex justify-center mt-2 bg-white/40 p-4 rounded-md">
-
-                    @if($read < 1 && $pending < 1)
-                        <div class="flex flex-col gap-4 items-center justify-center w-full border border-gray-100 rounded-sm bg-gray-50/70 min-h-60">
-                            <i data-lucide="chart-no-axes-column" class="w-8 h-8 text-gray-300"></i>
-                            <p class="text-gray-400 text-xs">No data available yet</p>
-                        </div>
-
-                    @else
-                        <div class=" ">
-                            <x-charts.reading-donut-chart
+                        @if($read < 1 && $pending < 1)
+                            <div class="flex flex-col gap-4 items-center justify-center w-full border border-gray-100 rounded-sm bg-gray-50/70 min-h-60">
+                                <i data-lucide="chart-no-axes-column" class="w-8 h-8 text-gray-300"></i>
+                                <p class="text-gray-400 text-xs">No data available yet</p>
+                            </div>
+                        @else
+                            <div class=" ">
+                                <x-charts.reading-donut-chart
                                     :read="$read"
                                     :pending="$pending"
                                 />
-                        </div>
-                    @endif
+                            </div>
+                        @endif
                     </div>
-                   
                 </div>
 
                 <!-- Login form -->
-                <div class="border px-6 w-1/2 py-6 mb-4 rounded-md bg-white/40">
+                <div class="border w-sm lg:w-1/2 p-3 md:p-6 mb-4 rounded-md bg-white/40">
                     <div class="mb-6 mt-2">
                         <h2 class="text-gray-700 text-2xl font-semibold">Login</h2>
                         <p class="text-gray-500 text-sm">Provide your credentials below to proceed.</p>
@@ -74,7 +67,7 @@
                         <!-- Email Address -->
                         <div>
                             <x-input-label for="login" :value="__('Email')" />
-                            <x-text-input id="login" class="block mt-1 w-full" type="text" name="login" :value="old('login')" required autofocus autocomplete="username" />
+                            <x-text-input id="login" class="block mt-1 w-full" type="text" name="login" :value="old('login')" required  autocomplete="username" />
                             <x-input-error :messages="$errors->get('login')" class="mt-2" />
                         </div>
         
@@ -109,18 +102,4 @@
         </div>
     </div>
 
-    <!-- Small Screen Notice -->
-    <div class="xl:hidden h-[98dvh] flex flex-col items-center justify-center space-y-4 bg-white p-4">
-        <div class="flex items-center justify-center gap-2 h-fit w-fit px-4 py-3 bg-amber-50 rounded-sm">
-            <i data-lucide="circle-alert" class="w-6 h-6 text-amber-600"></i>
-
-          <p class="text-amber-600">
-              You need to use a larger screen.
-          </p>
-      </div>
-
-      <p class="text-xs text-center text-gray-400 max-w-[70%]">
-          Dashboard cannot be loaded using a smaller screen.
-      </p>
-  </div>
 </x-guest-layout>
