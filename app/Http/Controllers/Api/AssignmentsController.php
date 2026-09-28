@@ -89,17 +89,6 @@ class AssignmentsController extends Controller
                         'status' => $a->status,
                     ];
                 }),
-                'top_accounts' => $topAccounts->map(function ($a) {
-                    return [
-                        'id' => $a->id,
-                        'account_number' => $a->account_number,
-                        'customer_name' => $a->customer_name,
-                        'address' => $a->address,
-                        'phone' => $a->phone,
-                        'billing_area' => $a->billing_area,
-                        'meter_number' => $a->meter_number,
-                    ];
-                }),
                 'stats' => [
                     'target' => $totalTarget,
                     'completed' => $completed,
