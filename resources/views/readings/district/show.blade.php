@@ -2,7 +2,7 @@
     <div class="p-4">
         <x-slot:breadcrumb>
             <x-breadcrumb :items="[
-                ['label' => 'Dashboard', 'url' => route('dashboard.dashboard.index')],
+                ['label' => 'Readings'],
                 ['label' => 'Districts', 'url' => route('readings.districts.index')],
                 ['label' => $district->name],
             ]"/>

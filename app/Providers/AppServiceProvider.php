@@ -9,6 +9,9 @@ use App\Observers\CustomerAccountObserver;
 use App\Observers\ReadingObserver;
 use App\Observers\UserObserver;
 use App\Services\FlagService;
+use App\Models\Flag;
+use App\Models\FlagRule;
+use App\Observers\FlagObserver;
 use App\Services\RuleEvaluator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
@@ -36,22 +39,19 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::composer('layouts.navigation', function ($view) {
+            $hasUnreadNotifications = SystemNotification::where('is_read', false)->exists();
+            $view->with('hasUnreadNotifications', $hasUnreadNotifications);
+        });
 
-        $hasUnreadNotifications = SystemNotification::where('is_read', false)->exists();
-
-        $view->with('hasUnreadNotifications', $hasUnreadNotifications);
-
-        // Register flag observers
+        // Register flag observers — must run on every request, including API-only ones
         Reading::observe(ReadingObserver::class);
         CustomerAccount::observe(CustomerAccountObserver::class);
         User::observe(UserObserver::class);
+        Flag::observe(FlagObserver::class);
+        FlagRule::observe(FlagObserver::class);
 
-        });
-
-        // Rate limiting for balance API requests
-   
         RateLimiter::for('balance-api', function () {
-            return Limit::perMinute(50); // ~1.2s/request average
+            return Limit::perMinute(50);
         });
     }
 }

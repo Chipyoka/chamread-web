@@ -152,14 +152,14 @@
                     <table class="min-w-full divide-y divide-gray-100">
                         <thead class="bg-gray-50">
                             <tr class="text-left text-xs text-gray-500 uppercase tracking-wider">
-                                <th class="px-6 py-3 whitespace-nowrap">Account #</th>
-                                <th class="px-6 py-3 whitespace-nowrap">Zone</th>
-                                <th class="px-6 py-3 whitespace-nowrap">CSA</th>
-                                <th class="px-6 py-3 whitespace-nowrap">Prev</th>
-                                <th class="px-6 py-3 whitespace-nowrap">Current</th>
-                                <th class="px-6 py-3 whitespace-nowrap">Consumption</th>
-                                <th class="px-6 py-3 whitespace-nowrap">Reading Time</th>
-                                <th class="px-6 py-3 text-right whitespace-nowrap">Actions</th>
+                                <th class="px-2 py-3 whitespace-nowrap">Account #</th>
+                                <th class="px-2 py-3 whitespace-nowrap">Zone</th>
+                                <th class="px-2 py-3 whitespace-nowrap">CSA</th>
+                                <th class="px-2 py-3 whitespace-nowrap">Prev</th>
+                                <th class="px-2 py-3 whitespace-nowrap">Current</th>
+                                <th class="px-2 py-3 whitespace-nowrap">Consumption</th>
+                                <th class="px-2 py-3 whitespace-nowrap">Reading Time</th>
+                                <th class="px-2 py-3 text-right whitespace-nowrap">Actions</th>
                             </tr>
                         </thead>
 

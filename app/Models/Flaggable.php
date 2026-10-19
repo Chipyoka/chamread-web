@@ -45,8 +45,10 @@ class Flaggable extends Model
     // Scopes
     public function scopeActive($query)
     {
-        return $query->whereNull('expires_at')
-                     ->orWhere('expires_at', '>', now());
+        return $query->where(function ($q) {
+            $q->whereNull('expires_at')
+            ->orWhere('expires_at', '>', now());
+        });
     }
 
     public function scopeExpired($query)

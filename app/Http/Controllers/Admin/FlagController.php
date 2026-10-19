@@ -151,7 +151,7 @@ class FlagController extends Controller
         $validator = Validator::make($request->all(), [
             'flag_id' => 'required|exists:flags,id',
             'field' => 'required|string|max:255',
-            'operator' => 'required|string|in:>,<,=,!=,>=,<=,contains,is_null,is_not_null',
+            'operator' => 'required|string|in:' . implode(',', array_keys(\App\Models\FlagRule::OPERATORS)),
             'value' => 'nullable|string|max:255',
             'group_key' => 'nullable|string|max:255',
             'order' => 'nullable|integer',
@@ -166,19 +166,21 @@ class FlagController extends Controller
         // validate submitted column 
         $flag = Flag::findOrFail($request->flag_id);
 
-        $table = match ($flag->applies_to) {
-            'reading' => 'readings',
-            'account' => 'customer_accounts',
-            default => null,
+        $allowedFields = match ($flag->applies_to) {
+            'reading' => [
+                ...Schema::getColumnListing('readings'),
+                'previous_cycle_code',   // Reading::getPreviousCycleCodeAttribute()
+                'account.category',
+                'account.status',
+            ],
+            'account' => Schema::getColumnListing('customer_accounts'),
+            'meter_reader' => Schema::getColumnListing('users'),
+            default => [],
         };
-
-        if (!$table || !Schema::hasColumn($table, $request->field)) {
+        
+        if (!in_array($request->field, $allowedFields, true)) {
             return response()->json([
-                'errors' => [
-                    'column' => [
-                        "Column not found."
-                    ]
-                ]
+                'errors' => ['field' => ["Field not allowed."]],
             ], 422);
         }
 
@@ -214,7 +216,7 @@ class FlagController extends Controller
         $validator = Validator::make($request->all(), [
             'flag_id' => 'required|exists:flags,id',
             'field' => 'required|string|max:255',
-            'operator' => 'required|string|in:>,<,=,!=,>=,<=,contains,is_null,is_not_null',
+            'operator' => 'required|string|in:' . implode(',', array_keys(\App\Models\FlagRule::OPERATORS)),
             'value' => 'nullable|string|max:255',
             'group_key' => 'nullable|string|max:255',
             'order' => 'nullable|integer',
@@ -229,21 +231,21 @@ class FlagController extends Controller
         // validate submitted column 
         $flag = Flag::findOrFail($request->flag_id);
 
-        $table = match ($flag->applies_to) {
-            'reading' => 'readings',
-            'account' => 'customer_accounts',
-            default => null,
+        $allowedFields = match ($flag->applies_to) {
+            'reading' => [
+                ...Schema::getColumnListing('readings'),
+                'previous_cycle_code',   // Reading::getPreviousCycleCodeAttribute()
+                'account.category',
+                'account.status',
+            ],
+            'account' => Schema::getColumnListing('customer_accounts'),
+            'meter_reader' => Schema::getColumnListing('users'),
+            default => [],
         };
-
-     
-
-        if (!$table || !Schema::hasColumn($table, $request->field)) {
+        
+        if (!in_array($request->field, $allowedFields, true)) {
             return response()->json([
-                'errors' => [
-                    'column' => [
-                        "Column not found."
-                    ]
-                ]
+                'errors' => ['field' => ["Field not allowed."]],
             ], 422);
         }
 
@@ -305,13 +307,13 @@ class FlagController extends Controller
      */
     public function runEvaluation(FlagService $flagService): RedirectResponse
     {
-        CustomerAccount::chunk(200, function ($accounts) use ($flagService) {
-            foreach ($accounts as $account) {
-                $flagService->reevaluate($account);
-            }
-        });
+        // CustomerAccount::chunk(200, function ($accounts) use ($flagService) {
+        //     foreach ($accounts as $account) {
+        //         $flagService->reevaluate($account);
+        //     }
+        // });
 
-        Reading::chunk(200, function ($readings) use ($flagService) {
+        Reading::chunk(1000, function ($readings) use ($flagService) {
             foreach ($readings as $reading) {
                 $flagService->reevaluate($reading);
             }

@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AdminUserSeeder::class,
             MeterReadingCodeSeeder::class,
+            VerificationFlagSeeder::class,
         ]);
     }
 }

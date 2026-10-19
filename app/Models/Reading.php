@@ -105,9 +105,24 @@ class Reading extends Model
         ->latestOfMany();
     }
     public function pendingReread()
-{
-    return $this->hasOne(ReadingReread::class)
-        ->where('status', 'pending')
-        ->latestOfMany();
-}
+    {
+        return $this->hasOne(ReadingReread::class)
+            ->where('status', 'pending')
+            ->latestOfMany();
+    }
+
+    /**
+     * Mirrors the lookup your controller already does for previous_reading:
+     * same account_id, most recent earlier billing_cycle_id.
+     */
+
+    public function getPreviousCycleCodeAttribute(): ?string
+    {
+        return static::query()
+            ->where('account_id', $this->account_id)
+            ->where('billing_cycle_id', '<', $this->billing_cycle_id)
+            ->whereNotNull('this_month_code')
+            ->orderByDesc('billing_cycle_id')
+            ->value('this_month_code');
+    }
 }

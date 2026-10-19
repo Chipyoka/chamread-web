@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\MonthlyTemplateController;
 use App\Http\Controllers\Admin\DeviceController;
 use App\Http\Controllers\Admin\ZoneController;
 use App\Http\Controllers\Admin\FlagController;
+use App\Http\Controllers\Admin\ReadingVerificationController;
 use App\Http\Controllers\Admin\CustomerAccountIssueController;
 use App\Http\Controllers\AppDownloadController;
 
@@ -162,6 +163,8 @@ use Illuminate\Support\Facades\Route;
 
             Route::get('/{reading}/export', [ReadingsController::class, 'export'])->name('export');
             Route::get('/export/bulk', [ReadingsController::class, 'exportExcel'])->name('export.excel');
+
+            Route::post('/{reading}/verify', [ReadingVerificationController::class, 'verify'])->name('verify');
            
         });
 

@@ -1,46 +1,53 @@
 <?php
-// app/Observers/ReadingObserver.php
 
 namespace App\Observers;
 
+use App\Models\FlagRule;
 use App\Models\Reading;
-use App\Services\FlagService;
+use App\Services\ReadingVerifier;
 
 class ReadingObserver
 {
     public function __construct(
-        private FlagService $flagService
+        private ReadingVerifier $verifier
     ) {}
 
     /**
-     * Handle the Reading "created" event.
-     * Evaluate against all active reading rules.
+     * New reading: run the rules and set auto / flagged.
      */
     public function created(Reading $reading): void
     {
-        $this->flagService->evaluate($reading);
+        $this->run($reading);
     }
 
     /**
-     * Handle the Reading "updated" event.
-     * Re-evaluate: remove flags that no longer apply, add new ones.
+     * Edited reading: re-verify only if a field used by an active rule changed.
      */
     public function updated(Reading $reading): void
     {
-        // Only re-evaluate if relevant fields changed
         if ($this->relevantFieldsChanged($reading)) {
-            $this->flagService->reevaluate($reading);
+            $this->run($reading);
         }
     }
 
     /**
-     * Check if any fields used in active rules were modified.
-     * Prevents unnecessary re-evaluation on unrelated updates.
+     * A verification error must never break the upload loop.
+     * The reading is kept and marked 'failed' so it can be retried
+     * with `php artisan readings:verify --include-failed`.
      */
+    private function run(Reading $reading): void
+    {
+        try {
+            $this->verifier->verify($reading);
+        } catch (\Throwable $e) {
+            report($e);
+            $this->verifier->markFailed($reading);
+        }
+    }
+
     private function relevantFieldsChanged(Reading $reading): bool
     {
-        // Get all field names used in active reading rules
-        $watchedFields = \App\Models\FlagRule::active()
+        $watchedFields = FlagRule::active()
             ->whereHas('flag', function ($query) {
                 $query->where('applies_to', 'reading')->where('active', true);
             })
@@ -48,7 +55,6 @@ class ReadingObserver
             ->unique()
             ->toArray();
 
-        // Check if any watched field was changed
         return $reading->wasChanged($watchedFields);
     }
 }
