@@ -46,7 +46,6 @@ class AppServiceProvider extends ServiceProvider
         // Register flag observers — must run on every request, including API-only ones
         Reading::observe(ReadingObserver::class);
         CustomerAccount::observe(CustomerAccountObserver::class);
-        User::observe(UserObserver::class);
         Flag::observe(FlagObserver::class);
         FlagRule::observe(FlagObserver::class);
 

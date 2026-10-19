@@ -208,7 +208,7 @@
                                             'consumption'     => $reading->consumption,
                                             'reading_date'    => optional($reading->reading_date)->format('Y-m-d'),
                                             'reading_time'    => optional($reading->reading_time)->format('Y-m-d H:i:s'),
-                                            'this_month_code' => $reading->this_month_code . ' ' .($reading->code->name ?? ''),
+                                            'this_month_code' => $reading->code?->code . ' ' .($reading->code->name ?? ''),
                                             'meter_status'    => $reading->meter_status,
                                             'comment'         => $reading->comment,
                                             'verification_status' => $reading->verification_status,
@@ -298,71 +298,85 @@
     -->
 
     <!-- View reading modal: photo + essential info, no navigation -->
-    <x-modal name="view-reading" max-width="lg" :closable="true">
+    <x-modal name="view-reading" max-width="3xl" :closable="true">
         <div class="p-6" x-show="selectedView">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">
                 Reading — <span x-text="selectedView?.account_number"></span>
             </h2>
 
-            <template x-if="selectedView?.photo_url">
-                <img :src="selectedView.photo_url" alt="Meter photo"
-                     class="w-full max-h-80 object-contain rounded-sm border border-gray-200 mb-4">
-            </template>
-            <template x-if="!selectedView?.photo_url">
-                <div class="w-full h-40 flex items-center justify-center bg-gray-50 rounded-sm border border-dashed border-gray-200 mb-4">
-                    <p class="text-gray-400 text-xs">No photo attached</p>
-                </div>
-            </template>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <template x-if="selectedView?.photo_url">
+                        <img :src="selectedView.photo_url" alt="Meter photo"
+                            class="w-full max-h-80 object-contain rounded-sm border border-gray-200 bg-gray-50/70 mb-4">
+                    </template>
 
-            <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
-                <div>
-                    <dt class="text-gray-400 uppercase text-xxs">CSA</dt>
-                    <dd class="text-gray-700 font-medium" x-text="selectedView?.csa_name"></dd>
+                    <template x-if="!selectedView?.photo_url">
+                        <div class="w-full h-40 flex items-center justify-center bg-gray-50 rounded-sm border border-dashed border-gray-200 mb-4">
+                            <p class="text-gray-400 text-xs">No photo attached</p>
+                        </div>
+                    </template>
                 </div>
-                <div>
-                    <dt class="text-gray-400 uppercase text-xxs">Status</dt>
-                    <dd class="text-gray-700 font-medium capitalize" x-text="selectedView?.verification_status"></dd>
-                </div>
-                <div>
-                    <dt class="text-gray-400 uppercase text-xxs">Previous Reading</dt>
-                    <dd class="text-gray-700 font-medium" x-text="selectedView?.previous_reading"></dd>
-                </div>
-                <div>
-                    <dt class="text-gray-400 uppercase text-xxs">Current Reading</dt>
-                    <dd class="text-gray-700 font-medium" x-text="selectedView?.current_reading"></dd>
-                </div>
-                <div>
-                    <dt class="text-gray-400 uppercase text-xxs">Consumption</dt>
-                    <dd class="text-gray-700 font-medium" x-text="selectedView?.consumption"></dd>
-                </div>
-                <div>
-                    <dt class="text-gray-400 uppercase text-xxs">Meter Code</dt>
-                    <dd class="text-gray-700 font-medium" x-text="selectedView?.this_month_code"></dd>
-                </div>
-            
-                <div>
-                    <dt class="text-gray-400 uppercase text-xxs">Reading Time</dt>
-                    <dd class="text-gray-700 font-medium" x-text="selectedView?.reading_time"></dd>
-                </div>
-                <div x-show="selectedView?.comment">
-                    <dt class="text-gray-400 uppercase text-xxs">Comment</dt>
-                    <dd class="text-gray-700" x-text="selectedView?.comment"></dd>
-                </div>
-            </dl>
 
-            <template x-if="selectedView?.flags?.length">
-                <div class="mt-4 border-t pt-3 border-gray-100">
-                    <p class="text-gray-400 uppercase text-xxs mb-2">Flag Reasons</p>
-                    <ul class="space-y-1">
-                        <template x-for="flag in selectedView.flags" :key="flag.name">
-                            <li class="flex items-center text-xs text-amber-600">
-                                <i data-lucide="flag" class="w-3 h-3 mr-2"></i>
-                                <span x-text="flag.description"></span>
-                            </li>
-                        </template>
-                    </ul>
+                <!-- details -->
+                <div>
+                    <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
+                        <div>
+                            <dt class="text-gray-400 uppercase text-xxs">CSA</dt>
+                            <dd class="text-gray-700 font-medium" x-text="selectedView?.csa_name"></dd>
+                        </div>
+                        <div>
+                            <dt class="text-gray-400 uppercase text-xxs">Status</dt>
+                            <dd class="text-gray-700 font-medium capitalize" x-text="selectedView?.verification_status"></dd>
+                        </div>
+                        <div>
+                            <dt class="text-gray-400 uppercase text-xxs">Previous Reading</dt>
+                            <dd class="text-gray-700 font-medium" x-text="selectedView?.previous_reading"></dd>
+                        </div>
+                        <div>
+                            <dt class="text-gray-400 uppercase text-xxs">Current Reading</dt>
+                            <dd class="text-gray-700 font-medium" x-text="selectedView?.current_reading"></dd>
+                        </div>
+                        <div>
+                            <dt class="text-gray-400 uppercase text-xxs">Consumption</dt>
+                            <dd class="text-gray-700 font-medium" x-text="selectedView?.consumption"></dd>
+                        </div>
+                        <div>
+                            <dt class="text-gray-400 uppercase text-xxs">Meter Code</dt>
+                            <dd class="text-gray-700 font-medium" x-text="selectedView?.this_month_code"></dd>
+                        </div>
+                    
+                        <div>
+                            <dt class="text-gray-400 uppercase text-xxs">Reading Time</dt>
+                            <dd class="text-gray-700 font-medium" x-text="selectedView?.reading_time"></dd>
+                        </div>
+                        <div x-show="selectedView?.comment">
+                            <dt class="text-gray-400 uppercase text-xxs">Comment</dt>
+                            <dd class="text-gray-700" x-text="selectedView?.comment"></dd>
+                        </div>
+                    </dl>
+
+                    <template x-if="selectedView?.flags?.length">
+                        <div class="mt-4 border-t pt-3 border-gray-100">
+                            <p class="text-gray-400 uppercase text-xxs mb-2">Flag Reasons</p>
+                            <ul class="space-y-1">
+                                <template x-for="flag in selectedView.flags" :key="flag.name">
+                                    <li class="flex items-center text-xs text-amber-600">
+                                        <i data-lucide="flag" class="w-3 h-3 mr-2"></i>
+                                        <span x-text="flag.description"></span>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+                    </template>
+
                 </div>
-            </template>
+
+            </div>
+
+   
+
+          
         </div>
     </x-modal>
 
