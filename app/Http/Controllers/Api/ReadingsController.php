@@ -12,8 +12,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Throwable;
+
+
+
+
+
+
+
 
 class ReadingsController extends Controller
 {
@@ -935,8 +943,45 @@ class ReadingsController extends Controller
         ]);
     }
 
+    /**
+     * Correct a stale cycle id sent by the mobile client.
+     *
+     * The app only learns about a new cycle when the user manually refreshes
+     * online, so readings captured in the new cycle can still carry the previous
+     * cycle's id. We remap ONLY when all of these hold:
+     *   1. incoming id is the cycle immediately before the current one
+     *      (resolved by lookup, not id - 1, so gaps in ids are safe), and
+     *   2. the reading was captured on/after the current cycle's start_date,
+     *      so a genuinely late reading from the old cycle is NOT pulled forward.
+     * Anything else is returned unchanged and falls through to the normal
+     * wrong-cycle rejection.
+     */
+    private function reconcileStaleCycle(int $incomingCycleId, BillingCycle $currentCycle, Carbon $readingTime): int
+    {
+        $currentCycleId = (int) $currentCycle->id;
 
-    
+        if ($incomingCycleId === $currentCycleId) {
+            return $incomingCycleId;
+        }
+
+        $previousCycleId = Cache::remember(
+            "billing_cycle:previous:{$currentCycleId}",
+            600,
+            fn () => BillingCycle::where('id', '<', $currentCycleId)->orderByDesc('id')->value('id')
+        );
+
+        if ($previousCycleId === null || $incomingCycleId !== (int) $previousCycleId) {
+            return $incomingCycleId;
+        }
+
+        $currentCycleStart = Carbon::parse($currentCycle->start_date)->startOfDay();
+
+        if ($readingTime->lt($currentCycleStart)) {
+            return $incomingCycleId; // captured before the new cycle began: genuine old-cycle reading
+        }
+
+        return $currentCycleId;
+    }
 
     /**
      * Single reading sync endpoint (multipart/form-data).
@@ -954,11 +999,23 @@ class ReadingsController extends Controller
      * app at this endpoint via a feature flag / config value, confirm it
      * behaves in the field, then retire batchStore() once nothing calls it.
      */
+
     public function syncReading(Request $request)
     {
         $currentCycle = BillingCycle::where('status', 'active')->latest()->first();
 
-        if ($currentCycle && $currentCycle->can_upload === false) {
+        if (! $currentCycle) {
+            Log::warning('Reading sync blocked: no active billing cycle', [
+                'csa_id' => auth()->id(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No active billing cycle',
+            ], 409);
+        }
+
+        if (! $currentCycle->can_upload) {
             return response()->json([
                 'success' => false,
                 'message' => 'Upload is locked',
@@ -979,14 +1036,39 @@ class ReadingsController extends Controller
             'photo'              => 'nullable|image|max:8192', // 8MB ceiling
         ]);
 
-        // block upload to wrong cycle or inactive cycle
-       if ((int) $validated['billing_cycle_id'] !== $currentCycle->id) {
+        $readingTime = $this->resolveReadingTime($validated['reading_time']);
 
+        // ------------------------------------------------------------------
+        // Stale-cycle reconciliation. From here on, $validated['billing_cycle_id']
+        // is the EFFECTIVE cycle, so the cycle gate, duplicate check, previous-
+        // reading lookup and the saved row all agree.
+        // ------------------------------------------------------------------
+        $clientCycleId    = (int) $validated['billing_cycle_id'];
+        $effectiveCycleId = $this->reconcileStaleCycle($clientCycleId, $currentCycle, $readingTime);
+        $remappedFrom     = null;
+
+        if ($effectiveCycleId !== $clientCycleId) {
+            $remappedFrom = $clientCycleId;
+
+            Log::notice('Stale cycle reading detected', [
+                'account_id'        => $validated['account_id'],
+                'account_number'    => $validated['account_number'],
+                'incoming_cycle_id' => $clientCycleId,
+                'current_cycle_id'  => (int) $currentCycle->id,
+                'reading_time'      => $readingTime->toDateTimeString(),
+                'csa_id'            => auth()->id(),
+            ]);
+        }
+
+        $validated['billing_cycle_id'] = $effectiveCycleId;
+
+        // block upload to wrong cycle (anything not remappable above)
+        if ($effectiveCycleId !== (int) $currentCycle->id) {
             Log::warning('Reading sync blocked: wrong billing cycle', [
-                'account_id' => $validated['account_id'],
-                'billing_cycle_id' => $validated['billing_cycle_id'],
-                'current_cycle_id' => $currentCycle->id,
-                'csa_id' => auth()->id(),
+                'account_id'       => $validated['account_id'],
+                'billing_cycle_id' => $clientCycleId,
+                'current_cycle_id' => (int) $currentCycle->id,
+                'csa_id'           => auth()->id(),
             ]);
 
             return response()->json([
@@ -994,8 +1076,6 @@ class ReadingsController extends Controller
                 'message' => 'Wrong billing cycle',
             ], 400);
         }
-
-        $readingTime = $this->resolveReadingTime($validated['reading_time']);
 
         // ------------------------------------------------------------------
         // Duplicate check — same rule as batchStore(), returned as a normal
@@ -1008,16 +1088,17 @@ class ReadingsController extends Controller
 
         if ($existingReading) {
             Log::warning('Duplicate reading attempt blocked', [
-                'account_id' => $validated['account_id'],
-                'billing_cycle_id' => $validated['billing_cycle_id'],
+                'account_id'          => $validated['account_id'],
+                'billing_cycle_id'    => $validated['billing_cycle_id'],
                 'existing_reading_id' => $existingReading->id,
-                'csa_id' => auth()->id(),
+                'was_remapped'        => $remappedFrom !== null,
+                'csa_id'              => auth()->id(),
             ]);
 
             return response()->json([
-                'success' => false,
+                'success'    => false,
                 'error_code' => 'DUPLICATE_READING',
-                'message' => 'A reading for this account already exists in the current cycle.',
+                'message'    => 'A reading for this account already exists in the current cycle.',
                 'reading_id' => $existingReading->id,
             ]);
         }
@@ -1053,38 +1134,40 @@ class ReadingsController extends Controller
             }
 
             $reading = Reading::create([
-                'account_id' => $validated['account_id'],
-                'csa_id' => auth()->id(),
-                'billing_cycle_id' => $validated['billing_cycle_id'],
-                'reading_date' => now()->toDateString(),
-                'previous_reading' => $previousReading,
-                'current_reading' => $validated['current_reading'],
-                'meter_status' => null,
-                'this_month_code' => $validated['meter_reading_code'] ?? null,
-                'status' => $validated['status'],
-                'meter_reading_code' => $validated['meter_reading_code'] ?? null,
-                'comment' => $validated['comment'] ?? null,
-                'consumption' => $validated['current_reading'] && $previousReading
+                'account_id'             => $validated['account_id'],
+                'csa_id'                 => auth()->id(),
+                'billing_cycle_id'       => $validated['billing_cycle_id'],
+                'remapped_from_cycle_id' => $remappedFrom,
+                'reading_date'           => now()->toDateString(),
+                'previous_reading'       => $previousReading,
+                'current_reading'        => $validated['current_reading'],
+                'meter_status'           => null,
+                'this_month_code'        => $validated['meter_reading_code'] ?? null,
+                'status'                 => $validated['status'],
+                'meter_reading_code'     => $validated['meter_reading_code'] ?? null,
+                'comment'                => $validated['comment'] ?? null,
+                'consumption'            => $validated['current_reading'] && $previousReading
                     ? $validated['current_reading'] - $previousReading
                     : null,
-                'photo_path' => $photoPath,
-                'latitude' => $validated['latitude'] ?? null,
-                'longitude' => $validated['longitude'] ?? null,
-                'reading_time' => $readingTime,
-                'synced_at' => now(),
+                'photo_path'             => $photoPath,
+                'latitude'               => $validated['latitude'] ?? null,
+                'longitude'              => $validated['longitude'] ?? null,
+                'reading_time'           => $readingTime,
+                'synced_at'              => now(),
             ]);
 
             DB::commit();
 
             Log::info('Reading synced successfully', [
-                'reading_id' => $reading->id,
+                'reading_id'     => $reading->id,
                 'account_number' => $validated['account_number'],
+                'was_remapped'   => $remappedFrom !== null,
             ]);
 
             return response()->json([
-                'success' => true,
+                'success'    => true,
                 'reading_id' => $reading->id,
-                'message' => 'Reading synced successfully',
+                'message'    => 'Reading synced successfully',
             ]);
         } catch (Throwable $e) {
             DB::rollBack();
@@ -1096,8 +1179,8 @@ class ReadingsController extends Controller
 
             Log::error('Reading sync failed', [
                 'account_number' => $validated['account_number'] ?? null,
-                'error' => $e->getMessage(),
-                'line' => $e->getLine(),
+                'error'          => $e->getMessage(),
+                'line'           => $e->getLine(),
             ]);
 
             return response()->json([

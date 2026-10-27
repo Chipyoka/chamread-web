@@ -16,7 +16,7 @@ class Reading extends Model
         'status','reason_code','meter_status',
         'photo_path','latitude','longitude',
         'reading_time','synced_at','comment','reading_date',
-        'meter_reading_code','this_month_code'
+        'meter_reading_code','this_month_code', 'remapped_from_cycle_id',
 
     ];
       protected $casts = [
