@@ -60,15 +60,13 @@ use Illuminate\Support\Facades\Route;
      */
     Route::prefix('dashboard')
         ->name('dashboard.')
-        ->middleware(['auth', 'role:ADMIN,COMMERCIAL,SUPERVISOR,IT'])
+        ->middleware(['auth', 'role:ADMIN,COMMERCIAL,SUPERVISOR,IT,TECHNICAL'])
         ->group(function () {
 
         Route::get('/overview', [DashboardController::class, 'index'])->name('dashboard.index');
         Route::get('/supervisor', [DashboardController::class, 'supervisor'])->name('supervisor.index');
         Route::get('/technical', [DashboardController::class, 'technical'])->name('technical.index');
         Route::get('/performance', [PerformanceController::class, 'index'])->name('performance.index');
-
-
     });
 
     /**

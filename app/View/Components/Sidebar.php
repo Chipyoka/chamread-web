@@ -26,9 +26,9 @@ class Sidebar extends Component
                 'icon'  => 'layout-dashboard',
                 'roles' => ['SUPERVISOR', 'ADMIN', 'IT', 'COMMERCIAL', 'MD', 'FINANCE', 'HR', 'TECHNICAL', 'OTHER'],
                 'children' => [
-                    ['name' => 'Overview',     'route' => 'dashboard.dashboard.index',    'pattern' => 'dashboard.dashboard.*',    'icon' => 'layout-dashboard',     'roles' => ['SUPERVISOR', 'ADMIN', 'IT','COMMERCIAL']],
+                    ['name' => 'Overview',     'route' => 'dashboard.dashboard.index',    'pattern' => 'dashboard.dashboard.*',    'icon' => 'layout-dashboard',     'roles' => ['SUPERVISOR', 'ADMIN', 'IT','COMMERCIAL','TECHNICAL']],
                     ['name' => 'Supervisor',     'route' => 'dashboard.supervisor.index',    'pattern' => 'dashboard.supervisor.*',    'icon' => 'hard-hat',     'roles' => ['SUPERVISOR', 'ADMIN', 'IT','COMMERCIAL']],
-                    ['name' => 'Technical',     'route' => 'dashboard.technical.index',    'pattern' => 'dashboard.technical.*',    'icon' => 'wrench',     'roles' => ['SUPERVISOR', 'ADMIN', 'IT','COMMERCIAL']],
+                    ['name' => 'Technical',     'route' => 'dashboard.technical.index',    'pattern' => 'dashboard.technical.*',    'icon' => 'wrench',     'roles' => ['SUPERVISOR', 'ADMIN', 'IT','COMMERCIAL', 'TECHNICAL']],
                     ['name' => 'Performance',     'route' => 'dashboard.performance.index',    'pattern' => 'dashboard.performance.*',    'icon' => 'chart-no-axes-combined',     'roles' => ['ADMIN', 'IT','COMMERCIAL']],
                 ],
             ],
