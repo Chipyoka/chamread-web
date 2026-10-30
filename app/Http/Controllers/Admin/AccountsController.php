@@ -106,6 +106,15 @@ class AccountsController extends Controller
             $query->where('customer_category', 'like', '%' . $request->category . '%');
         }
 
+        // Search by status
+        if ($request->filled('status')) {
+            if($request->status === 'metered'){
+                $query->where('account_status', 'metered');
+            }else{
+                $query->where('account_status', 'unmetered');
+            }
+        }
+
         $accounts = $query->paginate(10)->withQueryString();
 
         $accountsTotal = CustomerAccount::when($zoneIds !== null, fn($q) => $q->whereIn('zone_id', $zoneIds))

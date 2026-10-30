@@ -64,10 +64,28 @@
              </div>
 
             <!-- Total accounts loaded -->
-            <div class="hover-sweep flex items-center justify-between bg-white border rounded-md border-gray-200  px-4 py-4 cursor-default">
-                <p class="text-gray-500 text-xs font-medium uppercase mt-2">Total Accounts Loaded</p>
-                <h2 class="text-2xl md:text-3xl font-bold text-primary">{{ $totalAccountsLoaded ?? '00' }}</h2>
-            </div>
+             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white border rounded-md border-gray-200  px-4 py-4 cursor-default">
+
+                <!-- total accounts -->
+                 <div onClick="window.location.href='{{ route('readings.accounts.index') }}'" class="hover-sweep flex items-center justify-between bg-blue-50 px-4 py-4 cursor-pointer">
+                     <p class="text-gray-500 text-xs font-medium uppercase mt-2">Accounts Total</p>
+                     <h2 class="text-2xl md:text-3xl font-bold text-primary">{{ $totalAccountsLoaded ?? '00' }}</h2>
+                 </div>
+
+                <!-- total metered -->
+                 <div class="hover-sweep flex items-center justify-between bg-gray-50 px-4 py-4 cursor-default">
+                     <p class="text-gray-500 text-xs font-medium uppercase mt-2">Metered</p>
+                     <h2 class="text-2xl md:text-3xl font-semibold text-gray-400">{{ $totalMetered ?? '00' }}</h2>
+                 </div>
+
+                <!-- total metered -->
+                 <div class="hover-sweep flex items-center justify-between bg-gray-50 px-4 py-4 cursor-default">
+                     <p class="text-gray-500 text-xs font-medium uppercase mt-2">Unmetered</p>
+                     <h2 class="text-2xl md:text-3xl font-semibold text-slate-400">{{ $totalUnmetered ?? '00' }}</h2>
+                 </div>
+                 <div class="grid-colspan-3">
+                 </div>
+             </div>
 
             <!-- Top card row for CURRENT BILLING CYCLE + TOP 5 CSAs -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-8">
@@ -179,7 +197,7 @@
                             <!-- also calculate assignment percentage -->
                             <p class="text-gray-500 text-xs uppercase mt-2">
                                 @php
-                                    $assignmentPercentage = $totalAccountsLoaded > 0 ? round(($totalAssignedAccounts / $totalAccountsLoaded) * 100) : 0
+                                    $assignmentPercentage = $totalAccountsLoaded > 0 ? round(($totalAssignedAccounts / $totalMetered) * 100) : 0
                                 @endphp
 
                                 <!-- color coded span for percentage -->

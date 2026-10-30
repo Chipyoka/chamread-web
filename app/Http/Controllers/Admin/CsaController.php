@@ -15,6 +15,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 use App\Services\AuditLogService;
 
@@ -84,106 +87,138 @@ class CsaController extends Controller
     }
 
 
+    
     /**
-     * List all CSAs
+     * Display a paginated list of CSAs with optional filtering and sorting.
+     *
+     * Strategy:
+     *  - Aggregates reading counts in a single query over `readings` (cached).
+     *  - Filters/sorts on lightweight id lists before loading full models.
+     *  - Eager loads relations only for the current page.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View
      */
     public function index(Request $request)
     {
+        $perPage = 10;
+
         $zoneIds = $this->scopedZoneIds();
-        $csaIds = $this->scopedCsaIds($zoneIds);
+        $csaIds  = $this->scopedCsaIds($zoneIds);
 
         $currentCycle = BillingCycle::where('status', 'active')->first();
+        $cycleId      = $currentCycle?->id;
 
-        $query = User::where('role', 'CSA')
-            ->with('activeAssignment.zone')
-            ->withCount([
-                'readings as readings_count' => function ($q) {
-                    $q->where('status', 'read');
-                }
-            ])
-            ->orderByDesc('readings_count')
-            // Mandatory district scope — a supervisor only ever sees CSAs
-            // currently assigned to a zone in their district.
-            ->when($zoneIds !== null, function ($q) use ($zoneIds) {
-                $q->whereHas('activeAssignment', fn($aq) => $aq->whereIn('zone_id', $zoneIds));
-            });
+        // Resolve readings table and foreign key from the relation.
+        $readingsRel   = (new User)->readings();
+        $readingsTable = $readingsRel->getRelated()->getTable();
+        $readingsFk    = $readingsRel->getForeignKeyName();
 
-        // Default values when there is no active billing cycle
-        $withReadings = 0;
-        $withoutReadings = 0;
+        // Cached per-CSA all-time and current-cycle "read" counts.
+        $counts = Cache::remember('csa-read-counts:' . ($cycleId ?? 'none'), 60, function () use ($readingsTable, $readingsFk, $cycleId) {
+            $q = DB::table($readingsTable)
+                ->where('status', 'read')
+                ->groupBy($readingsFk)
+                ->select("{$readingsFk} as csa_id")
+                ->selectRaw('COUNT(*) as total');
 
-      if ($currentCycle) {
+            $cycleId
+                ? $q->selectRaw('SUM(CASE WHEN billing_cycle_id = ? THEN 1 ELSE 0 END) as cycle_total', [$cycleId])
+                : $q->selectRaw('0 as cycle_total');
 
-        // Counts for the current billing cycle only
+            return $q->get()
+                ->mapWithKeys(fn ($r) => [
+                    (int) $r->csa_id => ['total' => (int) $r->total, 'cycle' => (int) $r->cycle_total],
+                ])
+                ->all();
+        });
 
-        $withReadings = User::where('role', 'CSA')
-            ->whereHas('activeAssignment', function ($q) use ($currentCycle) {
-                $q->where('billing_cycle_id', $currentCycle->id);
-            })
-            ->whereHas('readings', function ($q) use ($currentCycle) {
-                $q->where('billing_cycle_id', $currentCycle->id)
-                    ->where('status', 'read');
-            })
-            ->when($csaIds !== null, fn($q) => $q->whereIn('id', $csaIds))
-            ->count();
+        // Helpers to read counts for a given CSA id.
+        $totalFor = fn ($id) => $counts[$id]['total'] ?? 0;
+        $cycleFor = fn ($id) => $counts[$id]['cycle'] ?? 0;
 
-        $withoutReadings = User::where('role', 'CSA')
-            ->whereHas('activeAssignment', function ($q) use ($currentCycle) {
-                $q->where('billing_cycle_id', $currentCycle->id);
-            })
-            ->whereDoesntHave('readings', function ($q) use ($currentCycle) {
-                $q->where('billing_cycle_id', $currentCycle->id)
-                    ->where('status', 'read');
-            })
-            ->when($csaIds !== null, fn($q) => $q->whereIn('id', $csaIds))
-            ->count();
+        // Build the filtered id query.
+        $base = User::query()
+            ->where('role', 'CSA')
+            ->when($zoneIds !== null, fn ($q) =>
+                $q->whereHas('activeAssignment', fn ($aq) => $aq->whereIn('zone_id', $zoneIds))
+            )
+            ->when($request->filled('zone'), fn ($q) =>
+                $q->whereHas('activeAssignment', fn ($aq) => $aq->where('zone_id', $request->zone))
+            )
+            ->when($request->filled('search'), fn ($q) =>
+                $q->where('name', 'like', '%' . $request->search . '%')
+            );
 
-        // Status filter - current billing cycle only
-        if ($request->filled('status')) {
+        // Status filter: restrict to CSAs with/without reads in the current cycle.
+        if ($cycleId && $request->filled('status')) {
+            $base->whereHas('activeAssignment', fn ($q) => $q->where('billing_cycle_id', $cycleId));
 
-            $query->whereHas('activeAssignment', function ($q) use ($currentCycle) {
-                $q->where('billing_cycle_id', $currentCycle->id);
-            });
+            $idsWithCycleReads = array_keys(array_filter($counts, fn ($c) => $c['cycle'] > 0));
 
             if ($request->status === 'withReadings') {
-
-                $query->whereHas('readings', function ($q) use ($currentCycle) {
-                    $q->where('billing_cycle_id', $currentCycle->id)
-                        ->where('status', 'read');
-                });
-
+                $base->whereIn('id', $idsWithCycleReads);
             } elseif ($request->status === 'withoutReadings') {
-
-                $query->whereDoesntHave('readings', function ($q) use ($currentCycle) {
-                    $q->where('billing_cycle_id', $currentCycle->id)
-                        ->where('status', 'read');
-                });
+                $base->whereNotIn('id', $idsWithCycleReads);
             }
         }
-    }
 
-        // Zone filter (combined with the mandatory scope above, so a
-        // supervisor requesting a zone outside their district simply gets
-        // zero results rather than leaking another district's CSAs).
-        if ($request->filled('zone')) {
-            $query->whereHas('activeAssignment', function ($q) use ($request) {
-                $q->where('zone_id', $request->zone);
-            });
-        }
+        // Sort ids by all-time read count desc, with id asc as tie-breaker.
+        $sortedIds = $base->pluck('id')
+            ->sort(fn ($a, $b) => ($totalFor($b) <=> $totalFor($a)) ?: ($a <=> $b))
+            ->values();
 
-        // Search by name
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%');
-        }
+        // Load full models and relations for the current page only.
+        $page    = LengthAwarePaginator::resolveCurrentPage();
+        $pageIds = $sortedIds->forPage($page, $perPage)->values();
 
-        $csas = $query->paginate(10)->withQueryString();
+        $models = User::with('activeAssignment.zone')
+            ->whereIn('id', $pageIds)
+            ->get()
+            ->keyBy('id');
 
-        // Total CSA count — scoped to the district when restricted.
-        $csasTotal = User::where('role', 'CSA')
-            ->when($csaIds !== null, fn($q) => $q->whereIn('id', $csaIds))
-            ->count();
+        $items = $pageIds
+            ->map(function ($id) use ($models, $totalFor) {
+                $csa = $models->get($id);
+                if ($csa) {
+                    $csa->readings_count = $totalFor($id);
+                }
+                return $csa;
+            })
+            ->filter()
+            ->values();
 
-        $zones = Zone::when($zoneIds !== null, fn($q) => $q->whereIn('id', $zoneIds))->get();
+        $csas = (new LengthAwarePaginator($items, $sortedIds->count(), $perPage, $page))
+            ->withPath($request->url())
+            ->withQueryString();
+
+        // Summary cards, cached per cycle and zone scope.
+        $statsKey = 'csa-index-stats:' . ($cycleId ?? 'none') . ':' . md5(json_encode($zoneIds));
+
+        [$csasTotal, $withReadings, $withoutReadings] = Cache::remember($statsKey, 60, function () use ($csaIds, $cycleId, $cycleFor) {
+            $scoped = fn () => User::where('role', 'CSA')
+                ->when($csaIds !== null, fn ($q) => $q->whereIn('id', $csaIds));
+
+            $total = $scoped()->count();
+
+            if (! $cycleId) {
+                return [$total, 0, 0];
+            }
+
+            $assignedIds = $scoped()
+                ->whereHas('activeAssignment', fn ($q) => $q->where('billing_cycle_id', $cycleId))
+                ->pluck('id');
+
+            $with = $assignedIds->filter(fn ($id) => $cycleFor($id) > 0)->count();
+
+            return [$total, $with, $assignedIds->count() - $with];
+        });
+
+        // Zones dropdown data.
+        $zones = Zone::select('id', 'name')
+            ->when($zoneIds !== null, fn ($q) => $q->whereIn('id', $zoneIds))
+            ->orderBy('name')
+            ->get();
 
         return view('readings.csa.index', compact(
             'csas',
@@ -259,7 +294,7 @@ class CsaController extends Controller
         //     ->with(['zone', 'dma', 'billingCycle'])
         //     ->latest()
         //     ->get();
-$currentCycle = BillingCycle::where('status', 'active')->first();
+        $currentCycle = BillingCycle::where('status', 'active')->first();
          $devices = Device::whereNotIn(
                 'id',
                 User::whereNotNull('device_id')->pluck('device_id')
@@ -302,7 +337,7 @@ $currentCycle = BillingCycle::where('status', 'active')->first();
     /**
      * Update CSA
      */
-   public function update(Request $request, User $csa)
+    public function update(Request $request, User $csa)
     {
         $zoneIds = $this->scopedZoneIds();
         $csaIds = $this->scopedCsaIds($zoneIds);
@@ -363,40 +398,7 @@ $currentCycle = BillingCycle::where('status', 'active')->first();
             ->route('readings.csas.index')
             ->with('success', 'CSA updated successfully.');
     }
-    /**
-     * Delete CSA
-     */
-    public function destroy(User $csa)
-    {
-        $zoneIds = $this->scopedZoneIds();
-        $csaIds = $this->scopedCsaIds($zoneIds);
-
-        $this->ensureCSA($csa, $csaIds);
-
-        // Optional: prevent delete if has readings
-        if ($csa->readings()->exists()) {
-        return redirect()->back()
-            ->with('error', 'Cannot delete CSA with Readings');
-         }
-
-        // Capture state before deletion
-        $snapshot = collect($csa->toArray())
-            ->except(['password', 'remember_token'])
-            ->toArray();
-
-        // Perform delete
-        $csa->delete();
-
-        // Audit log
-        $this->auditLog->log('DELETE', 'User deleted', [
-            'user_id' => $csa->id,
-            'payload' => $snapshot,
-        ]);
-
-        return redirect()
-            ->route('readings.csas.index')
-            ->with('success', 'CSA deleted successfully.');
-    }
+ 
 
     /**
      * Show assignment page
@@ -672,7 +674,7 @@ $currentCycle = BillingCycle::where('status', 'active')->first();
         $target = $assignment->target ?? 0;
 
         // Step 1: the fixed set of account IDs this CSA is assigned to
-        $accountIds = CustomerAccount::where('zone_id', $assignment->zone_id)
+        $accountIds = CustomerAccount::where('account_status', 'metered')->where('zone_id', $assignment->zone_id)
             ->orderBy('id')
             ->take($target)
             ->pluck('id');
@@ -820,6 +822,41 @@ $currentCycle = BillingCycle::where('status', 'active')->first();
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+       /**
+     * Delete CSA
+     */
+    public function destroy(User $csa)
+    {
+        $zoneIds = $this->scopedZoneIds();
+        $csaIds = $this->scopedCsaIds($zoneIds);
+
+        $this->ensureCSA($csa, $csaIds);
+
+        // Optional: prevent delete if has readings
+        if ($csa->readings()->exists()) {
+        return redirect()->back()
+            ->with('error', 'Cannot delete CSA with Readings');
+         }
+
+        // Capture state before deletion
+        $snapshot = collect($csa->toArray())
+            ->except(['password', 'remember_token'])
+            ->toArray();
+
+        // Perform delete
+        $csa->delete();
+
+        // Audit log
+        $this->auditLog->log('DELETE', 'User deleted', [
+            'user_id' => $csa->id,
+            'payload' => $snapshot,
+        ]);
+
+        return redirect()
+            ->route('readings.csas.index')
+            ->with('success', 'CSA deleted successfully.');
     }
 
     /**

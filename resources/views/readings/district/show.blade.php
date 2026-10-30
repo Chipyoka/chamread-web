@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="p-4">
+    <div class="p-4" x-data="">
         <x-slot:breadcrumb>
             <x-breadcrumb :items="[
                 ['label' => 'Readings'],
@@ -23,42 +23,16 @@
                 </div>
 
                 <div class="flex items-center space-x-2">
-                    <x-micro-button
-                        color="amber"
-                        icon="file-up"
-                        size="md"
-                        href="{{ route('readings.districts.export.pending', $district) }}"
-                    >
-                        Pending
-                    </x-micro-button>
+                   
 
                     <x-micro-button
-                        color="gray"
-                        icon="file-up"
+                        variant="edit"
+                        icon="sliders-horizontal"
                         size="md"
-                        href="{{ route('readings.districts.export.field-issues', $district) }}"
+                        x-on:click="$dispatch('open-modal', 'export-district')"
                     >
-                        Field Issues
+                        Export Options
                     </x-micro-button>
-
-                    <x-micro-button
-                        color="gray"
-                        icon="file-up"
-                        size="md"
-                        href="{{ route('readings.districts.export.flagged-accounts', $district) }}"
-                    >
-                        Flagged Accounts
-                    </x-micro-button>
-
-                    <x-micro-button
-                        color="gray"
-                        icon="file-up"
-                        size="md"
-                        href="{{ route('readings.districts.export.flagged-readings', $district) }}"
-                    >
-                        Flagged Readings
-                    </x-micro-button>
-
                     <x-micro-button
                         variant="edit"
                         icon="arrow-left"
@@ -80,7 +54,7 @@
             @endif
 
             {{-- ---------------------------------------------------------- --}}
-            {{-- District Info Card --}}
+            <!-- {{-- District Info Card --}} -->
             {{-- ---------------------------------------------------------- --}}
             <div class="bg-white rounded-md p-6 space-y-4 border border-gray-200">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -93,6 +67,7 @@
                         <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Short Code</h2>
                         <p class="text-gray-500 font-semibold">{{ $district->short_code ?? '-' }}</p>
                     </div>
+                   
 
                     <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                         <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Status</h2>
@@ -107,40 +82,43 @@
                         @endif
                     </div>
 
+                     <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
+                        <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Accounts Total</h2>
+                        <p class="text-gray-500 font-semibold">{{ number_format($accountsTotal) ?? '-' }}</p>
+                    </div>
+
+                     <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
+                        <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Metered</h2>
+                        <p class="text-gray-500 font-semibold">{{ number_format($accountsMetered) ?? '-' }}</p>
+                    </div>
+
+                     <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
+                        <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Unmetered</h2>
+                        <p class="text-gray-500 font-semibold">{{ number_format($accountsUnmetered) ?? '-' }}</p>
+                    </div>
+
                 </div>
             </div>
 
             {{-- ---------------------------------------------------------- --}}
-            {{-- Metric Cards --}}
+            <!-- {{-- Metric Cards --}} -->
             {{-- ---------------------------------------------------------- --}}
-            <div class="bg-white rounded-md p-6 space-y-4 border border-gray-200">
-                <div class="my-3 hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-slate-400 rounded-sm px-4 py-4 hover:shadow-md transition-all duration-300 ease-in-out">
-                    <div>
-                        <h2 class="text-3xl font-bold text-slate-400">{{ $completionRate }}%</h2>
-                        <p class="text-gray-500 text-xs uppercase mt-2">Completion Rate</p>
-                    </div>
-                    <div class="flex items-center justify-center p-4 bg-slate-100/70 rounded-full">
-                        <i data-lucide="circle-percent" class="w-7 h-7 text-slate-400"></i>
-                    </div>
-                </div>
-            </div>
+       
 
             <div class="bg-white rounded-md p-6 space-y-4 border border-gray-200">
 
                 <div>
                     <h3 class="text-gray-400 text-xs uppercase my-2">Overview</h3>
-
-            
     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-8">
-                        {{-- Accounts Assigned / Total --}}
-                        <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-primary rounded-sm px-4 py-4 hover:shadow-md transition-all duration-300 ease-in-out">
+         
+                         <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-slate-400 rounded-sm px-4 py-4 hover:shadow-md transition-all duration-300 ease-in-out">
                             <div>
-                                <h2 class="text-3xl font-bold text-primary">{{ number_format($accountsTotal) }}</h2>
-                                <p class="text-gray-500 text-xs uppercase mt-2">Accounts Total</p>
+                                <h2 class="text-3xl font-bold text-slate-400">{{ $completionRate }}%</h2>
+                                <p class="text-gray-500 text-xs uppercase mt-2">Completion Rate</p>
                             </div>
-                            <div class="flex items-center justify-center p-4 bg-blue-100/70 rounded-full">
-                                <i data-lucide="list" class="w-7 h-7 text-primary"></i>
+                            <div class="flex items-center justify-center p-4 bg-slate-100/70 rounded-full">
+                                <i data-lucide="circle-percent" class="w-7 h-7 text-slate-400"></i>
                             </div>
                         </div>
     
@@ -267,4 +245,39 @@
 
         </div>
     </div>
+
+    
+     <!-- export options  modal -->
+    <x-modal name="export-district" max-width="md" :closable="false">
+        <div class="p-6">
+            <h2 class="text-lg font-semibold text-gray-900"> District Export Options</h2>
+            <p class="text-xs text-gray-500">Select an export option for <strong>{{$district->name}}</strong> district</p>
+
+            <div class="space-y-2 mt-4 bg-slate-50/30 p-4">
+                <!-- export pending accounts -->
+                <a href="{{ route('readings.districts.export.pending', $district) }}" class="inline-flex items-center gap-4 w-full py-2 px-4 rounded-sm bg-gray-100 text-gray-600 hover:shadow-sm cursor-pointer text-sm">
+                    <i data-lucide="file-up" class="w-5 h-5"></i>
+                    <span>Export Pending Reading</span>
+                </a>
+                <!-- export field issues -->
+                <a href="{{ route('readings.districts.export.field-issues', $district) }}" class="inline-flex items-center gap-4 w-full py-2 px-4 rounded-sm bg-gray-100 text-gray-600 hover:shadow-sm cursor-pointer text-sm">
+                    <i data-lucide="file-up" class="w-5 h-5"></i>
+                    <span>Export Field Issues</span>
+                </a>
+
+                <!-- export flagged accounts -->
+                <a href="{{ route('readings.districts.export.flagged-accounts', $district) }}" class="inline-flex items-center gap-4 w-full py-2 px-4 rounded-sm bg-gray-100 text-gray-600 hover:shadow-sm cursor-pointer text-sm">
+                    <i data-lucide="file-up" class="w-5 h-5"></i>
+                    <span>Export Flagged Accounts</span>
+                </a>
+
+                <!-- export flagged readings -->
+                <a href="{{ route('readings.districts.export.flagged-readings', $district) }}" class="inline-flex items-center gap-4 w-full py-2 px-4 rounded-sm bg-gray-100 text-gray-600 hover:shadow-sm cursor-pointer text-sm">
+                    <i data-lucide="file-up" class="w-5 h-5"></i>
+                    <span>Export Flagged Readings</span>
+                </a>
+            </div>
+        </div>
+    </x-modal>
+
 </x-app-layout>

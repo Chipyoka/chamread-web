@@ -12,7 +12,7 @@
             <!-- total accounts loaded -->
             <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-slate-500 rounded-sm px-4 py-4 transition-all duration-300 ease-in-out">
                 <div>
-                    <h2 class="text-3xl font-bold text-slate-500">{{ $overviewData['totalAccountsLoaded'] ?? 0 }}</h2>
+                    <h2 class="text-3xl font-bold text-slate-500">{{ $overviewData['totalAssigned'] ?? 0 }}</h2>
                     <p class="text-gray-500 text-xs uppercase mt-2">Total Accounts</p>
                 </div>
                 <div class="flex items-center justify-center p-4 bg-slate-100/70 rounded-full">
@@ -23,7 +23,7 @@
             <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-green-500 rounded-sm px-4 py-4 transition-all duration-300 ease-in-out">
                 <div>
                     <h2 class="text-3xl font-bold text-green-500">{{ $counts['read'] ?? 0 }}</h2>
-                    <p class="text-gray-500 text-xs uppercase mt-2">Read</p>
+                    <p class="text-gray-500 text-xs uppercase mt-2">Readings</p>
                 </div>
                 <div class="flex items-center justify-center p-4 bg-green-100/70 rounded-full">
                     <i data-lucide="circle-check" class="w-7 h-7 text-green-500"></i>
@@ -34,7 +34,7 @@
             <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-amber-400 rounded-sm px-4 py-4 transition-all duration-300 ease-in-out">
                 <div>
                     <h2 class="text-3xl font-bold text-amber-400">{{ $counts['pending'] ?? 0 }}</h2>
-                    <p class="text-gray-500 text-xs uppercase mt-2">Pending</p>
+                    <p class="text-gray-500 text-xs uppercase mt-2">Pending Reading</p>
                 </div>
                 <div class="flex items-center justify-center p-4 bg-amber-100/70 rounded-full">
                     <i data-lucide="clock-arrow-down" class="w-7 h-7 text-amber-400"></i>
@@ -57,7 +57,7 @@
             <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-blue-500 rounded-sm px-4 py-4 transition-all duration-300 ease-in-out">
                 <div>
                     <h2 class="text-3xl font-bold text-blue-500">{{ $counts['auto'] ?? 0 }}</h2>
-                    <p class="text-gray-500 text-xs uppercase mt-2">Auto</p>
+                    <p class="text-gray-500 text-xs uppercase mt-2">Verified - Auto</p>
                 </div>
                 <div class="flex items-center justify-center p-4 bg-blue-100/70 rounded-full">
                     <i data-lucide="zap" class="w-7 h-7 text-blue-500"></i>
@@ -68,7 +68,7 @@
             <div class="hover-sweep flex items-center justify-between bg-gray-50/70 border-t-8 border-purple-500 rounded-sm px-4 py-4 transition-all duration-300 ease-in-out">
                 <div>
                     <h2 class="text-3xl font-bold text-purple-500">{{ $counts['manual'] ?? 0 }}</h2>
-                    <p class="text-gray-500 text-xs uppercase mt-2">Manual</p>
+                    <p class="text-gray-500 text-xs uppercase mt-2">Verified - Manual</p>
                 </div>
                 <div class="flex items-center justify-center p-4 bg-purple-100/70 rounded-full">
                     <i data-lucide="user-check" class="w-7 h-7 text-purple-500"></i>
@@ -153,7 +153,7 @@
 
         @else
 
-            {{-- Readings: read / auto / manual / flagged --}}
+            <!--  Readings: read / auto / manual / flagged  -->
             @if(count($readings) > 0)
                 <table class="min-w-full divide-y divide-gray-100">
                     <thead class="bg-gray-50">
@@ -264,9 +264,13 @@
                                     @if($reading->verification_status === 'flagged')
                                         <form method="POST" action="{{ route('readings.meter-readings.verify', $reading) }}" class="inline-flex" onsubmit="return confirm('Are you sure you want to verify this reading? This action cannot be undone.')">
                                             @csrf
-                                            <x-micro-button type="submit" color="green" icon="shield-check" size="sm" >
-                                                Verify
-                                            </x-micro-button>
+                                            @if($reading->verified_at)
+                                                <p class="text-xs italic text-green-400">Verified</p>
+                                            @else
+                                                <x-micro-button type="submit" color="green" icon="shield-check" size="sm" >
+                                                    Verify
+                                                </x-micro-button>
+                                            @endif
                                         </form>
                                     @endif
                                 </td>

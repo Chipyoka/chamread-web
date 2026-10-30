@@ -45,6 +45,9 @@ class DistrictController extends Controller
     /**
      * Distinct account IDs belonging to a district (through zones).
      * Cached per-request to avoid repeating the same subquery.
+     *
+     * @param  \App\Models\District  $district
+     * @return \Illuminate\Support\Collection
      */
     private function accountIdsFor(District $district): \Illuminate\Support\Collection
     {
@@ -61,7 +64,40 @@ class DistrictController extends Controller
     }
 
     /**
+     * Aggregate account stats (total, metered, unmetered) for a district.
+     * Cached per-request keyed by district id.
+     *
+     * @param  \App\Models\District  $district
+     * @return array{total:int,metered:int,unmetered:int}
+     */
+    private function accountStatsFor(District $district): array
+    {
+        static $cache = [];
+
+        if (!isset($cache[$district->id])) {
+            $zoneIds = $this->zoneIdsFor($district);
+
+            $counts = CustomerAccount::whereIn('zone_id', $zoneIds)
+                ->selectRaw("COUNT(*) as total")
+                ->selectRaw("SUM(CASE WHEN account_status = 'metered' THEN 1 ELSE 0 END) as metered")
+                ->selectRaw("SUM(CASE WHEN account_status = 'unmetered' THEN 1 ELSE 0 END) as unmetered")
+                ->first();
+
+            $cache[$district->id] = [
+                'total'     => (int) ($counts->total ?? 0),
+                'metered'   => (int) ($counts->metered ?? 0),
+                'unmetered' => (int) ($counts->unmetered ?? 0),
+            ];
+        }
+
+        return $cache[$district->id];
+    }
+
+    /**
      * List all districts with light rollup stats for the current cycle.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View
      */
     public function index(Request $request)
     {
@@ -93,11 +129,16 @@ class DistrictController extends Controller
         $districts = $query->paginate(15)->withQueryString();
 
         // Rollups for the page only (≤15 rows).
-        if ($currentCycle) {
-            foreach ($districts as $district) {
-                $accountIds = $this->accountIdsFor($district);
+        foreach ($districts as $district) {
+            $stats = $this->accountStatsFor($district);
 
-                $district->accounts_total = $accountIds->count();
+            $district->accounts_total     = $stats['total'];
+            $district->accounts_metered   = $stats['metered'];
+            $district->accounts_unmetered = $stats['unmetered'];
+
+            $district->accounts_read = 0;
+            if ($currentCycle && $stats['total'] > 0) {
+                $accountIds = $this->accountIdsFor($district);
 
                 $district->accounts_read = $accountIds->isEmpty()
                     ? 0
@@ -106,11 +147,11 @@ class DistrictController extends Controller
                         ->where('status', 'read')
                         ->distinct('account_id')
                         ->count('account_id');
-
-                $district->completion_rate = $district->accounts_total > 0
-                    ? round(($district->accounts_read / $district->accounts_total) * 100, 2)
-                    : 0;
             }
+
+            $district->completion_rate = $stats['total'] > 0
+                ? round(($district->accounts_read / $stats['metered']) * 100, 2)
+                : 0;
         }
 
         return view('readings.district.index', compact('districts', 'currentCycle'));
@@ -118,23 +159,29 @@ class DistrictController extends Controller
 
     /**
      * Show a single district dashboard (read-only).
+     *
+     * @param  \App\Models\District  $district
+     * @return \Illuminate\View\View
      */
     public function show(District $district)
     {
         $currentCycle = BillingCycle::where('status', 'active')->first();
 
         $accountIds = $this->accountIdsFor($district);
+        $stats      = $this->accountStatsFor($district);
 
-        // --- Team (pivot: role + status) ---
+        // Team (pivot: role + status).
         $team = $district->users()
             ->wherePivot('status', 'active')
             ->orderBy('name')
             ->get();
 
-        // --- Account totals (accounts scoped to district via zones) ---
-        $accountsTotal = $accountIds->count();
+        // Account totals (accounts scoped to district via zones).
+        $accountsTotal     = $stats['total'];
+        $accountsMetered   = $stats['metered'];
+        $accountsUnmetered = $stats['unmetered'];
 
-        $accountsRead = 0;
+        $accountsRead    = 0;
         $accountsPending = $accountsTotal;
 
         if ($currentCycle && $accountsTotal > 0) {
@@ -148,10 +195,10 @@ class DistrictController extends Controller
         }
 
         $completionRate = $accountsTotal > 0
-            ? round(($accountsRead / $accountsTotal) * 100, 2)
+            ? round(($accountsRead / $accountsMetered) * 100, 2)
             : 0;
 
-        // --- Technical cases (readings for accounts in district, current cycle) ---
+        // Technical cases (readings for accounts in district, current cycle).
         $technicalCases = 0;
         if ($currentCycle && $accountsTotal > 0) {
             $technicalCases = Reading::where('billing_cycle_id', $currentCycle->id)
@@ -160,14 +207,14 @@ class DistrictController extends Controller
                 ->count();
         }
 
-        // --- Flagged accounts (no cycle scope; flags are account-level) ---
+        // Flagged accounts (no cycle scope; flags are account-level).
         $flaggedAccounts = $accountIds->isEmpty()
             ? 0
             : CustomerAccount::whereIn('id', $accountIds)
                 ->whereHas('flags', fn($q) => $q->active())
                 ->count();
 
-        // --- Flagged readings (current cycle only) ---
+        // Flagged readings (current cycle only).
         $flaggedReadings = 0;
         if ($currentCycle && $accountsTotal > 0) {
             $flaggedReadings = Reading::where('billing_cycle_id', $currentCycle->id)
@@ -176,7 +223,7 @@ class DistrictController extends Controller
                 ->count();
         }
 
-        // --- Field issues (reporter's active zone falls in this district) ---
+        // Field issues (reporter's active zone falls in this district).
         $fieldIssues = 0;
         if ($currentCycle) {
             $fieldIssues = CustomerAccountIssue::where('created_at', '>=', $currentCycle->start_date)
@@ -191,6 +238,8 @@ class DistrictController extends Controller
             'currentCycle',
             'team',
             'accountsTotal',
+            'accountsMetered',
+            'accountsUnmetered',
             'accountsRead',
             'accountsPending',
             'completionRate',
@@ -367,6 +416,7 @@ class DistrictController extends Controller
             'CURRENT_READING',
             'THIS_MONTH_CODE',
             'STATUS',
+            'FLAG',
             'CSA',
             'SYNCED_AT',
         ];
@@ -379,13 +429,21 @@ class DistrictController extends Controller
                 ->orderBy('id')
                 ->chunkById(500, function ($readings) use ($handle) {
                     foreach ($readings as $reading) {
+
+                        // Get first flag
+                        $firstFlag = $reading->flags()->first();
+
+                        // full code name
+                        $meter_code = $reading->code->code . " " . $reading->code->name;
+
                         fputcsv($handle, [
                             $reading->account->account_number ?? 'N/A',
                             $reading->account->customer_name ?? 'N/A',
                             $reading->account->zone->name ?? 'N/A',
                             $reading->current_reading ?? '',
-                            $reading->this_month_code ?? '',
+                            $meter_code ?? '',
                             $reading->status ?? '',
+                            $firstFlag->name ?? '',
                             $reading->csa->name ?? 'Unknown',
                             optional($reading->synced_at)->format('Y-m-d H:i:s'),
                         ]);

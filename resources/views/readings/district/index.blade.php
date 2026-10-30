@@ -78,10 +78,10 @@
                     <table class="min-w-full divide-y divide-gray-100">
                         <thead class="bg-gray-50">
                             <tr class="text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                <th class="px-6 py-3 whitespace-nowrap">Short Code</th>
-                                <th class="px-6 py-3 whitespace-nowrap">Name</th>
+                                <th class="px-6 py-3 whitespace-nowrap">District</th>
                                 <th class="px-6 py-3 whitespace-nowrap">Team</th>
-                                <th class="px-6 py-3 whitespace-nowrap">Accounts</th>
+                                <th class="px-6 py-3 whitespace-nowrap">Total</th>
+                                <th class="px-6 py-3 whitespace-nowrap">Metered</th>
                                 <th class="px-6 py-3 whitespace-nowrap">Read</th>
                                 <th class="px-6 py-3 whitespace-nowrap">Completion</th>
                                 <th class="px-6 py-3 whitespace-nowrap">Status</th>
@@ -99,11 +99,6 @@
                                         {{ $district->short_code ?? '-' }}
                                     </td>
 
-                                    <!-- Name -->
-                                    <td class="px-6 py-3 text-xs text-gray-500 font-medium whitespace-nowrap">
-                                        {{ $district->name }}
-                                    </td>
-
                                     <!-- Team Count -->
                                     <td class="px-6 py-3 text-xs text-gray-500 whitespace-nowrap">
                                         <span class="inline-flex items-center px-2 py-0.5 bg-slate-100 text-slate-600 rounded-sm text-[10px] font-medium">
@@ -111,9 +106,14 @@
                                         </span>
                                     </td>
 
-                                    <!-- Accounts Total -->
+                                    <!-- Accounts total -->
+                                    <td class="px-6 py-3 text-xs text-gray-500 font-medium whitespace-nowrap">
+                                        {{ $district->accounts_total ?? 0 }}
+                                    </td>
+
+                                    <!-- Accounts metered -->
                                     <td class="px-6 py-3 text-xs text-gray-500 whitespace-nowrap">
-                                        {{ number_format($district->accounts_total ?? 0) }}
+                                        {{ number_format($district->accounts_metered ?? 0) }}
                                     </td>
 
                                     <!-- Accounts Read -->

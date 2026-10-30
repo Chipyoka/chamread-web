@@ -143,6 +143,8 @@ class DashboardController extends Controller
         // Latest billing cycle
         $currentCycle = BillingCycle::where('status', 'active')->first();
 
+     
+
         /*
         |--------------------------------------------------------------------------
         | Default Safe Values
@@ -191,7 +193,7 @@ class DashboardController extends Controller
                 ->pluck('zone_id');
 
             // Total accounts in assigned zones
-            $total = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
+            $total = CustomerAccount::whereIn('zone_id', $assignedZoneIds)->where('account_status', 'metered')
                 ->count();
 
             // Accounts WITH readings for the CURRENT billing cycle
@@ -257,7 +259,7 @@ class DashboardController extends Controller
             $totalAssignedAccounts = CustomerAccount::whereIn(
                 'zone_id',
                 $assignedZoneIds
-            )->count();
+            )->where('account_status', 'metered')->count();
 
             $completionRate = $totalAssignedAccounts > 0
                 ? round(($totalReadings / $totalAssignedAccounts) * 100, 2)
@@ -312,8 +314,11 @@ class DashboardController extends Controller
 
             $accountsNotRead = Reading::where('billing_cycle_id', $currentCycle->id)
                 ->where('status', 'NOT_READ')
-                ->when($zoneIds !== null, function ($q) use ($zoneIds) {
-                    $q->whereHas('account', fn($acc) => $acc->whereIn('zone_id', $zoneIds));
+                ->whereHas('account', function ($acc) use ($zoneIds) {
+                    $acc->where('account_status', 'metered')
+                        ->when($zoneIds !== null, function ($q) use ($zoneIds) {
+                            $q->whereIn('zone_id', $zoneIds);
+                        });
                 })
                 ->count();
 
@@ -404,6 +409,10 @@ class DashboardController extends Controller
 
         $totalAccountsLoaded = CustomerAccount::when($zoneIds !== null, fn($q) => $q->whereIn('zone_id', $zoneIds))
             ->count();
+        $totalMetered = CustomerAccount::where('account_status', 'metered')->when($zoneIds !== null, fn($q) => $q->whereIn('zone_id', $zoneIds))
+            ->count();
+
+        $totalUnmetered = $totalAccountsLoaded - $totalMetered;
 
 
 
@@ -429,6 +438,8 @@ class DashboardController extends Controller
             'flaggedReadings',
             'reportedIssues',
             'totalAccountsLoaded',
+            'totalMetered',
+            'totalUnmetered',
             'totalTechnicalCases',
         ));
     }
@@ -451,9 +462,10 @@ class DashboardController extends Controller
 
         if ($currentCycle) {
             $baseReadings = fn () => Reading::where('billing_cycle_id', $currentCycle->id)
-                ->when($zoneIds !== null, fn ($q) => $q->whereHas(
-                    'account', fn ($acc) => $acc->whereIn('zone_id', $zoneIds)
-                ));
+                ->whereHas('account', function ($acc) use ($zoneIds) {
+                    $acc->where('account_status', 'metered')
+                        ->when($zoneIds !== null, fn ($q) => $q->whereIn('zone_id', $zoneIds));
+                });
 
             $counts['read']    = $baseReadings()->where('status', 'read')->count();
             $counts['auto']    = $baseReadings()->where('verification_status', 'auto')->count();
@@ -464,7 +476,8 @@ class DashboardController extends Controller
                 ->when($zoneIds !== null, fn ($q) => $q->whereIn('zone_id', $zoneIds))
                 ->pluck('zone_id');
 
-            $totalAssigned = CustomerAccount::whereIn('zone_id', $assignedZoneIds)->count();
+            $totalAssigned = CustomerAccount::where('account_status', 'metered')->whereIn('zone_id', $assignedZoneIds)->count();
+
             $readAccounts = CustomerAccount::whereIn('zone_id', $assignedZoneIds)
                 ->whereExists(function ($q) use ($currentCycle) {
                     $q->selectRaw(1)->from('readings')
@@ -474,14 +487,16 @@ class DashboardController extends Controller
             $counts['pending'] = $totalAssigned - $readAccounts;
 
             if ($filter === 'pending') {
-                $accountPendingList = CustomerAccount::with('assignedCsa')
-                    ->whereIn('zone_id', $assignedZoneIds)
-                    ->whereNotExists(function ($q) use ($currentCycle) {
-                        $q->selectRaw(1)->from('readings')
-                            ->whereColumn('readings.account_id', 'customer_accounts.id')
-                            ->where('readings.billing_cycle_id', $currentCycle->id);
-                    })
-                    ->paginate(25);
+              $accountPendingList = CustomerAccount::with('assignedCsa')
+                ->whereIn('zone_id', $assignedZoneIds)
+                ->where('account_status', 'metered')
+                ->whereNotExists(function ($q) use ($currentCycle) {
+                    $q->selectRaw(1)
+                        ->from('readings')
+                        ->whereColumn('readings.account_id', 'customer_accounts.id')
+                        ->where('readings.billing_cycle_id', $currentCycle->id);
+                })
+                ->paginate(25);
             } else {
                 $readings = $baseReadings()
                     ->with([
@@ -508,6 +523,7 @@ class DashboardController extends Controller
                 'readings'            => $readings,
                 'accountPendingList'  => $accountPendingList,
                 'totalAccountsLoaded' => $totalAccountsLoaded,
+                'totalAssigned' => $totalAssigned,
             ],
         ]);
     }

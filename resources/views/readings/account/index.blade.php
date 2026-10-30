@@ -104,6 +104,20 @@
                     </select>
                 </div>
 
+                <!-- account status Filter -->
+                <div class="flex items-center space-x-2">
+                    <select 
+                        id="status_filter" 
+                        name="status"
+                        class="text-xs border-gray-200 w-48 focus:ring-primary focus:border-primary text-gray-500 bg-gray-50 px-3 py-1.5 rounded-sm"
+                        onchange="this.form.submit()"
+                    >
+                        <option value="">All Meter Status</option>
+                        <option value="metered" {{ request('status') == 'metered' ? 'selected' : '' }}>Metered</option>
+                        <option value="unmetered" {{ request('status') == 'unmetered' ? 'selected' : '' }}>Unmetered</option>
+                    </select>
+                </div>
+
                 <!-- Submit Button -->
                 <button type="submit" class="text-xs bg-primary hover:opacity-95 text-white px-4 py-1.5 rounded-sm transition-colors">
                     Filter
