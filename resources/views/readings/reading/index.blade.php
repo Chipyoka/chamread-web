@@ -22,7 +22,7 @@
             </div>
 
           
-            @if(in_array(Auth::user()->role, ['ADMIN', 'IT', 'COMMERCIAL']))
+            @if(in_array(Auth::user()->role, ['ADMIN', 'IT', 'COMMERCIAL', 'SUPERVISOR']))
                 @php
                     $r =  method_exists($readings, 'total') ? $readings->total() : $readings->count();
                 @endphp
