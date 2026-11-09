@@ -236,6 +236,7 @@ use Illuminate\Support\Facades\Route;
          */
         Route::prefix('erp')->name('erp.')->group(function () {
             Route::get('/', [MonthlyTemplateController::class, 'index'])->name('index');
+            Route::get('/imports', [MonthlyTemplateController::class, 'showImports'])->name('imports');
         });
 
         /**

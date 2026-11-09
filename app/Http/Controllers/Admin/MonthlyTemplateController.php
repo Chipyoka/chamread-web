@@ -2,182 +2,241 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\MeterReadingsExport;
+use App\Exports\MonthlyTemplateExport;
 use App\Http\Controllers\Controller;
-
 use App\Jobs\ProcessMonthlyTemplateJob;
 use App\Models\BillingCycle;
 use App\Models\ImportProcess;
+use App\Services\MonthlyTemplateService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
-use App\Exports\MonthlyTemplateExport;
-use App\Exports\MeterReadingsExport;
 use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Throwable;
 
-use Illuminate\Support\Facades\Auth;
-
-use App\Services\MonthlyTemplateService;
-
+/**
+ * ERP ⇄ Chamread exchange: monthly template uploads (processed in the
+ * background by ProcessMonthlyTemplateJob), import progress and history,
+ * and per-cycle template and reading exports.
+ *
+ * Uploads and exports are limited to the roles in MANAGE_ROLES.
+ */
 class MonthlyTemplateController extends Controller
 {
     /**
-     * Display the monthly import/export page.
+     * Roles allowed to upload templates and export files.
+     *
+     * @var list<string>
+     */
+    protected const MANAGE_ROLES = ['ADMIN', 'COMMERCIAL', 'IT'];
+
+    /**
+     * Imports listed per page on the import history page.
+     */
+    protected const IMPORTS_PER_PAGE = 15;
+
+    /**
+     * Uploaded templates are kept here on the `local` disk.
+     */
+    protected const UPLOAD_DIRECTORY = 'imports/monthly-templates';
+
+    /**
+     * Display the import/export page.
+     *
+     * Reading counts are loaded with withCount() so the page does not load
+     * every reading of every cycle. The latest import is chosen by ID
+     * because progress updates keep changing updated_at.
      */
     public function index(): View
     {
-        return view('management.erp.index', [
-            'billingCycles' => BillingCycle::orderByDesc('start_date')->get(),
-            'latestImports' => ImportProcess::orderByDesc('updated_at')->limit(5)->get(),
-        ]);
+        $billingCycles = BillingCycle::query()
+            ->withCount('readings')
+            ->orderByDesc('start_date')
+            ->get();
+
+        $latestImport = ImportProcess::query()
+            ->with(['user:id,name', 'billingCycle:id,name', 'summaries'])
+            ->latest('id')
+            ->first();
+
+        return view('management.erp.index', compact('billingCycles', 'latestImport'));
     }
 
     /**
-     * Upload a monthly template and start background processing.
+     * Display the paginated import history, newest first.
+     */
+    public function showImports(): View
+    {
+        $imports = ImportProcess::query()
+            ->with(['user:id,name', 'billingCycle:id,name', 'summaries'])
+            ->latest('id')
+            ->paginate(self::IMPORTS_PER_PAGE);
+
+        return view('management.erp.all-imports', compact('imports'));
+    }
+
+    /**
+     * Store an uploaded template and queue it for processing.
+     *
+     * Redirects to the import page with `process_id` flashed so the
+     * progress tracker can follow the new import.
+     *
+     * @param  Request  $request  Carries `billing_cycle_id` and the `template` file.
      */
     public function upload(Request $request): RedirectResponse
     {
+        if (! $this->canManage($request)) {
+            return $this->denied();
+        }
+
         $validated = $request->validate([
-            'billing_cycle_id' => ['required', 'exists:billing_cycles,id'],
-            'template' => [
-                'required',
-                'file',
-                'mimes:xlsx,xls',
-                'max:10240', // 10 MB
-            ],
+            'billing_cycle_id' => ['required', 'integer', 'exists:billing_cycles,id'],
+            'template' => ['required', 'file', 'mimes:xlsx,xls', 'max:10240'],
         ]);
 
-        if(!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])){
-            return redirect()->back()
-            ->with('error', 'Insufficient permissions.');
-        };
+        $file = $request->file('template');
 
-        /*
-        |--------------------------------------------------------------------------
-        | Store uploaded file
-        |--------------------------------------------------------------------------
-        */
+        $path = $file->store(self::UPLOAD_DIRECTORY, 'local');
 
-   
+        if ($path === false) {
+            return back()->with('error', 'Failed to store the uploaded file. Please try again.');
+        }
 
-/*
-|--------------------------------------------------------------------------
-| Store uploaded file
-|--------------------------------------------------------------------------
-*/
+        $process = ImportProcess::create([
+            'user_id' => $request->user()->id,
+            'billing_cycle_id' => $validated['billing_cycle_id'],
+            'file_name' => $file->getClientOriginalName(),
+            'status' => ImportProcess::STATUS_PENDING,
+            'progress' => 0,
+            'current_step' => 'Waiting...',
+        ]);
 
-$file = $request->file('template');
+        ProcessMonthlyTemplateJob::dispatch($process, $path);
 
-$path = $file->store(
-    'imports/monthly-templates',
-    'local'
-);
-
-if (!$path) {
-    return redirect()
-        ->back()
-        ->with('error', 'Failed to store uploaded file.');
-}
-
-/*
-|--------------------------------------------------------------------------
-| Create import tracking record
-|--------------------------------------------------------------------------
-*/
-
-$process = ImportProcess::create([
-    'user_id' => auth()->id(),
-    'billing_cycle_id' => $validated['billing_cycle_id'],
-    'file_name' => $file->getClientOriginalName(),
-    'status' => ImportProcess::STATUS_PENDING,
-    'progress' => 0,
-    'current_step' => 'Waiting...',
-]);
-
-/*
-|--------------------------------------------------------------------------
-| Dispatch import job
-|--------------------------------------------------------------------------
-*/
-
-ProcessMonthlyTemplateJob::dispatch(
-    $process,
-    $path
-);
-
-return redirect()
-    ->route('management.erp.index')
-    ->with('process_id', $process->id)
-    ->with('success', 'Import started successfully.');
-
+        return redirect()
+            ->route('management.erp.index')
+            ->with('process_id', $process->id)
+            ->with('success', 'Import started successfully.');
     }
 
     /**
-     * Return current import progress.
+     * Return an import's progress for the polling tracker.
      *
-     * Used by the frontend polling every few seconds.
+     * Polled every few seconds, so it returns stored columns only and
+     * loads no relations.
+     *
+     * @param  ImportProcess  $process  Import being tracked.
+     * @return JsonResponse {id, status, progress, step, message, error}; `error` is set only when the import failed.
      */
     public function status(ImportProcess $process): JsonResponse
     {
+        $failed = $process->status === ImportProcess::STATUS_FAILED;
+
         return response()->json([
             'id' => $process->id,
             'status' => $process->status,
-            'progress' => $process->progress,
+            'progress' => (int) $process->progress,
             'step' => $process->current_step,
             'message' => $process->message,
+            'error' => $failed ? ($process->message ?: 'Import failed unexpectedly.') : null,
         ]);
     }
 
-    
     /**
-     * Download the reconstructed monthly template.
+     * Download the monthly ERP template rebuilt from current customer accounts.
+     *
+     * Failures are logged with full detail and reported to the user with a
+     * generic message, so internal errors are not exposed.
+     *
+     * @param  Request                 $request       Current request, used for authorization.
+     * @param  BillingCycle            $billingCycle  Cycle the template is exported for.
+     * @param  MonthlyTemplateService  $service       Builds the export rows.
      */
     public function download(
+        Request $request,
         BillingCycle $billingCycle,
         MonthlyTemplateService $service
-    ) {
-        if(!in_array(Auth::user()->role, ['ADMIN', 'COMMERCIAL', 'IT'])){
-            return redirect()->back()
-            ->with('error', 'Insufficient permissions.');
-        };
+    ): BinaryFileResponse|RedirectResponse {
+        if (! $this->canManage($request)) {
+            return $this->denied();
+        }
 
         try {
-            $rows = $service->exportRows(
-                $billingCycle
-            );
-
             return Excel::download(
-                new MonthlyTemplateExport($rows),
-                sprintf(
-                    'meter_reading_file_%s.xlsx',
-                    $billingCycle->name
-                )
+                new MonthlyTemplateExport($service->exportRows($billingCycle)),
+                $this->exportFileName('meter_reading_file', $billingCycle)
             );
-
-        } catch (\Exception $e) {
-            \Log::error('Monthly template download failed: ' . $e->getMessage(), [
-                'billing_cycle_id' => $billingCycle->name,
-                'trace' => $e->getTraceAsString()
+        } catch (Throwable $e) {
+            Log::error('Monthly template download failed.', [
+                'billing_cycle_id' => $billingCycle->id,
+                'exception' => $e,
             ]);
 
-            return back()->with('error', 'Failed to download template: ' . $e->getMessage());
+            return back()->with('error', 'Failed to download the template. Please contact IT if this continues.');
         }
     }
 
     /**
-     * Export the monthly template as an Excel file.
+     * Export the meter readings captured in a closed billing cycle.
+     *
+     * @param  Request       $request       Current request, used for authorization.
+     * @param  BillingCycle  $billingCycle  Cycle to export; must be closed.
      */
-    public function exportExcel( BillingCycle $billingCycle)
+    public function exportExcel(Request $request, BillingCycle $billingCycle): BinaryFileResponse|RedirectResponse
     {
-        
-        
-        if ($billingCycle->status !== 'closed') {
-            return back()->with('error', 'Failed. Cycle is not closed.');
+        if (! $this->canManage($request)) {
+            return $this->denied();
         }
 
-        $export = new MeterReadingsExport($billingCycle->id);
-        
-        return Excel::download($export, 'meter_readings_' . date('Y-m-d_His') . '.xlsx');
+        if ($billingCycle->status !== 'closed') {
+            return back()->with('error', 'Readings can only be exported after the cycle is closed.');
+        }
+
+        return Excel::download(
+            new MeterReadingsExport($billingCycle->id),
+            $this->exportFileName('meter_readings', $billingCycle)
+        );
+    }
+
+    /**
+     * Whether the current user may upload templates and export files.
+     *
+     * @param  Request  $request  Current request.
+     */
+    protected function canManage(Request $request): bool
+    {
+        return in_array($request->user()?->role, self::MANAGE_ROLES, true);
+    }
+
+    /**
+     * Response for users without the required role.
+     */
+    protected function denied(): RedirectResponse
+    {
+        return back()->with('error', 'Insufficient permissions.');
+    }
+
+    /**
+     * Build a filesystem-safe export file name.
+     *
+     * Cycle names are slugged because they may contain spaces or slashes,
+     * which break download file names.
+     *
+     * @param  string        $prefix        File name prefix.
+     * @param  BillingCycle  $billingCycle  Cycle being exported.
+     * @return string File name ending in `.xlsx`.
+     */
+    protected function exportFileName(string $prefix, BillingCycle $billingCycle): string
+    {
+        $cycle = Str::slug($billingCycle->name ?? '', '_') ?: 'cycle_' . $billingCycle->id;
+
+        return sprintf('%s_%s_%s.xlsx', $prefix, $cycle, now()->format('Y-m-d_His'));
     }
 }
+
+// TODO: Replace canManage() with a Gate or policy (for example `manage-erp`) applied as route middleware, and use it to restrict status() to users who may view imports.
