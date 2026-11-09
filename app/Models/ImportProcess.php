@@ -122,4 +122,7 @@ class ImportProcess extends Model
             'message' => $message,
         ]);
     }
+
+    public function summaries(): HasMany { return $this->hasMany(ImportSummary::class); }
+    public function changes(): HasMany   { return $this->hasMany(ImportChange::class); }
 }
