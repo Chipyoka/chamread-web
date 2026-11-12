@@ -11,18 +11,6 @@
             </div>
 
             <div class="flex items-center space-x-2">
-           
-            
-                 <!-- export reading-->
-                <x-micro-button
-                    color="purple"
-                    href="{{ route('readings.meter-readings.export', $reading) }}"
-                    icon="upload"
-                    size="md"
-                >
-                    Export
-                </x-micro-button>
-
                  <!-- back to list -->
                 <x-micro-button
                     variant="edit"
@@ -159,7 +147,10 @@
         <!-- Customer Info Card -->
         <div class="bg-white rounded-md p-6 space-y-4 border border-gray-200">
             
-         <h3 class="text-gray-400 text-xs uppercase my-2">Customer Account Information</h3>
+            <div class="flex justify-between items-center">
+                <h3 class="text-gray-400 text-xs uppercase my-2">Customer Account Information</h3>
+                <a href="{{ route('readings.accounts.show', $reading->account) }}" class="text-primary text-sm hover:underline">View Account</a>
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="px-2 py-1.5 bg-gray-50 rounded-sm">
                     <h2 class="text-gray-500 mb-1 text-xs uppercase font-normal">Account #</h2>

@@ -102,4 +102,14 @@ class CustomerAccount extends Model
             'csa_id'               // Local key on csa_assignments...
         )->where('users.role', 'CSA');
     }
+
+    public function unmetered()
+    {
+        return $this->hasMany(Unmetered::class, 'account_id');
+    }
+
+    public function isUnmetered(): bool
+    {
+        return strtolower((string) $this->account_status) === 'unmetered';
+    }
 }

@@ -39,6 +39,7 @@ class Sidebar extends Component
                 'roles' => ['SUPERVISOR', 'ADMIN', 'IT','COMMERCIAL'],
                 'children' => [
                     ['name' => 'Meter Readings', 'route' => 'readings.meter-readings.index',      'pattern' => 'readings.meter-readings.*',      'icon' => 'list-todo', 'roles' => ['SUPERVISOR', 'ADMIN', 'IT','COMMERCIAL']],
+                    ['name' => 'Unmetered', 'route' => 'readings.unmetered.index',      'pattern' => 'readings.unmetered.*',      'icon' => 'droplets', 'roles' => ['SUPERVISOR', 'ADMIN', 'IT','COMMERCIAL']],
                     ['name' => 'Field Issues', 'route' => 'readings.issues.index',      'pattern' => 'readings.issues.*',      'icon' => 'octagon-alert', 'roles' => ['SUPERVISOR', 'ADMIN', 'IT','COMMERCIAL']],
                     ['name' => 'Accounts', 'route' => 'readings.accounts.index','pattern' => 'readings.accounts.*','icon' => 'file-text', 'roles' => ['SUPERVISOR', 'ADMIN', 'IT','COMMERCIAL']],
                     ['name' => 'CSAs',     'route' => 'readings.csas.index',    'pattern' => 'readings.csas.*',    'icon' => 'users',     'roles' => ['SUPERVISOR', 'ADMIN', 'IT','COMMERCIAL']],

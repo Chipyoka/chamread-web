@@ -247,7 +247,7 @@
                         @if(request('duration') || request('search') || request('zone') || request('district'))
                             <a 
                                 href="{{ route('readings.meter-readings.index') }}"
-                                class="inline-flex items-center text-xs text-blue-500 hover:text-blue-700 transition-colors mt-2"
+                                class="inline-flex items-center text-xs text-primary transition-colors mt-2"
                             >
                                 <i data-lucide="x" class="w-3 h-3 mr-1"></i>
                                 Clear all filters

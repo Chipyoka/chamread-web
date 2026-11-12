@@ -1,0 +1,248 @@
+<x-app-layout>
+    <div class="p-6 space-y-6">
+
+        <x-slot:breadcrumb>
+            <x-breadcrumb :items="[
+                [
+                    'label'=>'Readings'
+                ],
+                [
+                    'label'=>'Meter Readings'
+                ]
+            ]"/>
+        </x-slot:breadcrumb>
+
+        <!-- Header -->
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-medium text-gray-500">Unmetered (Fixed Accounts)</h1>
+                <p class="text-xs text-gray-500">
+                    View Unmetered Readings from the current billing cycle
+                </p>
+            </div>
+
+          
+            @if(in_array(Auth::user()->role, ['ADMIN', 'IT', 'COMMERCIAL', 'SUPERVISOR']))
+                @php
+                    $r =  method_exists($unmetered, 'total') ? $unmetered->total() : $unmetered->count();
+                @endphp
+                @if($r > 0)
+                    <a
+                        href="{{ route('readings.meter-readings.export.excel', request()->query()) }}"
+                        class="inline-flex items-center px-3 py-2.5 bg-primary text-white text-xs font-medium rounded-md hover:bg-primary/90 transition"
+                    >
+                        <i data-lucide="file-up" class="w-4 h-4 mr-2"></i>
+                        Export Excel
+                        <span class="ml-1.5 px-1.5 py-0.5 bg-white/20 rounded-sm text-[10px]">
+                             {{ method_exists($unmetered, 'total') ? $unmetered->total() : $unmetered->count() }}
+                        </span>
+                    </a>
+                @else
+                    <span
+                        class="inline-flex items-center px-3 py-2.5 bg-gray-300 text-gray-500 text-xs font-medium rounded-md cursor-not-allowed opacity-60"
+                    >
+                        <i data-lucide="file-up" class="w-4 h-4 mr-2"></i>
+                        Export Excel (0)
+                    </span>
+                @endif
+            @endif
+           
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-md p-4 space-y-4 border border-gray-200 overflow-hidden">
+
+            <!-- Filter Section -->
+            <form method="GET" action="{{ route('readings.unmetered.index') }}" class="flex flex-wrap items-center gap-3 pb-4 border-b border-gray-100">
+                
+                <!-- Duration Filter -->
+                <div class="flex items-center space-x-2">
+                    <select 
+                        id="duration_filter" 
+                        name="duration"
+                        class="text-xs border-gray-200 w-36 focus:ring-primary focus:border-primary text-gray-500 bg-gray-50 px-3 py-1.5 rounded-sm"
+                        onchange="this.form.submit()"
+                    >
+                        <option value="">Duration</option>
+                        <option value="today" {{ request('duration') == 'today' ? 'selected' : '' }}>Today</option>
+                        <option value="this_week" {{ request('duration') == 'this_week' ? 'selected' : '' }}>This Week</option>
+                    </select>
+                </div>
+
+                <!-- Search by Account Number -->
+                <div class="flex items-center space-x-2 flex-1 max-w-xs">
+                    <div class="relative flex-1">
+                        <input 
+                            type="text" 
+                            id="search" 
+                            name="search"
+                            placeholder="Search by CSA or Account..."
+                            class="w-full text-xs border-gray-200 focus:ring-primary focus:border-primary text-gray-500 bg-gray-50 px-3 py-1.5 pl-8 rounded-sm"
+                            value="{{ request('search') }}"
+                        >
+                        <i data-lucide="search" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- Zone Filter -->
+                <div class="flex items-center space-x-2">
+                    <select 
+                        id="zone_filter" 
+                        name="zone"
+                        class="text-xs border-gray-200 w-48 focus:ring-primary focus:border-primary text-gray-500 bg-gray-50 px-3 py-1.5 rounded-sm"
+                        onchange="this.form.submit()"
+                    >
+                        <option value="">All Zones</option>
+                        @foreach($zones ?? [] as $zone)
+                            <option value="{{ $zone->id }}" {{ request('zone') == $zone->id ? 'selected' : '' }}>
+                                {{ $zone->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- District Filter -->
+                <div class="flex items-center space-x-2">
+                    <select 
+                        id="district_filter" 
+                        name="district"
+                        class="text-xs border-gray-200 w-48 focus:ring-primary focus:border-primary text-gray-500 bg-gray-50 px-3 py-1.5 rounded-sm"
+                        onchange="this.form.submit()"
+                    >
+                        <option value="">All Districts</option>
+                        @foreach($districts ?? [] as $district)
+                            <option value="{{ $district }}" {{ request('district') == $district ? 'selected' : '' }}>
+                                {{ $district }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="text-xs bg-primary hover:opacity-95 text-white px-4 py-1.5 rounded-sm transition-colors">
+                    Filter
+                </button>
+
+                <!-- Clear Filters -->
+                @if(request('duration') || request('search') || request('zone') || request('district'))
+                    <a 
+                        href="{{ route('readings.meter-readings.index') }}"
+                        class="text-xs text-gray-400 hover:text-gray-500 transition-colors flex items-center space-x-1"
+                    >
+                        <i data-lucide="x" class="w-3 h-3"></i>
+                        <span>Clear Filters</span>
+                    </a>
+                @endif
+
+                <!-- Active Filters Count Badge -->
+                @php
+                    $activeFilters = collect([
+                        request('duration') && request('duration') != 'today' ? request('duration') : null,
+                        request('search'),
+                        request('zone'),
+                        request('district')
+                    ])->filter()->count();
+                @endphp
+                
+            </form>
+
+            @if($unmetered->count() > 0)
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-100">
+                        <thead class="bg-gray-50">
+                            <tr class="text-left text-xs text-gray-500 uppercase tracking-wider">
+                                <th class="px-2 py-3 whitespace-nowrap">Account #</th>
+                                <th class="px-2 py-3 whitespace-nowrap">Zone</th>
+                                <th class="px-2 py-3 whitespace-nowrap">CSA</th>
+                                <th class="px-2 py-3 whitespace-nowrap">Status Code</th>
+                                <th class="px-2 py-3 whitespace-nowrap">Reading Time</th>
+                                <th class="px-2 py-3 text-right whitespace-nowrap">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody class="bg-white divide-y divide-gray-100">
+
+                            @foreach($unmetered as $reading)
+                                <tr class="hover:bg-gray-50 transition">
+
+                                    <!-- Account Number -->
+                                    <td class="px-6 py-3 text-xs text-gray-500 font-medium whitespace-nowrap">
+                                        {{ $reading->account->account_number }}
+                                        
+                                    </td>
+
+                                    <!-- Zone -->
+                                    <td class="px-6 py-3 text-xs text-gray-500 whitespace-nowrap">
+                                        {{ $reading->account->zone->name ?? '-' }}
+                                    </td>
+
+                                    <!-- Zone -->
+                                    <td class="px-6 py-3 text-xs text-gray-500 whitespace-nowrap">
+                                         {{ $reading->csa->name ?? "-" }}
+                                    </td>
+
+                                    <!-- Previous reading -->
+                                    <td class="px-6 py-3 text-xs text-gray-500 whitespace-nowrap">
+                                        {{ $reading->code->code ?? '-' }} {{ $reading->code->name ?? '-' }}
+                                    </td>
+
+                               
+
+                                    <!-- Reading time -->
+                                    <td class="px-6 py-3 text-xs text-gray-500 whitespace-nowrap">
+                                        {{ $reading->captured_at ? $reading->captured_at->format('Y-m-d H:i:s') : '-' }}
+                                    </td>
+
+                                    <!-- Actions -->
+                                    <td class="px-6 py-3 text-right text-xs space-x-2 whitespace-nowrap">
+
+                                        <!-- View -->
+                                        <x-micro-button
+                                            href="{{ route('readings.unmetered.show', $reading) }}"
+                                            color="blue"
+                                            icon="eye"
+                                            size="sm"
+                                        >
+                                            View
+                                        </x-micro-button>
+
+                                    </td>
+                                </tr>
+                            @endforeach
+
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pt-4 border-t border-gray-100">
+                    {{ $unmetered->links() }}
+                </div>
+
+            @else
+
+                <!-- Empty State -->
+                <div class="p-10 text-center">
+                    <div class="flex flex-col items-center space-y-3">
+                        <i data-lucide="list-todo" class="w-12 h-12 text-gray-300"></i>
+                        <p class="text-gray-500 text-sm font-medium">No readings found</p>
+                        <p class="text-gray-400 text-xs">No meter readings match your current filters.</p>
+
+                        @if(request('duration') || request('search') || request('zone') || request('district'))
+                            <a 
+                                href="{{ route('readings.unmetered.index') }}"
+                                class="inline-flex items-center text-xs text-primary transition-colors mt-2"
+                            >
+                                <i data-lucide="x" class="w-3 h-3 mr-1"></i>
+                                Clear all filters
+                            </a>
+                        @endif
+                    </div>
+                </div>
+
+            @endif
+
+        </div>
+    </div>
+</x-app-layout>

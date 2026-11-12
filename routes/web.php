@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\ZoneController;
 use App\Http\Controllers\Admin\FlagController;
 use App\Http\Controllers\Admin\ReadingVerificationController;
 use App\Http\Controllers\Admin\CustomerAccountIssueController;
+use App\Http\Controllers\Admin\UnmeteredController;
 use App\Http\Controllers\AppDownloadController;
 
 
@@ -164,6 +165,19 @@ use Illuminate\Support\Facades\Route;
 
             Route::post('/{reading}/verify', [ReadingVerificationController::class, 'verify'])->name('verify');
            
+        });
+
+        /**
+         * =====================================================
+         * UNMETERED READINGS MANAGEMENT
+         * =====================================================
+         */
+        Route::prefix('unmetered')->name('unmetered.')->group(function () {
+
+            Route::get('/', [UnmeteredController::class, 'index'])->name('index');
+            Route::get('/unmetered/{unmetered}', [UnmeteredController::class, 'show'])->name('show');
+            Route::get('/export', [Admin\UnmeteredController::class, 'exportCsv'])->name('export');
+
         });
 
         /**

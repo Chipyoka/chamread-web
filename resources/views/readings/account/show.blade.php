@@ -37,7 +37,16 @@
 
         <!-- account Info Card -->
         <div class="bg-white rounded-md p-6 space-y-4 border border-gray-200">
-            <div class="flex items-center justify-end mb-2">
+            <div class="flex items-center justify-between mb-2
+            
+            ">
+                <h2 class="text-lg font-semibold px-2 py-1 bg-amber-50 text-amber-500
+                @if ($account->account_status==='metered')
+                text-green-500 bg-green-50
+                @endif
+                ">
+                    {{ $account->account_status === 'metered' ? "Metered Account" : "Unmetered Account" }}
+                </h2>
                 <h2 class="text-lg font-medium text-gray-500">Assigned to <span class="text-secondary">
                     <a href="{{ route('readings.csas.show', $assignedCsa) }}" class="hover:underline">
                         {{ $assignedCsa ? $assignedCsa->name : 'N/A' }}
@@ -106,6 +115,8 @@
                 </div>
             </div>
         @endif
+
+       
         <!-- Consumption Trend chart -->
         <div class="bg-white rounded-md p-6 space-y-4 border border-gray-200">
             <h3 class="text-gray-400 text-xs uppercase my-2">Consumption Trend (Last 6 months)</h3>
