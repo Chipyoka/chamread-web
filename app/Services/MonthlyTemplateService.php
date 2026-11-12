@@ -61,6 +61,7 @@ class MonthlyTemplateService
         'address',
         'meter_number',
         'customer_category',
+        'meter_status_erp',
         'phone_number',
         'district',
         'zone',
@@ -88,6 +89,7 @@ class MonthlyTemplateService
         'address',
         'phone',
         'meter_number',
+        'account_status',
         'customer_category',
         'zone_id',
     ];
@@ -194,7 +196,7 @@ class MonthlyTemplateService
                 'Current Reading Date' => '',
                 'Current Reading' => '',
                 'Meter reading ERP (incl estimates)' => '',
-                'Meter Status ERP' => '',
+                'Meter Status ERP' => $account->account_status,
                 'Optional Comment' => '',
                 'MR: This month Code' => '',
                 'MR: Last month Code' => '',
@@ -377,6 +379,7 @@ class MonthlyTemplateService
                 'meter_number' => $this->clean($row['meter_number'] ?? null),
                 'customer_category' => $this->clean($row['customer_category'] ?? null),
                 'zone_id' => $zoneMap[$zoneCode],
+                'account_status' => $this->clean($row['meter_status_erp'] ?? null) ?? '',
             ];
         }
 

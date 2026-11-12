@@ -40,5 +40,5 @@
         @endforeach
     </nav>
 
-    <p class="text-center text-xxs text-gray-400 my-2 uppercase tracking-wider">current Version: 2.0.0</p>
+    <p class="text-center text-xxs text-gray-400 my-2 uppercase tracking-wider">current Version: 2.2.16</p>
 </div>
