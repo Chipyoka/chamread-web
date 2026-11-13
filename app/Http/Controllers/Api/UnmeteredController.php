@@ -75,7 +75,6 @@ class UnmeteredController extends Controller
         $validated = $request->validate([
             'account_id'        => 'required|exists:customer_accounts,id',
             'billing_cycle_id'  => 'required|exists:billing_cycles,id',
-            'connection_status' => ['required', Rule::in(Unmetered::STATUSES)],
             // Must be the id of an active code from Unmetered::ALLOWED_CODES.
             'meter_reading_code' => [
                 'required',
@@ -152,7 +151,6 @@ class UnmeteredController extends Controller
                 'csa_id'                 => auth()->id(),
                 'billing_cycle_id'       => $cycleId,
                 'remapped_from_cycle_id' => $remappedFrom,
-                'connection_status'      => $validated['connection_status'],
                 'meter_reading_code'     => $validated['meter_reading_code'],
                 'photo_path'             => $photoPath,
                 'comment'                => $validated['comment'] ?? null,
