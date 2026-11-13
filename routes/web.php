@@ -176,7 +176,7 @@ use Illuminate\Support\Facades\Route;
 
             Route::get('/', [UnmeteredController::class, 'index'])->name('index');
             Route::get('/unmetered/{unmetered}', [UnmeteredController::class, 'show'])->name('show');
-            Route::get('/export', [Admin\UnmeteredController::class, 'exportCsv'])->name('export');
+            Route::get('/export', [UnmeteredController::class, 'exportCsv'])->name('export');
 
         });
 

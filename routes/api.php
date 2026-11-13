@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AccountsController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CustomerAccountIssueController;
+use App\Http\Controllers\Api\UnmeteredController;
 use App\Http\Controllers\Api\ReadingHistoryController;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
@@ -52,10 +53,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::prefix('readings')->name('readings.')->group(function () {
             Route::post('/save', [ReadingsController::class, 'store'])->name('store');
             Route::post('/sync', [ReadingsController::class, 'syncReading'])->name('sync');
+            Route::post('/unmetered/sync', [UnmeteredController::class, 'sync'])->name('unmetered-sync');
 
             Route::post('/batch', [ReadingsController::class, 'batchStore'])->name('batchStore');
             Route::post('/batch/rereads', [ReadingsController::class, 'batchStoreRereads'])->name('batch-rereads');
 
+            Route::get('/unmetered/codes', [UnmeteredController::class, 'codes'])->name('unmetered-reasons');
             Route::get('/reasons', [ReadingsController::class, 'reasons'])->name('reasons');
             Route::get('/rereads', [ReadingsController::class, 'pendingRereads'])->name('rereads');
 

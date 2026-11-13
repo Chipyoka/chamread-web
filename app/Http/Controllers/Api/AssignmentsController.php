@@ -46,6 +46,7 @@ class AssignmentsController extends Controller
                     'name' => $currentCycle->name,
                     'start_date' => $currentCycle->start_date,
                     'end_date' => $currentCycle->end_date,
+                    'can_upload' => $currentCycle->can_upload,
                 ],
                 'assignments' => $assignments->map(fn ($a) => [
                     'id' => $a->id,

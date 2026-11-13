@@ -7,11 +7,11 @@ use App\Models\BillingCycle;
 use App\Models\CustomerAccount;
 use App\Models\MeterReadingCode;
 use App\Models\Unmetered;
-use App\Traits\ReconcilesStaleCycle;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -20,8 +20,6 @@ use Throwable;
 
 class UnmeteredController extends Controller
 {
-    use ReconcilesStaleCycle;
-
     /**
      * Codes a reader can select for an unmetered account.
      *
@@ -38,6 +36,46 @@ class UnmeteredController extends Controller
             'success' => true,
             'data'    => $codes,
         ]);
+    }
+
+    /**
+     * Correct a stale cycle id sent by the mobile client.
+     *
+     * The app only learns about a new cycle when the user manually refreshes
+     * online, so readings captured in the new cycle can still carry the previous
+     * cycle's id. We remap ONLY when all of these hold:
+     *   1. incoming id is the cycle immediately before the current one
+     *      (resolved by lookup, not id - 1, so gaps in ids are safe), and
+     *   2. the reading was captured on/after the current cycle's start_date,
+     *      so a genuinely late reading from the old cycle is NOT pulled forward.
+     * Anything else is returned unchanged and falls through to the normal
+     * wrong-cycle rejection.
+     */
+    private function reconcileStaleCycle(int $incomingCycleId, BillingCycle $currentCycle, Carbon $readingTime): int
+    {
+        $currentCycleId = (int) $currentCycle->id;
+
+        if ($incomingCycleId === $currentCycleId) {
+            return $incomingCycleId;
+        }
+
+        $previousCycleId = Cache::remember(
+            "billing_cycle:previous:{$currentCycleId}",
+            600,
+            fn () => BillingCycle::where('id', '<', $currentCycleId)->orderByDesc('id')->value('id')
+        );
+
+        if ($previousCycleId === null || $incomingCycleId !== (int) $previousCycleId) {
+            return $incomingCycleId;
+        }
+
+        $currentCycleStart = Carbon::parse($currentCycle->start_date)->startOfDay();
+
+        if ($readingTime->lt($currentCycleStart)) {
+            return $incomingCycleId; // captured before the new cycle began: genuine old-cycle reading
+        }
+
+        return $currentCycleId;
     }
 
     /**
@@ -175,13 +213,17 @@ class UnmeteredController extends Controller
             $this->deletePhoto($photoPath);
 
             // Two requests for the same account raced past the check above;
-            // the unique index rejected the second one. Report it as a duplicate.
+            // the unique index rejected the second one. Report it as a duplicate,
+            // but only when the other row really exists: the same SQLSTATE also
+            // covers foreign key and NOT NULL failures, which are real errors.
             if ($e instanceof QueryException && in_array((string) $e->getCode(), ['23000', '23505'], true)) {
                 $winner = Unmetered::where('account_id', $account->id)
                     ->where('billing_cycle_id', $cycleId)
                     ->value('id');
 
-                return $this->duplicateResponse($winner, $account->id, $cycleId);
+                if ($winner) {
+                    return $this->duplicateResponse($winner, $account->id, $cycleId);
+                }
             }
 
             Log::error('Unmetered sync failed', [
